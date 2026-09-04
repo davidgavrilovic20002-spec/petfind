@@ -203,6 +203,21 @@
     'acc.marketing': "Envoyez-moi les actualités, offres et conseils PetFind par e-mail. Désinscription à tout moment.",
     'acc.activate': "J'ai une médaille — l'activer",
 
+    /* ---- home: whole-system showcase ---- */
+    'hs.eyebrow': 'Tout le système',
+    'hs.h2': 'Une médaille aujourd’hui. <em>Tout un système</em> ensuite.',
+    'hs.sub': "PetFind commence par une médaille qui fonctionne toujours — puis débloque cinq fonctions de plus qui veillent sur toute la vie de votre animal. Touchez-en une pour voir comment ça marche.",
+    'hs.leg.inc': 'Inclus avec la médaille',
+    'hs.leg.prem': 'Abonnement Premium',
+    'hs.more': 'En savoir plus',
+    'hs.cta': 'Voir toutes les fonctionnalités',
+    'hs.qr.d': "Scannez pour vous joindre et voir le vétérinaire le plus proche — sans pile, sans appli.",
+    'hs.loc.d': "Suivez votre animal sur une carte en direct et recevez des alertes de zone.",
+    'hs.vit.d': "Suivez poids, activité et constantes — avec alertes précoces.",
+    'hs.rec.d': "Un passeport vaccinal et un calendrier de médicaments automatique.",
+    'hs.vet.d': "Réservez des cliniques et obtenez une aide d’urgence confirmée par vous.",
+    'hs.bowl.d': "Connectez un distributeur — planifiez les repas et suivez les quantités.",
+
     /* ---- features page ---- */
     'meta.title.features': 'Fonctionnalités PetFind — tout ce que ça fait',
     'meta.desc.features': "Comment fonctionne chaque fonction PetFind : la médaille QR toujours active incluse à l'achat, plus cinq fonctions premium — localisation en direct, constantes de santé, dossier médical et médicaments, rendez-vous vétérinaires et gamelles connectées.",

@@ -9,7 +9,7 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0A1413">
 <link rel="stylesheet" href="assets/css/styles.css?v=4">
-<link rel="stylesheet" href="assets/css/landing.css?v=5">
+<link rel="stylesheet" href="assets/css/landing.css?v=6">
 <style>
   .tier-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:18px 0 4px}
   .tier{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--ink)}
@@ -18,7 +18,9 @@
   .badge-tier{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.3px;padding:4px 10px;border-radius:999px;text-transform:uppercase}
   .badge-tier.inc{background:#E7F5F3;color:#0B5651}
   .badge-tier.prem{background:#FBEFD9;color:#8A5A12}
-  .fn{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:26px 0;border-top:1px solid var(--line);align-items:start}
+  .fn{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:26px 0;border-top:1px solid var(--line);align-items:start;scroll-margin-top:84px}
+  .fn:target{animation:fnflash 1.4s ease}
+  @keyframes fnflash{0%{background:rgba(20,184,166,.12)}100%{background:transparent}}
   @media(max-width:640px){.fn{grid-template-columns:1fr;gap:12px}}
   .fn .fic{width:56px;height:56px;border-radius:16px;background:var(--soft);display:flex;align-items:center;justify-content:center}
   .fn .fic svg{width:30px;height:30px}
@@ -66,7 +68,7 @@
     </div>
 
     <!-- 1. QR identity -->
-    <div class="fn">
+    <div class="fn" id="f-qr">
       <div class="fic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><path d="M13 13h3v3M20 13v7M16 20h4" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
       <div>
         <h3><span data-i18n="ft.f1.h">Always-on QR identity tag</span> <span class="badge-tier inc" data-i18n="ft.tier.inc">Included</span></h3>
@@ -80,7 +82,7 @@
     </div>
 
     <!-- 2. Location -->
-    <div class="fn">
+    <div class="fn" id="f-location">
       <div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="#B4791F" stroke-width="1.6"/><circle cx="12" cy="10" r="2.4" stroke="#B4791F" stroke-width="1.6"/></svg></div>
       <div>
         <h3><span data-i18n="ft.f2.h">Live location &amp; safe zones</span> <span class="badge-tier prem" data-i18n="ft.tier.prem">Premium</span></h3>
@@ -95,7 +97,7 @@
     </div>
 
     <!-- 3. Vitals -->
-    <div class="fn">
+    <div class="fn" id="f-vitals">
       <div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h4l2-5 3 10 2-5h5" stroke="#B4791F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div>
         <h3><span data-i18n="ft.f3.h">Health vitals &amp; trends</span> <span class="badge-tier prem" data-i18n="ft.tier.prem">Premium</span></h3>
@@ -109,7 +111,7 @@
     </div>
 
     <!-- 4. Records & medication -->
-    <div class="fn">
+    <div class="fn" id="f-records">
       <div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="#B4791F" stroke-width="1.6"/><path d="M12 8v6M9 11h6" stroke="#B4791F" stroke-width="1.6" stroke-linecap="round"/></svg></div>
       <div>
         <h3><span data-i18n="ft.f4.h">Medical records &amp; medication</span> <span class="badge-tier prem" data-i18n="ft.tier.prem">Premium</span></h3>
@@ -123,7 +125,7 @@
     </div>
 
     <!-- 5. Appointments & escalation -->
-    <div class="fn">
+    <div class="fn" id="f-vet">
       <div class="fic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="#B4791F" stroke-width="1.6"/><path d="M8 3v4M16 3v4M4 10h16" stroke="#B4791F" stroke-width="1.6" stroke-linecap="round"/></svg></div>
       <div>
         <h3><span data-i18n="ft.f5.h">Vet appointments &amp; escalation</span> <span class="badge-tier prem" data-i18n="ft.tier.prem">Premium</span></h3>
@@ -137,7 +139,7 @@
     </div>
 
     <!-- 6. Bowls / feeders -->
-    <div class="fn">
+    <div class="fn" id="f-bowls">
       <div class="fic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11h16a0 0 0 010 0 8 8 0 01-8 8 8 8 0 01-8-8z" stroke="#B4791F" stroke-width="1.6"/><path d="M12 3c1.5 1.5 1.5 3 0 5" stroke="#B4791F" stroke-width="1.6" stroke-linecap="round"/></svg></div>
       <div>
         <h3><span data-i18n="ft.f6.h">Smart bowls &amp; feeders</span> <span class="badge-tier prem" data-i18n="ft.tier.prem">Premium</span></h3>
@@ -182,6 +184,6 @@
 </footer>
 
 <script src="assets/js/petfind.js?v=4"></script>
-<script src="assets/js/i18n.js?v=9"></script>
+<script src="assets/js/i18n.js?v=10"></script>
 </body>
 </html>

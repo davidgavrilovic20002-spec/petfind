@@ -67,6 +67,48 @@ body.home main{margin-top:-64px}
 .section-dark .statement p{color:rgba(255,255,255,.66)}
 .section-dark h2 .hl{color:#5EEAD4}
 
+/* ---- "Whole system" showcase (home) ----
+   A dark, glowing grid of all six functions that deep-links into
+   features.html. Teal = included with the tag, amber = premium. */
+.system{position:relative;overflow:hidden;background:radial-gradient(1000px 640px at 50% -12%,#123f3a 0%,#0A1413 58%);color:#fff;padding:92px 0}
+.system .glow{position:absolute;left:50%;top:-6%;width:720px;height:720px;transform:translateX(-50%);
+  background:radial-gradient(circle,rgba(20,184,166,.18),transparent 62%);filter:blur(12px);pointer-events:none}
+.system .sys-head{position:relative;text-align:center;max-width:60ch;margin:0 auto 12px}
+.system .eyebrow{color:#5EEAD4}
+.system h2{font-size:clamp(26px,4.6vw,44px);letter-spacing:-1px;line-height:1.08;font-weight:800;margin:6px 0 12px}
+.system h2 em{font-style:normal;background:linear-gradient(120deg,#5EEAD4,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.system .sys-sub{color:rgba(255,255,255,.66);font-size:clamp(15px,2vw,18px);margin:0 auto}
+.sys-legend{position:relative;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 4px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.8)}
+.sys-legend span{display:inline-flex;align-items:center;gap:7px}
+.sys-legend i{width:10px;height:10px;border-radius:50%}
+.sys-legend i.t{background:#5EEAD4}.sys-legend i.a{background:#F59E0B}
+.sys-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+@media(max-width:860px){.sys-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.sys-grid{grid-template-columns:1fr}}
+.sys-card{position:relative;display:block;text-decoration:none;color:#fff;background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:22px 20px;overflow:hidden;
+  transition:transform .28s cubic-bezier(.2,.7,.2,1),border-color .28s,background .28s,box-shadow .28s}
+.sys-card::after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;
+  background:radial-gradient(340px 160px at 20% -10%,rgba(94,234,212,.14),transparent 70%);opacity:0;transition:opacity .3s}
+.sys-card.prem::after{background:radial-gradient(340px 160px at 20% -10%,rgba(245,158,11,.16),transparent 70%)}
+.sys-card:hover{transform:translateY(-6px);border-color:rgba(94,234,212,.5);background:rgba(255,255,255,.075);box-shadow:0 22px 44px rgba(0,0,0,.45)}
+.sys-card.prem:hover{border-color:rgba(245,158,11,.5)}
+.sys-card:hover::after{opacity:1}
+.sys-card:focus-visible{outline:2px solid #5EEAD4;outline-offset:3px}
+.sys-ic{position:relative;width:50px;height:50px;border-radius:14px;background:rgba(94,234,212,.13);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.sys-card.prem .sys-ic{background:rgba(245,158,11,.14)}
+.sys-ic svg{width:27px;height:27px}
+.sys-pill{position:absolute;top:18px;right:18px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+.sys-pill.inc{background:rgba(94,234,212,.16);color:#5EEAD4}
+.sys-pill.prem{background:rgba(245,158,11,.18);color:#FBBF24}
+.sys-card h3{position:relative;font-size:17px;margin:0 0 6px;letter-spacing:-.2px}
+.sys-card p{position:relative;color:rgba(255,255,255,.62);font-size:13.5px;line-height:1.55;margin:0}
+.sys-arrow{position:relative;margin-top:14px;display:inline-flex;align-items:center;gap:6px;color:#5EEAD4;font-weight:700;font-size:13px;transition:gap .22s}
+.sys-card.prem .sys-arrow{color:#FBBF24}
+.sys-card:hover .sys-arrow{gap:11px}
+.sys-arrow svg{width:15px;height:15px}
+.sys-cta{position:relative;text-align:center;margin-top:32px}
+
 /* ---- Testimonials ---- */
 .tcard{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);padding:24px;display:flex;flex-direction:column;height:100%}
 .stars{display:inline-flex;gap:3px;color:#F59E0B;margin-bottom:12px}
