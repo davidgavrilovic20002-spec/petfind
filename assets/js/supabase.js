@@ -25,6 +25,13 @@
     return (res && res.data) ? res.data.user : null;
   }
 
+  // Normalize sex to the canonical values the database accepts.
+  function normSex(v) {
+    if (!v) return null;
+    v = String(v).toLowerCase();
+    return (v === 'female' || v === 'male' || v === 'unknown') ? v : null;
+  }
+
   // Build the profile-update object from owner fields (only defined keys).
   function ownerFields(data) {
     var f = {};
@@ -103,7 +110,7 @@
       var petRes = await client.from('pets').insert({
         owner_id: user.id,
         name: data.name || '', species: data.species || null,
-        breed: data.breed || null, sex: data.sex || null, age: data.age || null
+        breed: data.breed || null, sex: normSex(data.sex), age: data.age || null
       }).select('id').single();
       if (petRes.error) return petRes;
       var petId = petRes.data.id;
@@ -135,7 +142,7 @@
 
       var petRes = await client.from('pets').update({
         name: data.name || '', species: data.species || null,
-        breed: data.breed || null, sex: data.sex || null, age: data.age || null
+        breed: data.breed || null, sex: normSex(data.sex), age: data.age || null
       }).eq('id', id);
       if (petRes.error) return petRes;
 

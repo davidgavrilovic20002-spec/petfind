@@ -13,6 +13,7 @@
       thanks: "Thank you for stopping to help. Here's everything you need to get me safely back home.",
       home: 'I have a loving home — my family is looking for me.',
       owner: 'Owner', call: 'Call the owner', text: 'Send a text message',
+      sexF: 'Female', sexM: 'Male',
       nearestVet: 'Nearest vet', locating: 'Finding the nearest clinic near you…',
       callVet: 'Call vet', directions: 'Directions', away: 'away',
       noLocation: 'Turn on location to see the nearest clinic, or search below.',
@@ -28,6 +29,7 @@
       thanks: "Merci de vous être arrêté pour aider. Voici tout ce qu'il faut pour me ramener à la maison.",
       home: "J'ai une famille qui m'aime — elle me cherche.",
       owner: 'Propriétaire', call: 'Appeler le propriétaire', text: 'Envoyer un message',
+      sexF: 'Femelle', sexM: 'Mâle',
       nearestVet: 'Vétérinaire le plus proche', locating: 'Recherche de la clinique la plus proche…',
       callVet: 'Appeler', directions: 'Itinéraire', away: '',
       noLocation: "Activez la localisation pour voir la clinique la plus proche, ou cherchez ci-dessous.",
@@ -61,11 +63,19 @@
     return window.PetFind.decodeProfile(raw);
   }
 
+  function sexLabel(v) {
+    var L = LABELS[lang];
+    var s = String(v || '').toLowerCase();
+    if (s === 'female') return L.sexF;
+    if (s === 'male') return L.sexM;
+    return v; // legacy / free-text values shown as-is
+  }
+
   function speciesChip() {
     var bits = [];
     if (profile.breed) bits.push(profile.breed);
     else if (profile.species) bits.push(profile.species);
-    if (profile.sex) bits.push(profile.sex);
+    if (profile.sex) bits.push(sexLabel(profile.sex));
     if (profile.age) bits.push(profile.age);
     return bits.join(' · ');
   }
