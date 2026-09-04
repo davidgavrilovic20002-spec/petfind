@@ -183,7 +183,7 @@
   var TEAL = '#0B5651', TEAL_M = '#0F766E';
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 
-  function composeQR(url, petName) {
+  function composeQR(url, petName, preview) {
     var qr = qrcode(0, 'H'); qr.addData(url); qr.make();
     var c = document.getElementById('qr-canvas'), x = c.getContext('2d');
     var W = 980, H = 1180;
@@ -215,6 +215,20 @@
     x.fillText('Point your phone camera at the code', W / 2, qy + area + 70);
     x.font = '400 28px -apple-system,Segoe UI,Roboto,Arial';
     x.fillText('No app needed — works even with no battery', W / 2, qy + area + 112);
+
+    // Preview watermark: a diagonal ribbon so an unpaid preview can't be used
+    // as a real, printable tag. Real (activated) tags are rendered clean.
+    if (preview) {
+      x.save();
+      x.translate(W / 2, qy + area / 2 + 20);
+      x.rotate(-Math.PI / 9);
+      x.globalAlpha = 0.16; x.fillStyle = '#0B5651';
+      x.font = '800 130px -apple-system,Segoe UI,Roboto,Arial';
+      x.textAlign = 'center';
+      x.fillText(crT('PREVIEW', 'APERÇU'), 0, -40);
+      x.fillText(crT('PREVIEW', 'APERÇU'), 0, 110);
+      x.restore();
+    }
   }
 
   /* ---------- generate / save ---------- */
@@ -235,41 +249,139 @@
            '?s=' + encodeURIComponent(slug);
   }
 
-  function showResult(url, permanent) {
-    composeQR(url, state.name);
-    document.getElementById('pet-link').value = url;
-    document.getElementById('open-page').href = url;
-    var dl = document.getElementById('download-qr');
-    dl.href = document.getElementById('qr-canvas').toDataURL('image/png');
-    dl.download = 'petfind-' + (state.name || 'pet').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-qr.png';
+  // The account's entitlement state, resolved at load. mode is one of:
+  //   'edit'     — editing a saved/activated pet (?edit=<id>)
+  //   'entitled' — has a real tag / completed checkout → may issue a live QR
+  //   'trial'    — inside the 1-hour free window → preview only
+  //   'expired'  — free window ended, no tag yet → locked
+  //   'guest'    — not signed in → preview + sign-up funnel
+  var gate = { mode: 'guest', trial: null };
+  var lastResult = null;
+
+  // Throwaway finder-page URL (data in the hash) — only to SHOW how the tag
+  // looks. Never a permanent/claimable tag; that needs a real PetFind tag.
+  function petPreviewUrl() {
+    var u = new URL('pet.html', window.location.href);
+    u.hash = 'd=' + PF.encodeProfile(buildProfile()) + '&preview=1';
+    return u.href;
+  }
+
+  function el(id) { return document.getElementById(id); }
+
+  // Build/refresh the small CTA area inside the result card (preview modes).
+  function ensureResultCta() {
+    var host = el('result-cta');
+    if (host) return host;
+    host = document.createElement('div');
+    host.id = 'result-cta';
+    host.style.marginTop = '12px';
+    el('result').appendChild(host);
+    return host;
+  }
+
+  function fmtRemaining(ms) {
+    if (ms <= 0) return '0:00';
+    var m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function showResult(opts) {
+    lastResult = opts;
+    var preview = !!opts.preview;
+    composeQR(opts.url, state.name, preview);
+
+    var linkbox = document.querySelector('#result .linkbox');
+    var dl = el('download-qr'), open = el('open-page');
     var note = document.querySelector('#result .note');
-    if (note) note.hidden = !!permanent;   // saved links work everywhere; hide the "device only" note
-    var result = document.getElementById('result');
+    var h2 = document.querySelector('#result h2');
+    var lead = document.querySelector('#result .rlead');
+    var cta = ensureResultCta();
+    cta.innerHTML = '';
+
+    if (preview) {
+      if (h2) h2.textContent = crT('Here’s how your tag will look 👀', 'Voici à quoi ressemblera votre médaille 👀');
+      if (lead) lead.textContent = crT('This is a preview. To get a real, scannable tag you can print and set up, order your PetFind tag.', 'Ceci est un aperçu. Pour obtenir une vraie médaille scannable à imprimer et configurer, commandez votre médaille PetFind.');
+      if (linkbox) linkbox.hidden = true;
+      if (dl) dl.hidden = true;
+      if (open) open.hidden = true;
+      if (note) note.hidden = true;
+
+      if (gate.mode === 'trial' && gate.trial) {
+        var count = document.createElement('div');
+        count.className = 'note';
+        count.style.cssText = 'background:#EAF2FF;border-color:#BcdBFF;color:#1D4ED8;text-align:center';
+        count.id = 'trial-count';
+        cta.appendChild(count);
+        startCountdown(count);
+      }
+      var buy = document.createElement('a');
+      buy.className = 'btn accent block'; buy.href = 'checkout.html';
+      buy.style.marginTop = '10px';
+      buy.textContent = crT('Get my PetFind tag', 'Obtenir ma médaille PetFind');
+      cta.appendChild(buy);
+
+      if (gate.mode === 'guest') {
+        var signup = document.createElement('a');
+        signup.className = 'btn ghost block'; signup.href = 'account.html';
+        signup.style.marginTop = '8px';
+        signup.textContent = crT('Create a free account (1-hour trial)', 'Créer un compte gratuit (essai 1 h)');
+        cta.appendChild(signup);
+      }
+    } else {
+      if (h2) h2.textContent = crT('Your tag is ready 🎉', 'Votre médaille est prête 🎉');
+      if (lead) lead.textContent = crT('Print this QR or put it on a tag. Anyone who scans it opens your pet’s page.', 'Imprimez ce QR ou placez-le sur une médaille. Quiconque le scanne ouvre la page de votre animal.');
+      if (linkbox) linkbox.hidden = false;
+      el('pet-link').value = opts.url;
+      if (open) { open.hidden = false; open.href = opts.url; }
+      if (dl) {
+        dl.hidden = false;
+        dl.href = el('qr-canvas').toDataURL('image/png');
+        dl.download = 'petfind-' + (state.name || 'pet').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-qr.png';
+      }
+      if (note) note.hidden = !!opts.permanent;
+    }
+
+    var result = el('result');
     result.classList.add('show');
     result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  function generate(e) {
-    if (e) e.preventDefault();
-    var phoneErr = document.getElementById('phone-err');
-    if (!state.owner.phone.trim()) {
-      phoneErr.classList.add('show');
-      document.getElementById('f-phone').focus();
-      return;
+  var countdownTimer = null;
+  function startCountdown(node) {
+    clearInterval(countdownTimer);
+    function tick() {
+      var remaining = gate.trial ? (gate.trial.expiresAt - Date.now()) : 0;
+      if (remaining <= 0) {
+        clearInterval(countdownTimer);
+        node.textContent = crT('Your free preview has ended.', 'Votre aperçu gratuit est terminé.');
+        gate.mode = 'expired';
+        renderGate();
+        return;
+      }
+      node.textContent = crT('Free preview — time left: ', 'Aperçu gratuit — temps restant : ') + fmtRemaining(remaining);
     }
-    phoneErr.classList.remove('show');
-    saveOrGenerate();
+    tick();
+    countdownTimer = setInterval(tick, 1000);
   }
 
-  async function saveOrGenerate() {
-    var user = window.PFDB ? await window.PFDB.getUser() : null;
-    if (!user) {
-      // Not signed in: local, self-contained link (pet data lives in the QR itself).
-      showResult(petUrl(false), false);
-      saveLocal();
+  function generate(e) {
+    if (e) e.preventDefault();
+    if (gate.mode === 'expired') { renderGate(); el('account-hint').scrollIntoView({ behavior: 'smooth' }); return; }
+
+    var realSave = (gate.mode === 'edit' || gate.mode === 'entitled');
+    if (realSave && !state.owner.phone.trim()) {
+      el('phone-err').classList.add('show');
+      el('f-phone').focus();
       return;
     }
-    var btn = document.getElementById('generate-btn');
+    el('phone-err').classList.remove('show');
+
+    if (realSave) { saveReal(); }
+    else { showResult({ url: petPreviewUrl(), preview: true }); }   // trial / guest
+  }
+
+  async function saveReal() {
+    var btn = el('generate-btn');
     var label = btn.textContent; btn.disabled = true; btn.textContent = '…';
     try {
       var data = buildSaveData();
@@ -281,7 +393,7 @@
         var got = await window.PFDB.getPet(editId);
         slug = got.data ? window.PFDB.slugForPet(got.data) : null;
       }
-      showResult(permanentUrl(slug), true);
+      showResult({ url: permanentUrl(slug), preview: false, permanent: true });
       PF.toast(editId ? crT('Changes saved', 'Modifications enregistrées')
                       : crT('Saved to your account', 'Enregistré dans votre compte'));
     } catch (err) {
@@ -316,26 +428,66 @@
     document.getElementById('generate-btn').textContent = crT('Save changes', 'Enregistrer les modifications');
   }
 
-  // Small banner telling the user whether their tag will be saved to an account.
-  function updateSaveHint(loggedIn) {
-    var host = document.getElementById('account-hint');
+  // Banner + button label reflecting the account's entitlement (gate.mode).
+  function renderGate() {
+    var host = el('account-hint');
+    var btn = el('generate-btn');
+    var form = el('pet-form');
     if (!host) return;
     host.innerHTML = '';
     var box = document.createElement('div');
     box.className = 'note';
-    if (loggedIn) {
-      box.style.background = '#EAF7EE'; box.style.color = '#15803D'; box.style.borderColor = '#BFE6CC';
-      box.textContent = editId
-        ? crT('Editing a saved pet — your changes update the same QR code.', 'Modification d’un animal enregistré — vos changements mettent à jour la même médaille.')
-        : crT('Signed in — this will be saved to your account, so you can edit it later and the same QR keeps working.', 'Connecté — ceci sera enregistré dans votre compte : vous pourrez le modifier plus tard et la même médaille continuera de fonctionner.');
-    } else {
-      var a = document.createElement('a'); a.href = 'account.html'; a.style.fontWeight = '700'; a.style.color = '#7A5312';
-      a.textContent = crT('Log in or create a free account', 'Connectez-vous ou créez un compte gratuit');
+
+    function link(href, label, color) {
+      var a = document.createElement('a'); a.href = href; a.style.fontWeight = '700';
+      if (color) a.style.color = color; a.textContent = label; return a;
+    }
+
+    if (form) form.classList.remove('locked');
+    if (btn) btn.disabled = false;
+
+    if (gate.mode === 'edit') {
+      box.style.cssText = 'background:#EAF7EE;color:#15803D;border-color:#BFE6CC';
+      box.textContent = crT('Editing a saved pet — your changes update the same QR code.', 'Modification d’un animal enregistré — vos changements mettent à jour la même médaille.');
+      if (btn) btn.textContent = crT('Save changes', 'Enregistrer les modifications');
+    } else if (gate.mode === 'entitled') {
+      box.style.cssText = 'background:#EAF7EE;color:#15803D;border-color:#BFE6CC';
+      box.textContent = crT('You have a PetFind tag — create your pet and get a live QR code.', 'Vous avez une médaille PetFind — créez votre animal et obtenez un QR code actif.');
+      if (btn) btn.textContent = crT('Create my live QR code', 'Créer mon QR code actif');
+    } else if (gate.mode === 'trial') {
+      box.style.cssText = 'background:#EAF2FF;color:#1D4ED8;border-color:#BcdBFF';
+      var remaining = gate.trial ? gate.trial.remainingMs : 0;
+      box.appendChild(document.createTextNode(
+        crT('Free 1-hour preview — design your tag and see how it looks. ', 'Aperçu gratuit d’1 h — concevez votre médaille et voyez le rendu. ') +
+        crT('Time left: ', 'Temps restant : ') + fmtRemaining(remaining) + '. '));
+      box.appendChild(link('checkout.html', crT('Get your tag to activate.', 'Obtenez votre médaille pour activer.'), '#1D4ED8'));
+      if (btn) btn.textContent = crT('Preview my tag', 'Aperçu de ma médaille');
+    } else if (gate.mode === 'expired') {
+      box.style.cssText = 'background:#FEF2F2;color:#B91C1C;border-color:#FBD5D5';
+      box.appendChild(document.createTextNode(crT('Your free 1-hour preview has ended. ', 'Votre aperçu gratuit d’1 h est terminé. ')));
+      box.appendChild(link('checkout.html', crT('Get your PetFind tag to create and activate your QR.', 'Obtenez votre médaille PetFind pour créer et activer votre QR.'), '#B91C1C'));
+      if (form) form.classList.add('locked');
+      if (btn) { btn.disabled = true; btn.textContent = crT('Preview locked — get your tag', 'Aperçu verrouillé — obtenez votre médaille'); }
+    } else { // guest
+      box.style.cssText = 'background:#FEF3E2;color:#7A5312;border-color:#F7D9A8';
       box.appendChild(document.createTextNode(crT('Tip: ', 'Astuce : ')));
-      box.appendChild(a);
-      box.appendChild(document.createTextNode(crT(' to save your tag and edit it anytime — the printed QR keeps working.', ' pour enregistrer votre médaille et la modifier à tout moment — le QR imprimé continue de fonctionner.')));
+      box.appendChild(link('account.html', crT('create a free account', 'créez un compte gratuit'), '#7A5312'));
+      box.appendChild(document.createTextNode(crT(' to start your 1-hour preview and, once you have a tag, get a working QR.', ' pour démarrer votre aperçu d’1 h et, une fois votre médaille reçue, obtenir un QR actif.')));
+      if (btn) btn.textContent = crT('Preview my tag', 'Aperçu de ma médaille');
     }
     host.appendChild(box);
+  }
+
+  // Resolve the entitlement gate from the account + trial + orders.
+  async function computeGate() {
+    if (editId) { gate.mode = 'edit'; return; }
+    if (!window.PFDB) { gate.mode = 'guest'; return; }
+    var user = await window.PFDB.getUser();
+    if (!user) { gate.mode = 'guest'; return; }
+    var entitled = await window.PFDB.hasEntitlement();
+    if (entitled) { gate.mode = 'entitled'; return; }
+    gate.trial = await window.PFDB.trialInfo();
+    gate.mode = (gate.trial && gate.trial.active) ? 'trial' : 'expired';
   }
 
   function saveLocal() {
@@ -402,6 +554,8 @@
         renderSteps();
         renderSuggestions();
       }
+      renderGate();
+      if (lastResult) showResult(lastResult);
     };
 
     // Start in whatever language i18n resolved (stored choice or browser),
@@ -410,11 +564,13 @@
 
     // Backend: reflect account state and load a pet for editing (?edit=<id>).
     (function initBackend() {
-      if (!window.PFDB) { updateSaveHint(false); return; }
+      if (!window.PFDB) { gate.mode = 'guest'; renderGate(); return; }
       window.PFDB.getUser().then(function (user) {
         var params = new URLSearchParams(location.search);
         var edit = user ? params.get('edit') : null;
-        Promise.resolve(edit ? loadForEdit(edit) : null).then(function () { updateSaveHint(!!user); });
+        Promise.resolve(edit ? loadForEdit(edit) : null).then(function () {
+          computeGate().then(renderGate);
+        });
       });
     })();
   });

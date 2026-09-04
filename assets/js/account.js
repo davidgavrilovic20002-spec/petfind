@@ -58,6 +58,22 @@
   var mode = 'login';
   var lastPets = null;
 
+  // Where to send the user after a successful login (checkout / setup flows
+  // link here as account.html?next=<page>). Kept same-origin only.
+  function nextTarget() {
+    var n = new URLSearchParams(location.search).get('next');
+    if (!n) return null;
+    try { n = decodeURIComponent(n); } catch (e) {}
+    // Only allow relative in-site targets (no protocol / host).
+    if (/^https?:|^\/\//i.test(n)) return null;
+    return n;
+  }
+  function redirectNext() {
+    var n = nextTarget();
+    if (n) { location.href = n; return true; }
+    return false;
+  }
+
   function show(view) {
     $('loading').hidden = true;
     $('auth-view').hidden = view !== 'auth';
@@ -71,6 +87,7 @@
     $('tab-login').classList.toggle('on', login);
     $('tab-signup').classList.toggle('on', !login);
     $('name-field').hidden = login;
+    var mk = $('marketing-field'); if (mk) mk.hidden = login;
     $('auth-title').textContent = login ? t('loginTitle') : t('signupTitle');
     $('auth-submit').textContent = login ? t('submitLogin') : t('submitSignup');
     $('a-pass').setAttribute('autocomplete', login ? 'current-password' : 'new-password');
@@ -101,14 +118,15 @@
     var btn = $('auth-submit'); btn.disabled = true; var orig = btn.textContent; btn.textContent = '…';
     try {
       if (mode === 'signup') {
-        var r = await window.PFDB.signUp(email, pass, name);
+        var mk = $('a-marketing');
+        var r = await window.PFDB.signUp(email, pass, name, mk && mk.checked);
         if (r.error) { showErr(translateAuthError(r.error.message)); return; }
-        if (r.data && r.data.session) { await loadDashboard(); }
+        if (r.data && r.data.session) { if (!redirectNext()) await loadDashboard(); }
         else { showMsg(t('checkEmail')(email), 'ok'); }
       } else {
         var r2 = await window.PFDB.signIn(email, pass);
         if (r2.error) { showErr(translateAuthError(r2.error.message)); return; }
-        await loadDashboard();
+        if (!redirectNext()) await loadDashboard();
       }
     } catch (err) { showErr(t('generic')); }
     finally { btn.disabled = false; btn.textContent = orig; }
@@ -171,10 +189,63 @@
     });
   }
 
+  function L(en, fr) { return lang() === 'fr' ? fr : en; }
+  var statusTimer = null;
+
+  function fmtRemaining(ms) {
+    if (ms <= 0) return '0:00';
+    var m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  // Trial / order / subscription state at the top of the dashboard.
+  async function renderStatus() {
+    var host = $('status-banner');
+    if (!host) return;
+    clearInterval(statusTimer);
+    var orders = await window.PFDB.listOrders();
+    var hasOrder = !!(orders.data && orders.data.length);
+    var sub = await window.PFDB.getSubscription();
+    var hasSub = !!(sub && sub.data);
+
+    function box(cls, html) {
+      host.innerHTML = '<div class="msg ' + cls + '">' + html + '</div>';
+    }
+
+    if (hasOrder) {
+      var subLine = hasSub
+        ? L(' Premium is active.', ' Premium est actif.')
+        : L(' Add Premium anytime for the 5 advanced functions.', ' Ajoutez Premium à tout moment pour les 5 fonctions avancées.');
+      box('ok', '<strong>' + L('You have a PetFind tag.', 'Vous avez une médaille PetFind.') + '</strong>' +
+        L(' Create your pet or activate the tag you received.', ' Créez votre animal ou activez la médaille reçue.') + subLine);
+      return;
+    }
+
+    // No order yet → show the free trial countdown.
+    var trial = await window.PFDB.trialInfo();
+    if (trial && trial.active) {
+      box('info', '<span id="acc-trial"></span> ' +
+        '<a href="checkout.html" style="font-weight:700;color:#7A5312">' +
+        L('Get your tag to activate a real QR.', 'Obtenez votre médaille pour activer un vrai QR.') + '</a>');
+      var span = $('acc-trial');
+      var tick = function () {
+        var remaining = trial.expiresAt - Date.now();
+        if (remaining <= 0) { clearInterval(statusTimer); renderStatus(); return; }
+        span.textContent = L('Free 1-hour preview — time left: ', 'Aperçu gratuit d’1 h — temps restant : ') + fmtRemaining(remaining) + '.';
+      };
+      tick(); statusTimer = setInterval(tick, 1000);
+    } else {
+      box('info', '<strong>' + L('Your free preview has ended.', 'Votre aperçu gratuit est terminé.') + '</strong> ' +
+        '<a href="checkout.html" style="font-weight:700;color:#7A5312">' +
+        L('Get your PetFind tag to create and activate your QR.', 'Obtenez votre médaille PetFind pour créer et activer votre QR.') + '</a>');
+    }
+  }
+
   async function loadDashboard() {
     show('dash');
     var user = await window.PFDB.getUser();
     if (user) $('dash-email').textContent = user.email || '';
+    renderStatus();
     var list = $('pets-list'); list.innerHTML = '<div class="spin" style="margin:24px auto"></div>';
     var res = await window.PFDB.listPets();
     if (res.error) { list.innerHTML = '<p class="muted">' + t('loadPetsErr') + res.error.message + '</p>'; return; }
@@ -185,14 +256,14 @@
   // Re-render language-dependent dynamic text when the site language changes.
   window.PFI18nOnChange = function () {
     if (!$('auth-view').hidden) setMode(mode);
-    if (!$('dash-view').hidden && lastPets) renderPets(lastPets);
+    if (!$('dash-view').hidden) { if (lastPets) renderPets(lastPets); renderStatus(); }
   };
 
   /* ---------- boot ---------- */
   (async function init() {
     setMode('login');
     var user = await window.PFDB.getUser();
-    if (user) { await loadDashboard(); } else { show('auth'); }
+    if (user) { if (redirectNext()) return; await loadDashboard(); } else { show('auth'); }
     window.PFDB.onAuth(function (event) {
       if (event === 'SIGNED_IN') loadDashboard();
       if (event === 'SIGNED_OUT') show('auth');

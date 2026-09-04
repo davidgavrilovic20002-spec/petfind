@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="meta.title.checkout">Get your PetFind tag</title>
+<meta name="description" data-i18n-content="meta.desc.checkout" content="Order your PetFind tag and enter your shipping address. Set it up yourself at home with the unique code printed on it.">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://petfind.example/checkout.html">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0F766E">
+<link rel="stylesheet" href="assets/css/styles.css?v=4">
+<style>
+  .co-grid{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start;padding:30px 0 60px}
+  @media (max-width:920px){.co-grid{grid-template-columns:1fr}}
+  .summary{position:sticky;top:84px}
+  @media (max-width:920px){.summary{position:static}}
+  .plan{border:2px solid var(--line);border-radius:16px;padding:16px;margin-top:12px;cursor:pointer;display:block;background:#fff;transition:border-color .15s,background .15s}
+  .plan:hover{border-color:var(--muted)}
+  .plan.sel{border-color:var(--teal);background:#F0FAF8}
+  .plan .pt{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .plan h3{font-size:16px;margin:0}
+  .plan .price{font-weight:800;color:var(--teal-d);font-size:14px;white-space:nowrap}
+  .plan ul{margin:10px 0 0;padding-left:18px;font-size:13.5px;color:var(--muted);line-height:1.6}
+  .plan .radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;position:relative}
+  .plan.sel .radio{border-color:var(--teal)}
+  .plan.sel .radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--teal)}
+  .demo-badge{display:inline-block;background:#FEF3E2;color:#7A5312;border:1px solid #F7D9A8;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;margin-bottom:8px}
+  .setup-card{border:1px dashed var(--teal);border-radius:16px;padding:18px;text-align:center;background:#F7FCFB;margin-top:14px}
+  .setup-card canvas{width:180px;height:180px;image-rendering:pixelated;margin:6px auto;display:block}
+  .setup-card code{display:block;font-size:16px;font-weight:800;letter-spacing:1px;color:var(--teal-d);background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:8px}
+  .ship-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:560px){.ship-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<header class="site-head">
+  <div class="container nav">
+    <a class="logo" href="index.html"><img src="assets/img/favicon.svg" alt="PetFind logo" width="30" height="30">Pet<span>Find</span></a>
+    <button class="menu-btn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="#0F1B1A" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="features.html" data-i18n="nav.features">Features</a>
+      <a href="pricing.html" data-i18n="nav.pricing">Pricing</a>
+      <a href="faq.html" data-i18n="nav.faq">FAQ</a>
+      <a href="account.html" data-i18n="nav.login">Log in</a>
+      <a class="btn primary nav-cta" href="create.html" data-i18n="nav.create">Create a tag</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <div class="eyebrow" style="margin-top:26px" data-i18n="co.eyebrow">Get your tag</div>
+  <h1 style="font-size:clamp(26px,4vw,36px);margin-bottom:6px" data-i18n="co.h1">Order your PetFind tag</h1>
+  <p class="muted" style="max-width:64ch" data-i18n="co.intro">Choose your plan and where we should ship it. Your tag arrives with a unique code — you set it up yourself at home, and only your account can change it afterwards.</p>
+
+  <!-- signed-out gate -->
+  <div id="co-auth" class="card" hidden style="margin-top:20px;text-align:center">
+    <h2 style="font-size:18px" data-i18n="co.login.h">Please log in to order</h2>
+    <p class="muted" style="font-size:14px;margin:8px 0 14px" data-i18n="co.login.p">Your order and shipping address are saved to your PetFind account.</p>
+    <a class="btn primary" href="account.html?next=checkout.html" data-i18n="co.login.btn">Log in or create an account</a>
+  </div>
+
+  <div id="co-body" class="co-grid" hidden>
+    <!-- LEFT: plan + shipping -->
+    <form id="co-form" novalidate>
+      <div class="card">
+        <span class="demo-badge" data-i18n="co.demo">Demo checkout — no card is charged yet</span>
+        <h2 style="font-size:18px;margin-bottom:2px" data-i18n="co.plan.h">Choose your plan</h2>
+        <p class="muted" style="font-size:13.5px;margin-bottom:6px" data-i18n="co.plan.p">Prices are announced at launch.</p>
+
+        <label class="plan sel" data-plan="tag">
+          <div class="pt">
+            <div style="display:flex;gap:12px;align-items:center"><span class="radio"></span><h3 data-i18n="co.plan.tag.h">PetFind Tag</h3></div>
+            <span class="price" data-i18n="co.plan.oneoff">One-time</span>
+          </div>
+          <ul><li data-i18n="co.plan.tag.f1">The paw QR tag, shipped to you</li><li data-i18n="co.plan.tag.f2">The always-on QR / finder page function</li><li data-i18n="co.plan.tag.f3">Set up yourself at home — no subscription needed</li></ul>
+        </label>
+
+        <label class="plan" data-plan="tag_plus_sub">
+          <div class="pt">
+            <div style="display:flex;gap:12px;align-items:center"><span class="radio"></span><h3 data-i18n="co.plan.sub.h">Tag + Premium</h3></div>
+            <span class="price" data-i18n="co.plan.subprice">One-time + monthly</span>
+          </div>
+          <ul><li data-i18n="co.plan.sub.f1">Everything in the Tag plan</li><li data-i18n="co.plan.sub.f2">Plus the 5 premium functions: live location, health vitals, records &amp; medication, vet appointments, smart bowls</li><li data-i18n="co.plan.sub.f3">Cancel anytime</li></ul>
+        </label>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2 style="font-size:18px;margin-bottom:14px" data-i18n="co.ship.h">Shipping address</h2>
+        <div class="field"><label for="s-name" data-i18n="co.ship.name">Full name</label><input id="s-name" type="text" autocomplete="name"></div>
+        <div class="field"><label for="s-addr1" data-i18n="co.ship.addr1">Address</label><input id="s-addr1" type="text" autocomplete="address-line1" placeholder="12 Rue des Lilas"></div>
+        <div class="field"><label for="s-addr2" data-i18n="co.ship.addr2">Address line 2 (optional)</label><input id="s-addr2" type="text" autocomplete="address-line2"></div>
+        <div class="ship-row">
+          <div class="field"><label for="s-city" data-i18n="co.ship.city">City</label><input id="s-city" type="text" autocomplete="address-level2"></div>
+          <div class="field"><label for="s-zip" data-i18n="co.ship.zip">Postal code</label><input id="s-zip" type="text" autocomplete="postal-code" inputmode="numeric"></div>
+        </div>
+        <div class="ship-row">
+          <div class="field"><label for="s-country" data-i18n="co.ship.country">Country</label>
+            <select id="s-country" autocomplete="country-name"><option value="France">France</option><option value="Belgium">Belgique</option><option value="Switzerland">Suisse</option><option value="Luxembourg">Luxembourg</option><option value="Other" data-i18n="cr.pet.other">Other</option></select>
+          </div>
+          <div class="field"><label for="s-phone" data-i18n="co.ship.phone">Phone</label><input id="s-phone" type="tel" autocomplete="tel" inputmode="tel"></div>
+        </div>
+        <label class="checkbox" style="margin-top:8px"><input type="checkbox" id="s-promo"><span data-i18n="co.ship.promo">Send me PetFind news, offers and setup tips by email.</span></label>
+        <p id="co-err" class="err-msg" data-i18n="co.err">Please fill in your name, address, city and postal code.</p>
+      </div>
+
+      <button type="submit" class="btn primary lg block" style="margin-top:18px" id="co-submit" data-i18n="co.submit">Place my order</button>
+      <p class="muted" style="font-size:12px;text-align:center;margin-top:10px" data-i18n="co.legal">By ordering you agree to our Terms. Payment is not collected in this demo — your order is recorded as “pending”.</p>
+    </form>
+
+    <!-- RIGHT: summary / success -->
+    <div class="summary">
+      <div class="card" id="co-summary">
+        <h2 style="font-size:16px;margin-bottom:10px" data-i18n="co.sum.h">Order summary</h2>
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span id="sum-plan" data-i18n="co.plan.tag.h">PetFind Tag</span><span class="muted" data-i18n="co.plan.oneoff">One-time</span></div>
+        <div id="sum-sub" hidden style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span data-i18n="co.sum.premium">Premium subscription</span><span class="muted" data-i18n="co.sum.monthly">Monthly</span></div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+        <div style="display:flex;justify-content:space-between;font-weight:800"><span data-i18n="co.sum.total">Total</span><span data-i18n="co.sum.tba">Announced at launch</span></div>
+        <p class="muted" style="font-size:12.5px;margin-top:12px" data-i18n="co.sum.note">You’ll receive the tag with a printed setup link + code. Scan it, sign in, and set up your pet — takes a minute.</p>
+      </div>
+
+      <!-- success card (after placing the demo order) -->
+      <div class="card" id="co-success" hidden style="margin-top:16px">
+        <h2 style="font-size:17px;margin-bottom:4px" data-i18n="co.ok.h">Order placed 🎉</h2>
+        <p class="muted" style="font-size:13.5px" data-i18n="co.ok.p">This is what will be printed on the card shipped with your tag. You can also set it up right now.</p>
+        <div class="setup-card">
+          <strong style="font-size:13px" data-i18n="co.ok.card">Set up your PetFind tag</strong>
+          <canvas id="setup-qr" width="180" height="180" aria-label="Setup QR code"></canvas>
+          <span style="font-size:12px;color:var(--muted)" data-i18n="co.ok.code">Your unique setup code</span>
+          <code id="setup-code">—</code>
+        </div>
+        <a class="btn accent block" id="co-setup-now" style="margin-top:12px" data-i18n="co.ok.now">Set up my tag now</a>
+        <button type="button" class="btn soft block" id="co-copy-link" style="margin-top:8px" data-i18n="co.ok.copy">Copy setup link</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a></div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.js?v=6"></script>
+<script src="assets/js/petfind.js?v=4"></script>
+<script src="assets/js/qrcode.js"></script>
+<script src="assets/js/i18n.js?v=9"></script>
+<script src="assets/js/checkout.js?v=1"></script>
+</body>
+</html>
