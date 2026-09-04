@@ -17,6 +17,7 @@
   };
   var stepsCustomized = false;
   var previewTimer = null;
+  var syncingLang = false; // guards the two-way sync between setLang() and PFI18n
 
   /* ---------- profile <-> state ---------- */
   function syncFromForm() {
@@ -144,7 +145,11 @@
     });
   }
 
-  /* ---------- page language (pet page EN/FR — not site chrome) ---------- */
+  /* ---------- language ----------
+     Choosing a language sets both the pet-page output AND the whole builder
+     interface, and stays in sync with the header EN/FR switch. This is why
+     tapping English/Français visibly translates the page. `syncingLang`
+     guards against a feedback loop between this and PFI18n. */
   function setLang(l) {
     if (l !== 'en' && l !== 'fr') return;
     state.lang = l;
@@ -163,6 +168,13 @@
       state.steps = PF.defaultSteps(l).map(function (s, i) { return { t: s.t, d: s.d, key: PF.DEFAULT_STEP_KEYS[i] }; });
     }
     renderSteps(); renderSuggestions(); updatePreview();
+    // Translate the interface chrome too (labels, headings, nav) so the choice
+    // is visible immediately — not just in the pet-page preview further down.
+    if (window.PFI18n && window.PFI18n.lang !== l && !syncingLang) {
+      syncingLang = true;
+      window.PFI18n.set(l);
+      syncingLang = false;
+    }
   }
 
   /* ---------- QR compose (branded card) ---------- */
@@ -282,12 +294,21 @@
       navigator.clipboard ? navigator.clipboard.writeText(inp.value).then(function () { PF.toast(crT('Link copied', 'Lien copié')); }) : (document.execCommand('copy'), PF.toast(crT('Link copied', 'Lien copié')));
     });
 
-    // Re-render step editor placeholders when the site chrome language changes.
-    window.PFI18nOnChange = function () {
-      renderSteps();
-      renderSuggestions();
+    // When the site language changes (e.g. via the header EN/FR switch), keep
+    // the Page-language segment, steps and preview in sync with it.
+    window.PFI18nOnChange = function (lang) {
+      if (lang && lang !== state.lang && !syncingLang) {
+        syncingLang = true;
+        setLang(lang);
+        syncingLang = false;
+      } else {
+        renderSteps();
+        renderSuggestions();
+      }
     };
 
-    setLang(state.lang);
+    // Start in whatever language i18n resolved (stored choice or browser),
+    // not a hard-coded default, so the segment matches the interface on load.
+    setLang(window.PFI18n && window.PFI18n.lang ? window.PFI18n.lang : state.lang);
   });
 })();
