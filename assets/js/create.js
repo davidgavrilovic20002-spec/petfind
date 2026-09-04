@@ -18,6 +18,8 @@
   var stepsCustomized = false;
   var previewTimer = null;
   var syncingLang = false; // guards the two-way sync between setLang() and PFI18n
+  var editId = null;       // set when editing a saved pet (?edit=<id>)
+  var currentSlug = null;  // the saved pet's public slug
 
   /* ---------- profile <-> state ---------- */
   function syncFromForm() {
@@ -215,7 +217,38 @@
     x.fillText('No app needed — works even with no battery', W / 2, qy + area + 112);
   }
 
-  /* ---------- generate ---------- */
+  /* ---------- generate / save ---------- */
+  function buildSaveData() {
+    syncFromForm();
+    return {
+      name: state.name, species: state.species, breed: state.breed,
+      sex: state.sex, age: state.age, hasHome: state.hasHome,
+      ownerName: state.owner.name, ownerPhone: state.owner.phone, showPhone: true,
+      steps: state.steps.map(function (s) { return { t: s.t, d: s.d }; }),
+      vet: (state.vet.name ? { name: state.vet.name, address: state.vet.address, phone: state.vet.phone } : null),
+      lang: state.lang
+    };
+  }
+
+  function permanentUrl(slug) {
+    return new URL('pet.html', window.location.href).href.replace(/[^/]*$/, 'pet.html') +
+           '?s=' + encodeURIComponent(slug);
+  }
+
+  function showResult(url, permanent) {
+    composeQR(url, state.name);
+    document.getElementById('pet-link').value = url;
+    document.getElementById('open-page').href = url;
+    var dl = document.getElementById('download-qr');
+    dl.href = document.getElementById('qr-canvas').toDataURL('image/png');
+    dl.download = 'petfind-' + (state.name || 'pet').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-qr.png';
+    var note = document.querySelector('#result .note');
+    if (note) note.hidden = !!permanent;   // saved links work everywhere; hide the "device only" note
+    var result = document.getElementById('result');
+    result.classList.add('show');
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   function generate(e) {
     if (e) e.preventDefault();
     var phoneErr = document.getElementById('phone-err');
@@ -225,20 +258,84 @@
       return;
     }
     phoneErr.classList.remove('show');
+    saveOrGenerate();
+  }
 
-    var url = petUrl(false);
-    composeQR(url, state.name);
+  async function saveOrGenerate() {
+    var user = window.PFDB ? await window.PFDB.getUser() : null;
+    if (!user) {
+      // Not signed in: local, self-contained link (pet data lives in the QR itself).
+      showResult(petUrl(false), false);
+      saveLocal();
+      return;
+    }
+    var btn = document.getElementById('generate-btn');
+    var label = btn.textContent; btn.disabled = true; btn.textContent = '…';
+    try {
+      var data = buildSaveData();
+      var res = editId ? await window.PFDB.updatePet(editId, data)
+                       : await window.PFDB.createPet(data);
+      if (res.error) { PF.toast(crT('Could not save: ', 'Enregistrement impossible : ') + res.error.message); return; }
+      var slug = editId ? currentSlug : (res.data && res.data.slug);
+      if (!slug && editId) {
+        var got = await window.PFDB.getPet(editId);
+        slug = got.data ? window.PFDB.slugForPet(got.data) : null;
+      }
+      showResult(permanentUrl(slug), true);
+      PF.toast(editId ? crT('Changes saved', 'Modifications enregistrées')
+                      : crT('Saved to your account', 'Enregistré dans votre compte'));
+    } catch (err) {
+      PF.toast(crT('Something went wrong', 'Une erreur est survenue'));
+    } finally {
+      btn.disabled = false; btn.textContent = label;
+    }
+  }
 
-    document.getElementById('pet-link').value = url;
-    document.getElementById('open-page').href = url;
-    var dl = document.getElementById('download-qr');
-    dl.href = document.getElementById('qr-canvas').toDataURL('image/png');
-    dl.download = 'petfind-' + (state.name || 'pet').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-qr.png';
+  function setVal(id, v) { var el = document.getElementById(id); if (el && v != null) el.value = v; }
 
-    var result = document.getElementById('result');
-    result.classList.add('show');
-    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    saveLocal();
+  // Prefill the form to edit a saved pet.
+  async function loadForEdit(id) {
+    var res = await window.PFDB.getPet(id);
+    if (res.error || !res.data) { PF.toast(crT('Could not load this pet', 'Chargement impossible')); return; }
+    var p = res.data;
+    editId = id;
+    currentSlug = window.PFDB.slugForPet(p);
+    setVal('f-name', p.name); setVal('f-species', p.species); setVal('f-breed', p.breed);
+    setVal('f-sex', p.sex); setVal('f-age', p.age);
+    var pub = Array.isArray(p.pet_public_profile) ? (p.pet_public_profile[0] || {}) : (p.pet_public_profile || {});
+    var homeEl = document.getElementById('f-home'); if (homeEl) homeEl.checked = pub.home_message !== false;
+    if (pub.backup_vet) { setVal('v-name', pub.backup_vet.name); setVal('v-addr', pub.backup_vet.address); setVal('v-phone', pub.backup_vet.phone); }
+    var prof = await window.PFDB.getProfile();
+    if (prof.data) { setVal('f-owner', prof.data.full_name); setVal('f-phone', prof.data.phone); }
+    if (Array.isArray(pub.finder_steps) && pub.finder_steps.length) {
+      state.steps = pub.finder_steps.map(function (s) { return { t: s.t, d: s.d }; });
+      stepsCustomized = true;
+    }
+    syncFromForm();
+    renderSteps(); renderSuggestions(); updatePreview();
+    document.getElementById('generate-btn').textContent = crT('Save changes', 'Enregistrer les modifications');
+  }
+
+  // Small banner telling the user whether their tag will be saved to an account.
+  function updateSaveHint(loggedIn) {
+    var host = document.getElementById('account-hint');
+    if (!host) return;
+    host.innerHTML = '';
+    var box = document.createElement('div');
+    box.className = 'note';
+    if (loggedIn) {
+      box.style.background = '#EAF7EE'; box.style.color = '#15803D'; box.style.borderColor = '#BFE6CC';
+      box.textContent = editId
+        ? crT('Editing a saved pet — your changes update the same QR code.', 'Modification d’un animal enregistré — vos changements mettent à jour la même médaille.')
+        : crT('Signed in — this will be saved to your account, so you can edit it later and the same QR keeps working.', 'Connecté — ceci sera enregistré dans votre compte : vous pourrez le modifier plus tard et la même médaille continuera de fonctionner.');
+    } else {
+      var a = document.createElement('a'); a.href = 'account.html'; a.style.fontWeight = '700'; a.style.color = '#7A5312';
+      a.textContent = crT('Log in or create a free account', 'Connectez-vous ou créez un compte gratuit');
+      box.appendChild(document.createTextNode(crT('Tip: ', 'Astuce : ')));
+      box.appendChild(a);
+      box.appendChild(document.createTextNode(crT(' to save your tag and edit it anytime — the printed QR keeps working.', ' pour enregistrer votre médaille et la modifier à tout moment — le QR imprimé continue de fonctionner.')));
+    }
+    host.appendChild(box);
   }
 
   function saveLocal() {
@@ -310,5 +407,15 @@
     // Start in whatever language i18n resolved (stored choice or browser),
     // not a hard-coded default, so the segment matches the interface on load.
     setLang(window.PFI18n && window.PFI18n.lang ? window.PFI18n.lang : state.lang);
+
+    // Backend: reflect account state and load a pet for editing (?edit=<id>).
+    (function initBackend() {
+      if (!window.PFDB) { updateSaveHint(false); return; }
+      window.PFDB.getUser().then(function (user) {
+        var params = new URLSearchParams(location.search);
+        var edit = user ? params.get('edit') : null;
+        Promise.resolve(edit ? loadForEdit(edit) : null).then(function () { updateSaveHint(!!user); });
+      });
+    })();
   });
 })();

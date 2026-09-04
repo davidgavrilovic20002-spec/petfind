@@ -18,6 +18,7 @@
     'nav.reviews': 'Avis',
     'nav.faq': 'FAQ',
     'nav.create': 'Créer une médaille',
+    'nav.account': 'Mon compte',
     'cookie.text': "Nous utilisons uniquement un stockage essentiel au fonctionnement du site. Avec votre accord, nous utiliserions aussi des statistiques respectueuses de la vie privée pour améliorer PetFind. Voir notre <a href=\"privacy.html\">politique de confidentialité</a>.",
     'cookie.decline': 'Refuser',
     'cookie.accept': 'Accepter',

@@ -260,21 +260,51 @@
     render();
   }
 
-  function bootFromHash() {
-    profile = getProfile();
-    // Use the pet's saved language; otherwise default to French (the main language).
-    lang = (profile && profile.lang) || 'fr';
-    setLang(lang);
+  // Short link ?s=<slug> (saved pet in the database).
+  function slugFromUrl() {
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.get('s')) return q.get('s');
+    } catch (e) {}
+    var m = /(?:^|&)s=([^&]+)/.exec(location.hash.replace(/^#/, ''));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  // Map a get_public_pet() row to the profile shape the page renders.
+  function mapPublicRow(row) {
+    return {
+      name: row.name, species: row.species, breed: row.breed,
+      sex: row.sex, age: row.age, hasHome: row.home_message !== false,
+      owner: { name: row.owner_name, phone: row.owner_phone },
+      steps: Array.isArray(row.finder_steps) ? row.finder_steps : [],
+      vet: (row.backup_vet && row.backup_vet.name) ? row.backup_vet : null,
+      lang: 'fr'
+    };
+  }
+
+  function boot() {
+    var slug = slugFromUrl();
+    if (slug && window.PFDB) {
+      // Saved pet: fetch the safe public subset from the database.
+      window.PFDB.getPublicPet(slug).then(function (res) {
+        profile = (!res.error && res.data && res.data.length) ? mapPublicRow(res.data[0]) : null;
+        lang = (profile && profile.lang) || 'fr';
+        setLang(lang);
+      }).catch(function () { profile = null; lang = 'fr'; setLang(lang); });
+    } else {
+      // Legacy QR: pet data is encoded in the URL (#d=...).
+      profile = getProfile();
+      lang = (profile && profile.lang) || 'fr';
+      setLang(lang);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('lang-en').addEventListener('click', function () { setLang('en'); });
     document.getElementById('lang-fr').addEventListener('click', function () { setLang('fr'); });
-    bootFromHash();
+    boot();
   });
 
   // If the parent builder updates only the hash, re-render without a full reload.
-  window.addEventListener('hashchange', function () {
-    bootFromHash();
-  });
+  window.addEventListener('hashchange', function () { boot(); });
 })();
