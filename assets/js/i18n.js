@@ -292,11 +292,17 @@
 
   global.PFI18n = { apply: apply, set: set, lang: 'en', FR: FR };
 
-  document.addEventListener('DOMContentLoaded', function () {
+  function boot() {
     injectSwitch();
     var l;
     try { l = localStorage.getItem('pf_lang'); } catch (e) {}
-    if (!l) l = (navigator.language || '').slice(0, 2) === 'fr' ? 'fr' : 'en';
+    // French is the site's main language; English only if the visitor picks it.
+    if (l !== 'en' && l !== 'fr') l = 'fr';
     apply(l);
-  });
+  }
+  // i18n.js is loaded at the end of <body>, so all translatable content already
+  // exists when this runs. Boot immediately (before first paint) to translate
+  // to French without an English flash; fall back to DOMContentLoaded otherwise.
+  if (document.body) boot();
+  else document.addEventListener('DOMContentLoaded', boot);
 })(window);

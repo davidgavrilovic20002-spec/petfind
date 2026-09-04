@@ -262,7 +262,8 @@
 
   function bootFromHash() {
     profile = getProfile();
-    lang = (profile && profile.lang) || (navigator.language && navigator.language.slice(0, 2) === 'fr' ? 'fr' : 'en');
+    // Use the pet's saved language; otherwise default to French (the main language).
+    lang = (profile && profile.lang) || 'fr';
     setLang(lang);
   }
 
