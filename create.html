@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="meta.title.create">Create your PetFind tag</title>
+<meta name="description" content="Set up your pet's PetFind page in a minute — add your details, choose what finders should do, and get a unique QR code to print or put on a tag.">
+<link rel="canonical" href="https://petfind.example/create.html">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0F766E">
+<meta property="og:title" content="Create your PetFind tag">
+<meta property="og:description" content="Add your details, choose what finders should do, and get a unique QR code.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+<style>
+  .builder{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start;padding:34px 0 60px}
+  @media (max-width:920px){.builder{grid-template-columns:1fr}}
+  .preview-col{position:sticky;top:84px}
+  @media (max-width:920px){.preview-col{position:static}}
+  .preview-frame{width:100%;max-width:380px;height:640px;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:var(--shadow);overflow:hidden;margin:0 auto}
+  .preview-frame iframe{width:100%;height:100%;border:0;display:block}
+  .step-edit{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px;background:#fff}
+  .step-edit .se-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .step-edit .se-num{width:26px;height:26px;border-radius:8px;background:var(--teal);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .step-edit .se-actions{margin-left:auto;display:flex;gap:4px}
+  .icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--soft);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px;font-weight:700}
+  .icon-btn:hover{color:var(--ink);border-color:var(--muted)}
+  .icon-btn:disabled{opacity:.35;cursor:not-allowed}
+  .suggest-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .chip-btn{border:1.5px dashed var(--teal);background:#fff;color:var(--teal-d);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer}
+  .chip-btn:hover{background:#E7F5F3}
+  .chip-btn.added{opacity:.4;pointer-events:none;border-style:solid}
+  .result{margin-top:20px;display:none}
+  .result.show{display:block}
+  .result canvas{width:100%;max-width:280px;height:auto;border-radius:14px;box-shadow:var(--shadow-sm);margin:0 auto;display:block}
+  .linkbox{display:flex;gap:8px;margin-top:14px}
+  .linkbox input{font-size:13px;background:var(--soft)}
+  .note{background:#FEF3E2;border:1px solid #F7D9A8;border-radius:12px;padding:12px 14px;font-size:13px;color:#7A5312;margin-top:14px;line-height:1.5}
+  .seg{display:inline-flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+  .seg button{border:0;background:#fff;padding:11px 18px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);font-family:inherit;transition:background .15s,color .15s}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:var(--teal);color:#fff}
+  .seg button.on:hover{color:#fff}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<header class="site-head">
+  <div class="container nav">
+    <a class="logo" href="index.html"><img src="assets/img/favicon.svg" alt="PetFind logo" width="30" height="30">Pet<span>Find</span></a>
+    <button class="menu-btn" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="#0F1B1A" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html#how" data-i18n="nav.how">How it works</a>
+      <a href="faq.html" data-i18n="nav.faq">FAQ</a>
+      <a href="index.html#features" data-i18n="nav.features">Features</a>
+      <a class="btn primary nav-cta" href="create.html" data-i18n="nav.create">Create a tag</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+  <div class="builder">
+    <!-- FORM -->
+    <div>
+      <div class="eyebrow" data-i18n="cr.eyebrow">Set up your tag</div>
+      <h1 style="font-size:clamp(26px,4vw,36px);margin-bottom:6px" data-i18n="cr.h1">Create your pet's page</h1>
+      <p class="muted" style="margin-bottom:8px" data-i18n="cr.intro">Fill in your details, choose what a finder should do, and we'll generate a unique QR code. No account needed — everything stays on your device until you deploy it.</p>
+
+      <form id="pet-form" novalidate>
+        <div class="card" style="margin-top:20px">
+          <h2 style="font-size:18px;margin-bottom:4px" data-i18n="cr.lang.h">Page language</h2>
+          <p class="muted" style="font-size:13.5px;margin-bottom:12px" data-i18n="cr.lang.p">Finders can still switch language on the page.</p>
+          <div class="seg" id="page-lang" role="group" aria-label="Page language">
+            <button type="button" id="pl-en" class="on" data-lang="en" aria-pressed="true">English</button>
+            <button type="button" id="pl-fr" data-lang="fr" aria-pressed="false">Français</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2 style="font-size:18px;margin-bottom:14px" data-i18n="cr.pet.h">About your pet</h2>
+          <div class="field"><label for="f-name" data-i18n="cr.pet.name">Pet name</label><input id="f-name" name="name" type="text" placeholder="Luna" autocomplete="off"></div>
+          <div class="row">
+            <div class="field"><label for="f-species" data-i18n="cr.pet.species">Species</label>
+              <select id="f-species" name="species">
+                <option value="" data-i18n="cr.pet.choose">Choose…</option>
+                <option value="Dog" data-i18n="cr.pet.dog">Dog</option><option value="Cat" data-i18n="cr.pet.cat">Cat</option><option value="Rabbit" data-i18n="cr.pet.rabbit">Rabbit</option><option value="Other" data-i18n="cr.pet.other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label for="f-breed" data-i18n="cr.pet.breed">Breed (optional)</label><input id="f-breed" name="breed" type="text" placeholder="Golden Retriever"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="f-sex" data-i18n="cr.pet.sex">Sex (optional)</label>
+              <select id="f-sex" name="sex"><option value="">—</option><option value="Female" data-i18n="cr.pet.female">Female</option><option value="Male" data-i18n="cr.pet.male">Male</option></select>
+            </div>
+            <div class="field"><label for="f-age" data-i18n="cr.pet.age">Age (optional)</label><input id="f-age" name="age" type="text" placeholder="3 yrs"></div>
+          </div>
+          <label class="checkbox" style="margin-top:16px">
+            <input type="checkbox" id="f-home" checked>
+            <span data-i18n="cr.pet.home">Show the "I have a loving home — my family is looking for me" message.</span>
+          </label>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2 style="font-size:18px;margin-bottom:4px" data-i18n="cr.owner.h">How a finder reaches you</h2>
+          <p class="muted" style="font-size:13.5px;margin-bottom:12px" data-i18n="cr.owner.p">Your home address is never shown. Only your phone number and the nearest vet appear.</p>
+          <div class="field"><label for="f-owner" data-i18n="cr.owner.name">Your name</label><input id="f-owner" name="owner" type="text" placeholder="David G." autocomplete="name"></div>
+          <div class="field"><label for="f-phone" data-i18n="cr.owner.phone">Phone number</label><input id="f-phone" name="phone" type="tel" placeholder="+33 6 00 00 00 00" autocomplete="tel" inputmode="tel"></div>
+          <p id="phone-err" class="err-msg" data-i18n="cr.owner.err">Please add a phone number so finders can reach you.</p>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2 style="font-size:18px;margin-bottom:4px" data-i18n="cr.steps.h">What to do now — steps for the finder</h2>
+          <p class="muted" style="font-size:13.5px" data-i18n="cr.steps.p">Edit any wording, remove steps, or add from the suggestions. These show on your pet's page.</p>
+          <div id="steps-list"></div>
+          <div class="suggest-row" id="suggest-row"></div>
+          <button type="button" class="btn soft" id="add-custom" style="margin-top:14px" data-i18n="cr.steps.add">+ Add my own step</button>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h2 style="font-size:18px;margin-bottom:4px" data-i18n="cr.vet.h">Backup vet (optional)</h2>
+          <p class="muted" style="font-size:13.5px;margin-bottom:12px" data-i18n="cr.vet.p">The page automatically shows the nearest clinic to whoever finds your pet. If their location is off, this vet is shown instead.</p>
+          <div class="field"><label for="v-name" data-i18n="cr.vet.name">Clinic name</label><input id="v-name" type="text" placeholder="Clinique Vétérinaire du Parc"></div>
+          <div class="row">
+            <div class="field"><label for="v-addr" data-i18n="cr.vet.addr">Address</label><input id="v-addr" type="text" placeholder="12 Rue des Lilas"></div>
+            <div class="field"><label for="v-phone" data-i18n="cr.vet.phone">Phone</label><input id="v-phone" type="tel" placeholder="+33 1 11 11 11 11"></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn primary lg block" style="margin-top:20px" id="generate-btn" data-i18n="cr.generate">Generate my QR code</button>
+      </form>
+    </div>
+
+    <!-- PREVIEW + RESULT -->
+    <div class="preview-col">
+      <div class="eyebrow center" data-i18n="cr.preview">Live preview</div>
+      <div class="preview-frame"><iframe id="preview" title="Live preview of your pet page"></iframe></div>
+
+      <div class="card result" id="result">
+        <h2 style="font-size:18px;margin-bottom:4px;text-align:center" data-i18n="cr.result.h">Your tag is ready 🎉</h2>
+        <p class="muted" style="font-size:13px;text-align:center;margin-bottom:14px" data-i18n="cr.result.p">Print this QR or put it on a tag. Anyone who scans it opens your pet's page.</p>
+        <canvas id="qr-canvas" width="980" height="1180" aria-label="Your pet's QR code"></canvas>
+        <div class="linkbox">
+          <input id="pet-link" type="text" readonly aria-label="Your pet page link">
+          <button type="button" class="btn soft" id="copy-link" data-i18n="cr.copy">Copy</button>
+        </div>
+        <a class="btn accent block" id="download-qr" style="margin-top:12px" download data-i18n="cr.download">Download QR (PNG)</a>
+        <a class="btn ghost block" id="open-page" style="margin-top:10px" target="_blank" rel="noopener" data-i18n="cr.open">Open my pet page</a>
+        <div class="note" data-i18n="cr.note">This link points to wherever this site is hosted. To make the QR scannable by anyone, publish the site (or connect your domain). Until then the link works on this device.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie notice">
+  <p data-i18n-html="cookie.text">We use only essential storage to keep your work on this device. With your consent we'd also use privacy-friendly analytics to improve PetFind. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="row-btns">
+    <button class="btn soft" id="cookie-decline" type="button" data-i18n="cookie.decline">Decline</button>
+    <button class="btn primary" id="cookie-accept" type="button" data-i18n="cookie.accept">Accept</button>
+  </div>
+</div>
+
+<footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a></div></footer>
+
+<script src="assets/js/petfind.js?v=4"></script>
+<script src="assets/js/qrcode.js"></script>
+<script src="assets/js/i18n.js?v=4"></script>
+<script src="assets/js/create.js?v=4"></script>
+</body>
+</html>

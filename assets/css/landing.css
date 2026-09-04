@@ -1,0 +1,96 @@
+/* ============================================================
+   PetFind — landing page (Apple-style, interactive)
+   Dark hero, 3D rotatable paw tag, scroll reveals, testimonials.
+   ============================================================ */
+
+/* ---- Header states over the dark hero ----
+   NB: do NOT darken the whole body here — the light content sections
+   (features, how-it-works, reviews, footer) sit on the default light
+   background. Only .hero-dark and .section-dark paint themselves dark. */
+body.home .site-head{background:transparent;border-color:transparent;backdrop-filter:none;transition:background .3s ease,border-color .3s ease}
+body.home .site-head:not(.scrolled) .logo{color:#fff}
+body.home .site-head:not(.scrolled) .nav-links a:not(.btn){color:rgba(255,255,255,.82)}
+body.home .site-head:not(.scrolled) .nav-links a:not(.btn):hover{color:#fff}
+body.home .site-head:not(.scrolled) .menu-btn svg path{stroke:#fff}
+body.home .site-head:not(.scrolled) .lang-switch{border-color:rgba(255,255,255,.38)}
+body.home .site-head:not(.scrolled) .lang-switch button{color:rgba(255,255,255,.82)}
+body.home .site-head:not(.scrolled) .lang-switch button.on{background:#fff;color:var(--teal-d)}
+body.home .site-head.scrolled{background:rgba(255,255,255,.86);backdrop-filter:saturate(1.2) blur(12px);border-color:var(--line)}
+@media (max-width:720px){body.home .site-head:not(.scrolled) .nav-links a:not(.btn){color:var(--muted)}}
+
+/* ---- Dark hero ----
+   Pull the hero up behind the (transparent) sticky header so the white
+   header text always sits on the dark hero, not the light page glow. */
+body.home main{margin-top:-64px}
+.hero-dark{position:relative;overflow:hidden;background:radial-gradient(1100px 700px at 50% 8%,#123f3a 0%,#0A1413 55%);color:#fff;padding:150px 0 90px;text-align:center}
+.hero-dark .glow{position:absolute;left:50%;top:44%;width:760px;height:760px;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(20,184,166,.28),transparent 62%);filter:blur(10px);pointer-events:none}
+.hero-dark .badge{background:rgba(255,255,255,.1);color:#9EEAE0;border:1px solid rgba(255,255,255,.16)}
+.hero-dark .badge svg path{stroke:#5EEAD4}
+.hero-dark h1{font-size:clamp(36px,7.5vw,76px);line-height:1.03;letter-spacing:-1.5px;max-width:15ch;margin:14px auto 18px;font-weight:800}
+.hero-dark h1 em{font-style:normal;background:linear-gradient(120deg,#5EEAD4,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-dark p.lede{color:rgba(255,255,255,.72);font-size:clamp(16px,2.4vw,21px);max-width:52ch;margin:0 auto 30px}
+.hero-dark .hero-cta .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+.hero-dark .hero-cta .btn.ghost:hover{border-color:#fff}
+.scroll-cue{margin-top:56px;display:inline-flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.5);font-size:12px;letter-spacing:.4px;text-transform:uppercase}
+.scroll-cue svg{width:22px;height:22px;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ---- 3D paw tag ---- */
+.tag-stage{width:min(440px,86vw);height:min(440px,86vw);margin:0 auto;perspective:1100px;touch-action:none;cursor:grab}
+.tag-stage:active{cursor:grabbing}
+.tag-stage canvas{filter:drop-shadow(0 26px 34px rgba(0,0,0,.5))}
+.tag3d{position:relative;width:100%;height:100%;transform-style:preserve-3d;will-change:transform;
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.55))}
+.tag-face,.tag-edge{position:absolute;inset:0;transform-style:preserve-3d;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.tag-face *,.tag-edge *{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.paw-svg{width:100%;height:100%;display:block;overflow:visible}
+.tag-face.back{transform:rotateY(180deg)}
+.tag-overlay{position:absolute;left:0;right:0;bottom:20%;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.ov-paw{width:30px;height:30px;margin-bottom:2px}
+.ov-word{font-family:'Lora',Georgia,serif;font-weight:700;font-size:19px;color:#33424c;letter-spacing:-.3px}
+.qr-box{background:#fff;border-radius:12px;padding:7px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.qr-box canvas{display:block;width:84px;height:84px;border-radius:4px}
+.tag-hint{margin-top:26px;color:rgba(255,255,255,.55);font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.tag-hint svg{width:16px;height:16px}
+
+/* ---- Scroll reveals ---- */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---- Big statement sections (Apple-style) ---- */
+.statement{padding:110px 0;text-align:center}
+.statement h2{font-size:clamp(28px,5.5vw,58px);letter-spacing:-1px;max-width:18ch;margin:0 auto;line-height:1.08;font-weight:800}
+.statement h2 .hl{color:var(--teal)}
+.statement p{color:var(--muted);font-size:clamp(16px,2.2vw,20px);max-width:54ch;margin:20px auto 0}
+.section-dark{background:#0A1413;color:#fff}
+.section-dark .statement p{color:rgba(255,255,255,.66)}
+.section-dark h2 .hl{color:#5EEAD4}
+
+/* ---- Testimonials ---- */
+.tcard{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);padding:24px;display:flex;flex-direction:column;height:100%}
+.stars{display:inline-flex;gap:3px;color:#F59E0B;margin-bottom:12px}
+.stars svg{width:17px;height:17px}
+.tcard blockquote{font-size:15.5px;line-height:1.6;color:#25403c;margin:0 0 18px}
+.tperson{display:flex;align-items:center;gap:11px;margin-top:auto}
+.tavatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#5EEAD4,#0F766E);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}
+.tperson .tn{font-weight:700;font-size:14.5px}
+.tperson .tl{color:var(--muted);font-size:12.5px}
+.sample-note{display:inline-block;background:#FEF3E2;color:#7A5312;border:1px solid #F7D9A8;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;margin-top:12px}
+
+/* ---- Rating widget ---- */
+.rate-card{background:linear-gradient(180deg,#0F766E,#0B5651);color:#fff;border-radius:22px;padding:40px 28px;text-align:center}
+.rate-card h2{font-size:clamp(22px,3.5vw,30px);margin-bottom:8px}
+.rate-card p{opacity:.85;max-width:44ch;margin:0 auto 20px}
+.rate-stars{display:inline-flex;gap:6px}
+.rate-stars button{background:none;border:0;cursor:pointer;padding:4px;line-height:0}
+.rate-stars svg{width:40px;height:40px;transition:transform .12s ease}
+.rate-stars button:hover svg{transform:scale(1.15)}
+.rate-stars svg .fill{fill:rgba(255,255,255,.22);transition:fill .12s ease}
+.rate-stars button.lit svg .fill{fill:#F59E0B}
+.rate-thanks{margin-top:16px;font-weight:700;min-height:22px}
+
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .scroll-cue svg{animation:none}
+}

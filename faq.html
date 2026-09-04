@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="meta.title.faq">FAQ — PetFind</title>
+<meta name="description" content="Answers to common questions about PetFind — how the QR tag works, privacy, the nearest-vet feature, microchips, and more.">
+<link rel="canonical" href="https://petfind.example/faq.html">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0F766E">
+<meta property="og:title" content="PetFind FAQ">
+<meta property="og:description" content="How the PetFind QR tag works — privacy, nearest vet, microchips and more.">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Do I need an app or a subscription?","acceptedAnswer":{"@type":"Answer","text":"No. PetFind opens as a normal web page in any browser. Nothing to install for you or the finder, and the QR works even if a GPS collar's battery is dead."}},
+{"@type":"Question","name":"Is my home address shown to strangers?","acceptedAnswer":{"@type":"Answer","text":"Never. Only your phone number and the nearest vet clinic appear. Your address stays private."}},
+{"@type":"Question","name":"How does it find the nearest vet?","acceptedAnswer":{"@type":"Answer","text":"With the finder's permission, the page uses their phone's location to show the closest veterinary clinic to wherever your pet is found."}},
+{"@type":"Question","name":"Does this replace the mandatory microchip?","acceptedAnswer":{"@type":"Answer","text":"No. In France the I-CAD microchip stays legally required. PetFind is complementary and helps you reunite faster."}}
+]}
+</script>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<header class="site-head">
+  <div class="container nav">
+    <a class="logo" href="index.html"><img src="assets/img/favicon.svg" alt="PetFind logo" width="30" height="30">Pet<span>Find</span></a>
+    <button class="menu-btn" aria-label="Open menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="#0F1B1A" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html#how" data-i18n="nav.how">How it works</a>
+      <a href="index.html#features" data-i18n="nav.features">Features</a>
+      <a href="faq.html" data-i18n="nav.faq">FAQ</a>
+      <a class="btn primary nav-cta" href="create.html" data-i18n="nav.create">Create a tag</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container narrow section faq">
+  <div class="center" style="margin-bottom:24px">
+    <div class="eyebrow" data-i18n="faq.eyebrow">Help centre</div>
+    <h1 style="font-size:clamp(28px,5vw,40px)" data-i18n="faq.h1">Frequently asked questions</h1>
+  </div>
+
+  <details open><summary data-i18n="faq.q1">Do I need an app or a subscription?</summary><p data-i18n="faq.a1">No. PetFind opens as a normal web page in any browser. There's nothing to install for you or for the person who finds your pet, and the QR code works even if a GPS collar's battery is dead.</p></details>
+  <details><summary data-i18n="faq.q2">Is my home address shown to strangers?</summary><p data-i18n="faq.a2">Never. Only your phone number and the nearest vet clinic are shown on the page. Your home address stays private for your family's safety.</p></details>
+  <details><summary data-i18n="faq.q3">How does the "nearest vet" work?</summary><p data-i18n="faq.a3">With the finder's permission, the page reads their phone's location and looks up the closest veterinary clinic using OpenStreetMap. That means the vet shown is near wherever your pet actually is — not a fixed address you set once. If the finder declines location, the page shows a backup vet (if you added one) or a "search vets near me" link.</p></details>
+  <details><summary data-i18n="faq.q4">Can I choose what a finder should do?</summary><p data-i18n="faq.a4">Yes. When you create your tag you pick the steps a finder sees — from friendly suggestions like "keep me calm" or "offer me water," or in your own words. You can reorder, edit, or remove any of them.</p></details>
+  <details><summary data-i18n="faq.q5">What information do I need to provide?</summary><p data-i18n="faq.a5">Just your pet's name and your phone number to start. Everything else — breed, age, photo caption, backup vet — is optional.</p></details>
+  <details><summary data-i18n="faq.q6">Does this replace the mandatory microchip?</summary><p data-i18n="faq.a6">No. In France, identifying dogs, cats and ferrets with an I-CAD-registered microchip is legally required. PetFind is complementary: it gives finders an instant, friendly way to reach you so you reunite faster.</p></details>
+  <details><summary data-i18n="faq.q7">Which languages are supported?</summary><p data-i18n="faq.a7">The pet page is available in English and French, and a finder can switch between them with one tap. More languages are planned.</p></details>
+  <details><summary data-i18n="faq.q8">Is PetFind free?</summary><p data-i18n="faq.a8">Setting up your pet's page and generating a QR code is free. Physical tags, premium features and the wider connected-care app are on the roadmap.</p></details>
+  <details><summary data-i18n="faq.q9">What happens if I change my phone number?</summary><p data-i18n="faq.a9">You update your details and generate a fresh page. Editable, always-up-to-date pages tied to a permanent short link are coming as we add accounts — see the roadmap on our home page.</p></details>
+
+  <div class="center" style="margin-top:30px"><a class="btn primary lg" href="create.html" data-i18n="faq.cta">Create your tag</a></div>
+</main>
+
+<footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a> · <a href="index.html" data-i18n="foot.home">Home</a></div></footer>
+<script src="assets/js/petfind.js"></script>
+<script src="assets/js/i18n.js"></script>
+</body>
+</html>

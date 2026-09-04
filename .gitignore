@@ -1,0 +1,6 @@
+# Local Netlify folder
+.netlify
+
+# Deploy artifacts
+*.zip
+.DS_Store

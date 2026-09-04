@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="meta.title.privacy">Privacy Policy — PetFind</title>
+<meta name="description" content="How PetFind handles your data: what we store, the nearest-vet location feature, analytics, cookies, and your rights under the GDPR.">
+<link rel="canonical" href="https://petfind.example/privacy.html">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0F766E">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<header class="site-head">
+  <div class="container nav">
+    <a class="logo" href="index.html"><img src="assets/img/favicon.svg" alt="PetFind logo" width="30" height="30">Pet<span>Find</span></a>
+    <nav class="nav-links" aria-label="Primary"><a href="faq.html" data-i18n="nav.faq">FAQ</a><a class="btn primary nav-cta" href="create.html" data-i18n="nav.create">Create a tag</a></nav>
+  </div>
+</header>
+
+<main id="main" class="container narrow section article">
+  <div class="note" style="background:#FEF3E2;border:1px solid #F7D9A8;border-radius:12px;padding:12px 14px;font-size:13px;color:#7A5312;margin-bottom:24px" data-i18n-html="legal.draft">
+    <strong>Draft template.</strong> This policy is a starting point written for PetFind's current, fully client-side setup. Have it reviewed by a qualified professional and update the placeholders (company name, contact email, jurisdiction) before you launch publicly.
+  </div>
+
+  <h1 data-i18n="pv.h1">Privacy Policy</h1>
+  <p class="updated"><span data-i18n="legal.updated">Last updated:</span> <span id="today"></span></p>
+
+  <p data-i18n="pv.intro">PetFind ("we", "us") builds tools that help lost pets get home. This policy explains what information is involved when you use this website and the pet pages it generates.</p>
+
+  <h2 data-i18n="pv.h2.short">1. The short version</h2>
+  <ul>
+    <li data-i18n-html="pv.li1">The details you type to create a pet page (pet name, your phone number, the steps you choose) are stored <strong>in the link itself and in your own browser</strong> — not on our servers in this version.</li>
+    <li data-i18n-html="pv.li2">A pet page shows only your phone number and the nearest vet. <strong>Your home address is never displayed.</strong></li>
+    <li data-i18n-html="pv.li3">The "nearest vet" feature uses the finder's device location only with their permission, and only to look up nearby clinics.</li>
+    <li data-i18n-html="pv.li4">Analytics stay off until you accept them in the cookie banner.</li>
+  </ul>
+
+  <h2 data-i18n="pv.h2.info">2. Information we handle</h2>
+  <p data-i18n-html="pv.info1"><strong>Pet page details.</strong> When you use the tag builder, the information you enter is encoded into the page link and saved locally in your browser so you can come back to it. In this client-side version it is not transmitted to or stored by us.</p>
+  <p data-i18n-html="pv.info2"><strong>Location (finders).</strong> When someone opens a pet page and agrees to share their location, their coordinates are sent to the OpenStreetMap Overpass service to find nearby veterinary clinics. We do not store these coordinates. Location is never requested from the pet owner.</p>
+  <p data-i18n-html="pv.info3"><strong>Analytics.</strong> If you consent, we may use a privacy-friendly analytics tool to understand aggregate, anonymous usage (for example, how many people visit a page). No analytics run before consent.</p>
+
+  <h2 data-i18n="pv.h2.third">3. Third-party services</h2>
+  <ul>
+    <li data-i18n-html="pv.third1"><strong>OpenStreetMap / Overpass API</strong> — used to look up nearby vet clinics from a finder's location. See the OpenStreetMap Foundation privacy policy.</li>
+    <li data-i18n-html="pv.third2"><strong>Map directions</strong> — "Directions" links open your device's map provider; their own privacy terms then apply.</li>
+    <li data-i18n-html="pv.third3"><strong>Analytics provider</strong> — only if you consent; configured before public launch.</li>
+  </ul>
+
+  <h2 data-i18n="pv.h2.cookies">4. Cookies and local storage</h2>
+  <p data-i18n="pv.cookies">We use your browser's local storage to remember your consent choice and the pet pages you create on this device. Analytics cookies, if any, are set only after you accept.</p>
+
+  <h2 data-i18n="pv.h2.rights">5. Your rights (GDPR)</h2>
+  <p data-i18n="pv.rights">Under the GDPR you have the right to access, correct, delete, restrict or port your personal data, and to object to processing. Because your pet-page data lives in your own browser and link in this version, you control it directly: clear your browser storage or discard the link to remove it. For any request involving data we hold, contact us at the address below.</p>
+
+  <h2 data-i18n="pv.h2.children">6. Children</h2>
+  <p data-i18n="pv.children">PetFind is intended for adults. We do not knowingly collect data from children.</p>
+
+  <h2 data-i18n="pv.h2.changes">7. Changes</h2>
+  <p data-i18n="pv.changes">We may update this policy as PetFind grows (for example, when we add accounts and server-side storage). We will revise the "last updated" date above.</p>
+
+  <h2 data-i18n="pv.h2.contact">8. Contact</h2>
+  <p data-i18n-html="pv.contact">Questions about privacy? Contact <a href="mailto:privacy@petfind.example">privacy@petfind.example</a>. <em>(Replace with your real contact before launch.)</em></p>
+</main>
+
+<footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a> · <a href="index.html" data-i18n="foot.home">Home</a></div></footer>
+<script src="assets/js/petfind.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script>
+  function pfDate(){var l=document.documentElement.lang||'en';var el=document.getElementById('today');if(el)el.textContent=new Date().toLocaleDateString(l==='fr'?'fr-FR':'en-GB',{year:'numeric',month:'long',day:'numeric'});}
+  window.PFI18nOnChange=pfDate; pfDate();
+</script>
+</body>
+</html>

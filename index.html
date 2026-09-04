@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="meta.title.home">PetFind — the tag that brings pets home</title>
+<meta name="description" data-i18n-content="meta.desc.home" content="PetFind is a paw-shaped QR pet tag that always works — no battery, no app, no account. A finder scans it, calls you in one tap, and sees the nearest vet. Set up your pet's page in a minute.">
+<link rel="canonical" href="https://petfind.example/">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0A1413">
+<meta property="og:title" content="PetFind — the tag that brings pets home">
+<meta property="og:description" content="A paw-shaped QR pet tag that always works — no battery, no app, no account. Scan, call the owner, find the nearest vet.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://petfind.example/">
+<meta property="og:image" content="assets/img/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PetFind — the tag that brings pets home">
+<meta name="twitter:description" content="A paw-shaped QR pet tag that always works — no battery, no app, no account.">
+<meta name="twitter:image" content="assets/img/og-image.svg">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+<link rel="stylesheet" href="assets/css/landing.css?v=5">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Product","name":"PetFind Tag","description":"A paw-shaped QR pet identity tag that works with no battery and no app. Scan to reach the owner and find the nearest vet.","brand":{"@type":"Brand","name":"PetFind"}}
+</script>
+</head>
+<body class="home">
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<header class="site-head">
+  <div class="container nav">
+    <a class="logo" href="index.html"><img src="assets/img/favicon.svg" alt="PetFind logo" width="30" height="30">Pet<span>Find</span></a>
+    <button class="menu-btn" aria-label="Open menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="#0F1B1A" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#reviews" data-i18n="nav.reviews">Reviews</a>
+      <a href="faq.html" data-i18n="nav.faq">FAQ</a>
+      <a class="btn primary nav-cta" href="create.html" data-i18n="nav.create">Create a tag</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero-dark">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="container">
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> <span data-i18n="hero.badge">No battery · no app · no account</span></span>
+      <h1 data-i18n-html="hero.h1">The tag that brings <em>pets home</em>.</h1>
+      <p class="lede" data-i18n="hero.lede">A paw-shaped tag with a QR code that never runs out of charge. A finder scans it, reaches you in one tap, and sees the nearest vet — anywhere your pet turns up.</p>
+
+      <div class="tag-stage" id="tagStage" role="img" aria-label="Interactive 3D PetFind paw tag — drag to rotate. One side shows the logo, the other a QR code."></div>
+      <p class="tag-hint"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l-4 6 4 6M15 6l4 6-4 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg> <span data-i18n="hero.drag">Drag the tag to rotate it</span></p>
+
+      <div class="hero-cta" style="justify-content:center;margin-top:30px">
+        <a class="btn accent lg" href="create.html" data-i18n="hero.cta1">Create your pet's tag</a>
+        <a class="btn ghost lg" href="#how" data-i18n="hero.cta2">See how it works</a>
+      </div>
+
+      <div class="scroll-cue" aria-hidden="true"><span data-i18n="hero.scroll">Scroll</span><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+  </section>
+
+  <!-- STATEMENT -->
+  <section class="statement container reveal">
+    <h2 data-i18n-html="st1.h2">A found pet should never be a <span class="hl">dead end</span>.</h2>
+    <p data-i18n="st1.p">Most tags fail at the worst moment — a dead GPS battery, a number no one can read. PetFind is built so a stranger can help in seconds, with nothing to install and nothing to charge.</p>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section container" id="features">
+    <div class="center reveal" style="max-width:60ch;margin:0 auto 34px">
+      <div class="eyebrow" data-i18n="feat.eyebrow">Why PetFind</div>
+      <h2 data-i18n="feat.h2">Everything a finder needs, on one page.</h2>
+    </div>
+    <div class="grid cols-3">
+      <div class="card feature reveal" data-reveal-delay="0">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><path d="M13 13h3v3M20 13v7M16 20h4" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3 data-i18n="feat.qr.h">Always-on QR</h3>
+        <p data-i18n="feat.qr.p">The paw tag carries a QR code that draws no power. It works forever as an ID fallback — even when a battery is flat.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="90">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.3 6.7 15 15 15 .9 0 1.7-.6 2-1.5l.5-1.6a1.4 1.4 0 00-.8-1.7l-3-1.2a1.4 1.4 0 00-1.6.4l-.9 1.1a11.3 11.3 0 01-5-5l1.1-.9a1.4 1.4 0 00.4-1.6L10 3.3A1.4 1.4 0 008.3 2.5" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3 data-i18n="feat.tap.h">One-tap contact</h3>
+        <p data-i18n="feat.tap.p">The finder calls or texts you directly from the page. No sign-up, no waiting, no middleman.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="180">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="#0F766E" stroke-width="1.6"/><circle cx="12" cy="10" r="2.4" stroke="#0F766E" stroke-width="1.6"/></svg></div>
+        <h3 data-i18n="feat.vet.h">Nearest vet, live</h3>
+        <p data-i18n="feat.vet.p">The page finds the closest clinic to wherever your pet is found — not a fixed address — so help is always close.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="0">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 9.5-4-1.2-7-5-7-9.5V6l7-3z" stroke="#0F766E" stroke-width="1.5"/><path d="M9.5 12l1.8 1.8 3.2-3.6" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3 data-i18n="feat.priv.h">Private by design</h3>
+        <p data-i18n="feat.priv.p">Your home address is never shown. Only your phone number and the nearest vet appear on the page.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="90">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3 data-i18n="feat.steps.h">You write the steps</h3>
+        <p data-i18n="feat.steps.p">Choose exactly what a finder should do — from friendly suggestions or your own words, in English or French.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="180">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#0F766E" stroke-width="1.6"/><path d="M2 12h20M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="#0F766E" stroke-width="1.3"/></svg></div>
+        <h3 data-i18n="feat.lang.h">Any phone, any language</h3>
+        <p data-i18n="feat.lang.p">Opens in any browser worldwide. Finders can switch between English and French with one tap.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DARK STATEMENT -->
+  <section class="section-dark">
+    <div class="statement container reveal">
+      <h2 data-i18n-html="dk.h2">One side calls you. <span class="hl">One side saves you.</span></h2>
+      <p data-i18n="dk.p">Turn the tag over: the front carries your PetFind mark, the back a unique QR that opens your pet's page. Drag the tag at the top of this page to see both.</p>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section container" id="how">
+    <div class="grid cols-2" style="align-items:center;gap:40px">
+      <div class="reveal">
+        <div class="eyebrow" data-i18n="how.eyebrow">How it works</div>
+        <h2 data-i18n="how.h2">Three steps to a safer pet.</h2>
+        <div class="hiw" style="margin-top:22px">
+          <div class="step"><div class="num">1</div><div><h3 data-i18n="how.s1.h">Create your pet's page</h3><p data-i18n="how.s1.p">Add your pet's details and your phone number, and pick what a finder should do. Takes about a minute.</p></div></div>
+          <div class="step"><div class="num">2</div><div><h3 data-i18n="how.s2.h">Get your unique QR code</h3><p data-i18n="how.s2.p">We generate a one-of-a-kind QR you can print at home or put on a tag. Every pet gets its own.</p></div></div>
+          <div class="step"><div class="num">3</div><div><h3 data-i18n="how.s3.h">A finder scans, you reunite</h3><p data-i18n="how.s3.p">Anyone who finds your pet scans the code, calls you, and sees the nearest vet — no app required.</p></div></div>
+        </div>
+        <a class="btn primary lg" href="create.html" style="margin-top:26px" data-i18n="how.cta">Create your tag</a>
+      </div>
+      <div class="card reveal" data-reveal-delay="120" style="padding:0;overflow:hidden">
+        <div style="background:linear-gradient(180deg,#0F766E,#0B5651);color:#fff;padding:26px 24px">
+          <div style="font-size:12.5px;font-weight:700;opacity:.85;letter-spacing:.4px" data-i18n="how.card.tag">TAG SCANNED</div>
+          <div style="font-size:24px;font-weight:800;margin-top:6px" data-i18n="how.card.title">You found Luna 🐾</div>
+        </div>
+        <div style="padding:22px 24px">
+          <p class="muted" style="font-size:14px" data-i18n="how.card.p">"Luna has a loving home — her family is looking for her." One tap to call, and the nearest vet is right there. That's the whole experience a finder sees.</p>
+          <a class="btn ghost block" href="create.html" style="margin-top:16px" data-i18n="how.card.cta">Make one for your pet</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section container" id="reviews">
+    <div class="center reveal" style="margin-bottom:30px">
+      <div class="eyebrow" data-i18n="rev.eyebrow">Loved by pet people</div>
+      <h2 data-i18n="rev.h2">What early users are saying</h2>
+      <!-- NOTE: Sample testimonials for the demo. Replace with real, consented reviews before public launch. -->
+      <span class="sample-note" data-i18n="rev.sample">Sample reviews — we'll show real ones at launch</span>
+    </div>
+    <div class="grid cols-3">
+      <div class="tcard reveal" data-reveal-delay="0">
+        <span class="stars" aria-label="5 out of 5 stars">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg>
+        </span>
+        <blockquote data-i18n="rev.t1.q">"Someone found our cat two streets away and called within minutes. No app, no fuss — she just scanned the paw and reached us. Magic."</blockquote>
+        <div class="tperson"><div class="tavatar">ML</div><div><div class="tn" data-i18n="rev.t1.n">Marie L.</div><div class="tl" data-i18n="rev.t1.l">Cat owner · Lyon</div></div></div>
+      </div>
+      <div class="tcard reveal" data-reveal-delay="90">
+        <span class="stars" aria-label="5 out of 5 stars">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg>
+        </span>
+        <blockquote data-i18n="rev.t2.q">"What sold me is the nearest-vet part. My dog got out on holiday, hundreds of km from home, and the page still pointed the finder to a clinic nearby."</blockquote>
+        <div class="tperson"><div class="tavatar">TB</div><div><div class="tn" data-i18n="rev.t2.n">Thomas B.</div><div class="tl" data-i18n="rev.t2.l">Dog owner · Bordeaux</div></div></div>
+      </div>
+      <div class="tcard reveal" data-reveal-delay="180">
+        <span class="stars" aria-label="4 out of 5 stars">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg><svg viewBox="0 0 24 24" fill="currentColor" opacity="0.28"><path d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg>
+        </span>
+        <blockquote data-i18n="rev.t3.q">"Set it up in a minute and printed the QR at home. Being able to write my own instructions — 'she's shy, sit and wait' — made all the difference."</blockquote>
+        <div class="tperson"><div class="tavatar">AS</div><div><div class="tn" data-i18n="rev.t3.n">Amélie S.</div><div class="tl" data-i18n="rev.t3.l">Cat owner · Paris</div></div></div>
+      </div>
+    </div>
+
+    <!-- RATING WIDGET -->
+    <div class="rate-card reveal" style="margin-top:40px">
+      <h2 data-i18n="rate.h2">Would you trust PetFind for your pet?</h2>
+      <p data-i18n="rate.p">Tap the stars to rate the idea. Your rating is saved on your device — once accounts launch, these will help shape the product.</p>
+      <div class="rate-stars" id="rate-stars" role="group" aria-label="Rate PetFind from 1 to 5 stars">
+        <button type="button" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
+        <button type="button" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
+        <button type="button" aria-label="3 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
+        <button type="button" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
+        <button type="button" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
+      </div>
+      <div class="rate-thanks" id="rate-thanks" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section class="section container">
+    <div class="cta-band reveal">
+      <h2 data-i18n="cta.h2">Give your pet a way home.</h2>
+      <p data-i18n="cta.p">Create your pet's PetFind page now — free to set up, ready in a minute, and it works the moment someone scans it.</p>
+      <a class="btn accent lg" href="create.html" data-i18n="cta.btn">Create your tag</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-col" style="max-width:280px">
+        <a class="logo" href="index.html" style="margin-bottom:10px"><img src="assets/img/favicon.svg" alt="" width="28" height="28">Pet<span>Find</span></a>
+        <p data-i18n="foot.tagline">The connected pet-care system that starts with a tag that always works.</p>
+      </div>
+      <div class="foot-col"><h4 data-i18n="foot.product">Product</h4><a href="create.html" data-i18n="nav.create">Create a tag</a><a href="index.html#how" data-i18n="nav.how">How it works</a><a href="index.html#features" data-i18n="nav.features">Features</a><a href="faq.html" data-i18n="nav.faq">FAQ</a></div>
+      <div class="foot-col"><h4 data-i18n="foot.legal">Legal</h4><a href="privacy.html" data-i18n="foot.privacy.long">Privacy Policy</a><a href="terms.html" data-i18n="foot.terms">Terms of Service</a></div>
+    </div>
+    <div class="foot-bottom">
+      <span><span data-i18n="foot.copy">© %Y% PetFind. Made for pets and the people who find them.</span></span>
+      <span data-i18n="foot.region">France · Europe</span>
+    </div>
+  </div>
+</footer>
+
+<div class="cookie" id="cookie" role="dialog" aria-live="polite" aria-label="Cookie notice">
+  <p data-i18n-html="cookie.text">We use only essential storage to make the site work. With your consent we'd also use privacy-friendly analytics to improve PetFind. See our <a href="privacy.html">Privacy Policy</a>.</p>
+  <div class="row-btns">
+    <button class="btn soft" id="cookie-decline" type="button" data-i18n="cookie.decline">Decline</button>
+    <button class="btn primary" id="cookie-accept" type="button" data-i18n="cookie.accept">Accept</button>
+  </div>
+</div>
+
+<script src="assets/js/petfind.js"></script>
+<script src="assets/js/qrcode.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/js/tag3d.js?v=8"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/landing.js"></script>
+</body>
+</html>

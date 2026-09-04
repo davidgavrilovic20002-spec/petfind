@@ -1,0 +1,8 @@
+# PetFind robots.txt
+User-agent: *
+Allow: /
+# Individual pet pages carry no crawlable content (data lives in the URL fragment)
+# and are marked noindex on the page itself.
+Disallow: /pet.html
+
+Sitemap: https://petfind.example/sitemap.xml

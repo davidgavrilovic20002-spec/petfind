@@ -1,0 +1,197 @@
+/* ============================================================
+   PetFind — landing page interactions
+   - Builds the 3D rotatable paw tag (logo face / QR face)
+   - Drag + momentum + idle spin + scroll-driven rotation
+   - Header scroll state, scroll-reveal animations
+   - Interactive star rating (stored locally for now)
+   ============================================================ */
+(function () {
+  'use strict';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* Shared paw silhouette (5 shapes: 4 toes + heel) */
+  var PAW = '<ellipse cx="46" cy="92" rx="22" ry="30" transform="rotate(-20 46 92)"/>' +
+            '<ellipse cx="88" cy="56" rx="24" ry="32" transform="rotate(-8 88 56)"/>' +
+            '<ellipse cx="132" cy="56" rx="24" ry="32" transform="rotate(8 132 56)"/>' +
+            '<ellipse cx="174" cy="92" rx="22" ry="30" transform="rotate(20 174 92)"/>' +
+            '<ellipse cx="110" cy="150" rx="58" ry="44"/>';
+
+  function metalPaw(suffix) {
+    return '<svg class="paw-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="mtl' + suffix + '" x1="0" y1="0" x2="0.35" y2="1">' +
+          '<stop offset="0" stop-color="#ffffff"/><stop offset="0.4" stop-color="#dbe2e6"/>' +
+          '<stop offset="0.62" stop-color="#c1cace"/><stop offset="1" stop-color="#eef2f4"/>' +
+        '</linearGradient>' +
+        '<clipPath id="clip' + suffix + '">' + PAW + '</clipPath>' +
+      '</defs>' +
+      '<g clip-path="url(#clip' + suffix + ')">' +
+        '<rect x="0" y="0" width="220" height="220" fill="url(#mtl' + suffix + ')"/>' +
+        '<ellipse cx="78" cy="52" rx="130" ry="74" fill="#ffffff" opacity="0.4"/>' +
+        '<ellipse cx="150" cy="200" rx="120" ry="70" fill="#8b979d" opacity="0.25"/>' +
+      '</g>' +
+      '<g fill="none" stroke="#a7b1b7" stroke-width="2.5" opacity="0.75">' + PAW + '</g>' +
+    '</svg>';
+  }
+  function solidPaw(color) {
+    return '<svg class="paw-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="' + color + '">' + PAW + '</g></svg>';
+  }
+
+  function buildTag(stage) {
+    var tag = document.createElement('div');
+    tag.className = 'tag3d'; tag.id = 'tag3d';
+
+    // Thickness: stacked solid paws between the two faces.
+    var LAYERS = 12, DEPTH = 13;
+    for (var i = 0; i < LAYERS; i++) {
+      var t = i / (LAYERS - 1);                 // 0..1
+      var z = -DEPTH / 2 + t * DEPTH;
+      var shade = Math.round(150 + Math.sin(t * Math.PI) * 55); // brighter mid rim
+      var edge = document.createElement('div');
+      edge.className = 'tag-edge';
+      edge.style.transform = 'translateZ(' + z.toFixed(2) + 'px)';
+      edge.innerHTML = solidPaw('rgb(' + shade + ',' + (shade + 6) + ',' + (shade + 10) + ')');
+      tag.appendChild(edge);
+    }
+
+    var front = document.createElement('div');
+    front.className = 'tag-face front';
+    front.style.transform = 'translateZ(' + (DEPTH / 2 + 0.5) + 'px)';
+    front.innerHTML = metalPaw('F') +
+      '<div class="tag-overlay"><img class="ov-paw" src="assets/img/favicon.svg" alt=""><span class="ov-word">PetFind</span></div>';
+    tag.appendChild(front);
+
+    var back = document.createElement('div');
+    back.className = 'tag-face back';
+    back.style.transform = 'rotateY(180deg) translateZ(' + (DEPTH / 2 + 0.5) + 'px)';
+    back.innerHTML = metalPaw('B') +
+      '<div class="tag-overlay"><div class="qr-box"><canvas id="tagQR" width="168" height="168"></canvas></div></div>';
+    tag.appendChild(back);
+
+    stage.appendChild(tag);
+    renderTagQR();
+    return tag;
+  }
+
+  function renderTagQR() {
+    if (typeof qrcode === 'undefined') return;
+    var url = new URL('index.html', window.location.href).href;
+    var qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+    var c = document.getElementById('tagQR'); if (!c) return;
+    var ctx = c.getContext('2d'), n = qr.getModuleCount(), size = c.width, cell = size / n;
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#0B5651';
+    for (var r = 0; r < n; r++) for (var col = 0; col < n; col++) if (qr.isDark(r, col))
+      ctx.fillRect(Math.floor(col * cell), Math.floor(r * cell), Math.ceil(cell), Math.ceil(cell));
+  }
+
+  /* ---- rotation physics ---- */
+  function initRotation(stage, tag) {
+    var rotY = -22, rotX = -12, velY = 0, dragging = false, lastX = 0, lastY = 0, lastMove = 0;
+    var lastScroll = window.scrollY;
+
+    function apply() { tag.style.transform = 'rotateY(' + rotY + 'deg) rotateX(' + rotX + 'deg)'; }
+
+    function down(x, y) { dragging = true; lastX = x; lastY = y; velY = 0; stage.setAttribute('data-drag', '1'); }
+    function move(x, y) {
+      if (!dragging) return;
+      var dx = x - lastX, dy = y - lastY;
+      rotY += dx * 0.5;
+      rotX = Math.max(-40, Math.min(40, rotX - dy * 0.4));
+      velY = dx * 0.5; lastX = x; lastY = y; lastMove = Date.now();
+    }
+    function up() { dragging = false; stage.removeAttribute('data-drag'); }
+
+    stage.addEventListener('pointerdown', function (e) { down(e.clientX, e.clientY); stage.setPointerCapture && stage.setPointerCapture(e.pointerId); });
+    stage.addEventListener('pointermove', function (e) { move(e.clientX, e.clientY); });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+
+    // Scroll spins the tag a little (skipped when reduced motion).
+    if (!reduce) window.addEventListener('scroll', function () {
+      var d = window.scrollY - lastScroll; lastScroll = window.scrollY;
+      if (!dragging) rotY += d * 0.12;
+    }, { passive: true });
+
+    function frame() {
+      if (!dragging) {
+        var idle = Date.now() - lastMove > 900;
+        if (Math.abs(velY) > 0.08) { rotY += velY; velY *= 0.94; }
+        else if (!reduce && idle) { rotY += 0.22; }
+        rotX += (-10 - rotX) * 0.03; // ease back toward rest tilt
+      }
+      apply();
+      requestAnimationFrame(frame);
+    }
+    apply();
+    requestAnimationFrame(frame);
+  }
+
+  /* ---- header scroll state ---- */
+  function initHeader() {
+    var head = document.querySelector('.site-head');
+    if (!head) return;
+    var onScroll = function () { head.classList.toggle('scrolled', window.scrollY > 40); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  /* ---- scroll reveals ---- */
+  function initReveals() {
+    var els = [].slice.call(document.querySelectorAll('.reveal'));
+    if (reduce || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          var delay = en.target.getAttribute('data-reveal-delay') || 0;
+          en.target.style.transitionDelay = delay + 'ms';
+          en.target.classList.add('in');
+          io.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    els.forEach(function (e) { io.observe(e); });
+  }
+
+  /* ---- rating widget ---- */
+  function initRating() {
+    var wrap = document.getElementById('rate-stars'); if (!wrap) return;
+    var thanks = document.getElementById('rate-thanks');
+    var btns = [].slice.call(wrap.querySelectorAll('button'));
+    var saved = 0, justRated = false;
+    try { saved = parseInt(localStorage.getItem('pf_rating') || '0', 10); } catch (e) {}
+
+    function isFr() { return window.PFI18n && window.PFI18n.lang === 'fr'; }
+    function msg() {
+      if (!saved) return '';
+      if (isFr()) return justRated ? 'Merci d’avoir noté PetFind ' + saved + '/5 ! ★' : 'Vous avez noté PetFind ' + saved + '/5 — merci !';
+      return justRated ? 'Thanks for rating PetFind ' + saved + '/5! ★' : 'You rated PetFind ' + saved + '/5 — thank you!';
+    }
+    function paint(n) { btns.forEach(function (b, i) { b.classList.toggle('lit', i < n); }); }
+    btns.forEach(function (b, i) {
+      b.addEventListener('mouseenter', function () { paint(i + 1); });
+      b.addEventListener('focus', function () { paint(i + 1); });
+      b.addEventListener('click', function () {
+        saved = i + 1; justRated = true;
+        try { localStorage.setItem('pf_rating', String(saved)); } catch (e) {}
+        paint(saved); thanks.textContent = msg();
+      });
+    });
+    wrap.addEventListener('mouseleave', function () { paint(saved); });
+    if (saved) { paint(saved); thanks.textContent = msg(); }
+    // update the thank-you text when the language changes
+    window.PFI18nOnChange = function () { thanks.textContent = msg(); };
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var stage = document.getElementById('tagStage');
+    if (stage) {
+      var ok = false;
+      try { ok = window.PetTag3D && window.PetTag3D.init(stage); } catch (e) { ok = false; }
+      if (!ok) { var tag = buildTag(stage); initRotation(stage, tag); } // CSS fallback
+    }
+    initHeader();
+    initReveals();
+    initRating();
+  });
+})();
