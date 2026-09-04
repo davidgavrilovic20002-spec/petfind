@@ -7,6 +7,11 @@
 (function () {
   'use strict';
 
+  // Social sign-in providers. Flip to true once configured in Supabase
+  // (Google needs a free Google Cloud OAuth client; Apple needs a paid
+  // Apple Developer account). Until then the buttons show "coming soon".
+  var OAUTH = { google: false, apple: false };
+
   var SUPABASE_URL = 'https://pcbuyfnmzucywjtlodju.supabase.co';
   var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjYnV5Zm5tenVjeXdqdGxvZGp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MjQ0NzcsImV4cCI6MjEwNDEwMDQ3N30.AjVzj1bBn3eqcvEFPIvLKtPMfI5TxhWJk_cpcJT96BE';
 
@@ -59,6 +64,13 @@
       return client.auth.signInWithPassword({ email: email, password: password });
     },
     signOut: function () { return client.auth.signOut(); },
+    oauthEnabled: function (provider) { return OAUTH[provider] === true; },
+    signInWithOAuth: function (provider) {
+      return client.auth.signInWithOAuth({
+        provider: provider,
+        options: { redirectTo: window.location.origin + window.location.pathname.replace(/[^/]*$/, 'account.html') }
+      });
+    },
     resetPassword: function (email) {
       return client.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin +

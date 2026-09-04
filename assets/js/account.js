@@ -1,5 +1,6 @@
 /* ============================================================
    PetFind — account page: login / signup / dashboard
+   Bilingual (follows the site EN/FR switch) + Google/Apple sign-in.
    ============================================================ */
 (function () {
   'use strict';
@@ -7,12 +8,55 @@
   var $ = function (id) { return document.getElementById(id); };
   var yearEl = $('year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  // Dynamic strings (static text is handled by data-i18n in the HTML).
+  var T = {
+    en: {
+      loginTitle: 'Log in', signupTitle: 'Create an account',
+      submitLogin: 'Log in', submitSignup: 'Create my account',
+      needCreds: 'Enter your email and password.',
+      pwShort: 'Password must be at least 6 characters.',
+      badCreds: 'Incorrect email or password.',
+      exists: 'An account already exists for this email. Please log in.',
+      notConfirmed: 'Please confirm your email before logging in (check your inbox).',
+      rate: 'Too many attempts. Try again in a few minutes.',
+      generic: 'Something went wrong. Please try again.',
+      checkEmail: function (e) { return 'Account created! Check your inbox (' + e + ') and click the confirmation link to activate your account.'; },
+      resetSent: function (e) { return 'If an account exists for ' + e + ', a reset link has just been sent.'; },
+      forgotNeedEmail: 'Enter your email first, then click "Forgot password".',
+      loadPetsErr: 'Could not load your pets: ',
+      edit: 'Edit', seePage: 'View page', copy: 'Copy link', copied: 'Copied ✓',
+      oauthOff: 'This sign-in method isn’t enabled yet — it’s coming soon. Please use email for now.',
+      recovery: 'You can now set a new password: type it below and click "Log in".'
+    },
+    fr: {
+      loginTitle: 'Connectez-vous', signupTitle: 'Créer un compte',
+      submitLogin: 'Se connecter', submitSignup: 'Créer mon compte',
+      needCreds: 'Entrez votre e-mail et votre mot de passe.',
+      pwShort: 'Le mot de passe doit contenir au moins 6 caractères.',
+      badCreds: 'E-mail ou mot de passe incorrect.',
+      exists: 'Un compte existe déjà avec cet e-mail. Connectez-vous.',
+      notConfirmed: 'Confirmez votre e-mail avant de vous connecter (vérifiez votre boîte mail).',
+      rate: 'Trop de tentatives. Réessayez dans quelques minutes.',
+      generic: 'Une erreur est survenue. Réessayez.',
+      checkEmail: function (e) { return 'Compte créé ! Vérifiez votre boîte mail (' + e + ') et cliquez sur le lien de confirmation pour activer votre compte.'; },
+      resetSent: function (e) { return 'Si un compte existe pour ' + e + ', un lien de réinitialisation vient d’être envoyé.'; },
+      forgotNeedEmail: 'Entrez votre e-mail d’abord, puis cliquez sur « Mot de passe oublié ».',
+      loadPetsErr: 'Impossible de charger vos animaux : ',
+      edit: 'Modifier', seePage: 'Voir la page', copy: 'Copier le lien', copied: 'Copié ✓',
+      oauthOff: 'Ce mode de connexion n’est pas encore activé — bientôt disponible. Utilisez l’e-mail pour le moment.',
+      recovery: 'Vous pouvez maintenant définir un nouveau mot de passe : entrez-le ci-dessous et cliquez sur « Se connecter ».'
+    }
+  };
+  function lang() { return (window.PFI18n && window.PFI18n.lang) || 'fr'; }
+  function t(k) { return (T[lang()] || T.fr)[k]; }
+
   if (!window.PFDB) {
     $('loading').innerHTML = '<p class="center muted">Connexion au service impossible. Vérifiez votre connexion internet et réessayez.</p>';
     return;
   }
 
-  var mode = 'login'; // or 'signup'
+  var mode = 'login';
+  var lastPets = null;
 
   function show(view) {
     $('loading').hidden = true;
@@ -27,145 +71,132 @@
     $('tab-login').classList.toggle('on', login);
     $('tab-signup').classList.toggle('on', !login);
     $('name-field').hidden = login;
-    $('auth-title').textContent = login ? 'Connectez-vous' : 'Créer un compte';
-    $('auth-submit').textContent = login ? 'Se connecter' : 'Créer mon compte';
+    $('auth-title').textContent = login ? t('loginTitle') : t('signupTitle');
+    $('auth-submit').textContent = login ? t('submitLogin') : t('submitSignup');
     $('a-pass').setAttribute('autocomplete', login ? 'current-password' : 'new-password');
     hideErr(); $('auth-msg').hidden = true;
   }
   function showErr(msg) { var e = $('auth-err'); e.textContent = msg; e.classList.add('show'); }
   function hideErr() { var e = $('auth-err'); e.textContent = ''; e.classList.remove('show'); }
-  function showMsg(text, kind) {
-    var m = $('auth-msg'); m.textContent = text;
-    m.className = 'msg ' + (kind || 'info'); m.hidden = false;
+  function showMsg(text, kind) { var m = $('auth-msg'); m.textContent = text; m.className = 'msg ' + (kind || 'info'); m.hidden = false; }
+
+  function translateAuthError(msg) {
+    msg = String(msg || '');
+    if (/Invalid login credentials/i.test(msg)) return t('badCreds');
+    if (/already registered|already exists|already been registered/i.test(msg)) return t('exists');
+    if (/Email not confirmed/i.test(msg)) return t('notConfirmed');
+    if (/rate limit|too many/i.test(msg)) return t('rate');
+    return msg;
   }
 
   $('tab-login').addEventListener('click', function () { setMode('login'); });
   $('tab-signup').addEventListener('click', function () { setMode('signup'); });
 
   $('auth-form').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    hideErr();
-    var email = $('a-email').value.trim();
-    var pass = $('a-pass').value;
-    var name = $('a-name').value.trim();
-    if (!email || !pass) { showErr('Entrez votre e-mail et votre mot de passe.'); return; }
-    if (mode === 'signup' && pass.length < 6) { showErr('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+    e.preventDefault(); hideErr();
+    var email = $('a-email').value.trim(), pass = $('a-pass').value, name = $('a-name').value.trim();
+    if (!email || !pass) { showErr(t('needCreds')); return; }
+    if (mode === 'signup' && pass.length < 6) { showErr(t('pwShort')); return; }
 
-    var btn = $('auth-submit'); btn.disabled = true;
-    var original = btn.textContent; btn.textContent = '…';
+    var btn = $('auth-submit'); btn.disabled = true; var orig = btn.textContent; btn.textContent = '…';
     try {
       if (mode === 'signup') {
         var r = await window.PFDB.signUp(email, pass, name);
         if (r.error) { showErr(translateAuthError(r.error.message)); return; }
-        // If email confirmation is required, there is no session yet.
         if (r.data && r.data.session) { await loadDashboard(); }
-        else {
-          showMsg('Compte créé ! Vérifiez votre boîte mail (' + email + ') et cliquez sur le lien de confirmation pour activer votre compte.', 'ok');
-        }
+        else { showMsg(t('checkEmail')(email), 'ok'); }
       } else {
         var r2 = await window.PFDB.signIn(email, pass);
         if (r2.error) { showErr(translateAuthError(r2.error.message)); return; }
         await loadDashboard();
       }
-    } catch (err) {
-      showErr('Une erreur est survenue. Réessayez.');
-    } finally {
-      btn.disabled = false; btn.textContent = original;
-    }
+    } catch (err) { showErr(t('generic')); }
+    finally { btn.disabled = false; btn.textContent = orig; }
   });
 
   $('forgot').addEventListener('click', async function () {
     var email = $('a-email').value.trim();
-    if (!email) { showErr('Entrez votre e-mail d’abord, puis cliquez sur « Mot de passe oublié ».'); return; }
+    if (!email) { showErr(t('forgotNeedEmail')); return; }
     var r = await window.PFDB.resetPassword(email);
     if (r.error) { showErr(translateAuthError(r.error.message)); return; }
-    showMsg('Si un compte existe pour ' + email + ', un lien de réinitialisation vient d’être envoyé.', 'ok');
+    showMsg(t('resetSent')(email), 'ok');
   });
 
-  function translateAuthError(msg) {
-    msg = String(msg || '');
-    if (/Invalid login credentials/i.test(msg)) return 'E-mail ou mot de passe incorrect.';
-    if (/already registered|already exists/i.test(msg)) return 'Un compte existe déjà avec cet e-mail. Connectez-vous.';
-    if (/Email not confirmed/i.test(msg)) return 'Confirmez votre e-mail avant de vous connecter (vérifiez votre boîte mail).';
-    if (/rate limit|too many/i.test(msg)) return 'Trop de tentatives. Réessayez dans quelques minutes.';
-    return msg;
+  /* ---------- social sign-in ---------- */
+  async function oauth(provider) {
+    hideErr();
+    if (!window.PFDB.oauthEnabled(provider)) { showMsg(t('oauthOff'), 'info'); return; }
+    try {
+      var r = await window.PFDB.signInWithOAuth(provider);
+      if (r.error) showErr(translateAuthError(r.error.message));
+      // on success the browser redirects to the provider.
+    } catch (e) { showMsg(t('oauthOff'), 'info'); }
   }
+  $('oauth-google').addEventListener('click', function () { oauth('google'); });
+  $('oauth-apple').addEventListener('click', function () { oauth('apple'); });
 
   /* ---------- dashboard ---------- */
-  $('logout').addEventListener('click', async function () {
-    await window.PFDB.signOut();
-    location.reload();
-  });
+  $('logout').addEventListener('click', async function () { await window.PFDB.signOut(); location.reload(); });
 
   function petUrl(slug) {
     return new URL('pet.html', location.href).href.replace(/[^/]*$/, 'pet.html') + '?s=' + encodeURIComponent(slug);
+  }
+
+  function renderPets(pets) {
+    var list = $('pets-list'); list.innerHTML = '';
+    if (!pets || !pets.length) { $('empty-msg').hidden = false; return; }
+    $('empty-msg').hidden = true;
+    pets.forEach(function (p) {
+      var slug = window.PFDB.slugForPet(p);
+      var url = slug ? petUrl(slug) : null;
+      var sub = [p.breed || p.species, p.sex, p.age].filter(Boolean).join(' · ');
+      var item = document.createElement('div'); item.className = 'pet-item';
+      var h = document.createElement('h3'); h.textContent = p.name || '—'; item.appendChild(h);
+      var s = document.createElement('div'); s.className = 'pi-sub'; s.textContent = sub || '—'; item.appendChild(s);
+      var actions = document.createElement('div'); actions.className = 'pi-actions';
+      var edit = document.createElement('a'); edit.className = 'btn soft'; edit.textContent = t('edit'); edit.href = 'create.html?edit=' + p.id;
+      actions.appendChild(edit);
+      if (url) {
+        var open = document.createElement('a'); open.className = 'btn ghost'; open.textContent = t('seePage'); open.href = url; open.target = '_blank'; open.rel = 'noopener';
+        actions.appendChild(open);
+        var copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn soft'; copy.textContent = t('copy');
+        copy.addEventListener('click', function () {
+          (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+            .then(function () { copy.textContent = t('copied'); setTimeout(function () { copy.textContent = t('copy'); }, 1800); })
+            .catch(function () { window.prompt(t('copy'), url); });
+        });
+        actions.appendChild(copy);
+      }
+      item.appendChild(actions); list.appendChild(item);
+    });
   }
 
   async function loadDashboard() {
     show('dash');
     var user = await window.PFDB.getUser();
     if (user) $('dash-email').textContent = user.email || '';
-    var list = $('pets-list');
-    list.innerHTML = '<div class="spin" style="margin:24px auto"></div>';
-
+    var list = $('pets-list'); list.innerHTML = '<div class="spin" style="margin:24px auto"></div>';
     var res = await window.PFDB.listPets();
-    if (res.error) { list.innerHTML = '<p class="muted">Impossible de charger vos animaux : ' + res.error.message + '</p>'; return; }
-    var pets = res.data || [];
-    list.innerHTML = '';
-    if (!pets.length) { $('empty-msg').hidden = false; return; }
-    $('empty-msg').hidden = true;
-
-    pets.forEach(function (p) {
-      var slug = window.PFDB.slugForPet(p);
-      var url = slug ? petUrl(slug) : null;
-      var sub = [p.breed || p.species, p.sex, p.age].filter(Boolean).join(' · ');
-
-      var item = document.createElement('div');
-      item.className = 'pet-item';
-      var h = document.createElement('h3'); h.textContent = p.name || 'Sans nom'; item.appendChild(h);
-      var s = document.createElement('div'); s.className = 'pi-sub'; s.textContent = sub || '—'; item.appendChild(s);
-
-      var actions = document.createElement('div'); actions.className = 'pi-actions';
-
-      var edit = document.createElement('a'); edit.className = 'btn soft';
-      edit.textContent = 'Modifier'; edit.href = 'create.html?edit=' + p.id;
-      actions.appendChild(edit);
-
-      if (url) {
-        var open = document.createElement('a'); open.className = 'btn ghost';
-        open.textContent = 'Voir la page'; open.href = url; open.target = '_blank'; open.rel = 'noopener';
-        actions.appendChild(open);
-
-        var copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn soft';
-        copy.textContent = 'Copier le lien';
-        copy.addEventListener('click', function () {
-          (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
-            .then(function () { copy.textContent = 'Copié ✓'; setTimeout(function () { copy.textContent = 'Copier le lien'; }, 1800); })
-            .catch(function () { window.prompt('Copiez le lien :', url); });
-        });
-        actions.appendChild(copy);
-      }
-      item.appendChild(actions);
-      list.appendChild(item);
-    });
+    if (res.error) { list.innerHTML = '<p class="muted">' + t('loadPetsErr') + res.error.message + '</p>'; return; }
+    lastPets = res.data || [];
+    renderPets(lastPets);
   }
+
+  // Re-render language-dependent dynamic text when the site language changes.
+  window.PFI18nOnChange = function () {
+    if (!$('auth-view').hidden) setMode(mode);
+    if (!$('dash-view').hidden && lastPets) renderPets(lastPets);
+  };
 
   /* ---------- boot ---------- */
   (async function init() {
     setMode('login');
-    // A confirmation / recovery link lands here with tokens; supabase-js
-    // consumes them and a session appears. Give it a beat, then check.
     var user = await window.PFDB.getUser();
-    if (user) { await loadDashboard(); }
-    else { show('auth'); }
-
+    if (user) { await loadDashboard(); } else { show('auth'); }
     window.PFDB.onAuth(function (event) {
-      if (event === 'SIGNED_IN') { loadDashboard(); }
-      if (event === 'SIGNED_OUT') { show('auth'); }
-      if (event === 'PASSWORD_RECOVERY') {
-        show('auth');
-        showMsg('Vous pouvez maintenant définir un nouveau mot de passe : entrez-le ci-dessous et cliquez sur « Se connecter ».', 'info');
-      }
+      if (event === 'SIGNED_IN') loadDashboard();
+      if (event === 'SIGNED_OUT') show('auth');
+      if (event === 'PASSWORD_RECOVERY') { show('auth'); showMsg(t('recovery'), 'info'); }
     });
   })();
 })();

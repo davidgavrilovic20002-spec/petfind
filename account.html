@@ -18,6 +18,13 @@
   .spin{width:22px;height:22px;border:2.5px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto}
   @keyframes sp{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+  .oauth{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+  .oauth-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:12px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:inherit}
+  .oauth-btn:hover{border-color:var(--muted)}
+  .oauth-btn svg{width:18px;height:18px}
+  .oauth-btn.apple{background:#000;color:#fff;border-color:#000}
+  .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12.5px;margin:16px 0}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
   .pet-item{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:#fff;margin-top:12px;box-shadow:var(--shadow-sm)}
   .pet-item h3{font-size:18px;margin-bottom:2px}
   .pet-item .pi-sub{color:var(--muted);font-size:13px;margin-bottom:12px}
@@ -31,7 +38,7 @@
 </style>
 </head>
 <body>
-<a class="skip" href="#main">Aller au contenu</a>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
 <header class="site-head">
   <div class="container nav">
     <a class="logo" href="index.html"><img src="assets/img/favicon.svg" alt="PetFind" width="30" height="30">Pet<span>Find</span></a>
@@ -50,31 +57,45 @@
 
   <!-- Logged OUT: login / signup -->
   <section id="auth-view" class="auth-wrap" hidden>
-    <div class="eyebrow center">Espace propriétaire</div>
-    <h1 style="font-size:clamp(24px,4vw,32px);text-align:center;margin-bottom:20px" id="auth-title">Connectez-vous</h1>
+    <div class="eyebrow center" data-i18n="acc.eyebrow">Owner area</div>
+    <h1 style="font-size:clamp(24px,4vw,32px);text-align:center;margin-bottom:20px" id="auth-title" data-i18n="acc.login.title">Log in</h1>
     <div class="card">
-      <div class="seg" role="group" aria-label="Connexion ou inscription">
-        <button type="button" id="tab-login" class="on">Se connecter</button>
-        <button type="button" id="tab-signup">Créer un compte</button>
+      <div class="seg" role="group" aria-label="Login or sign up">
+        <button type="button" id="tab-login" class="on" data-i18n="acc.tab.login">Log in</button>
+        <button type="button" id="tab-signup" data-i18n="acc.tab.signup">Sign up</button>
       </div>
+
+      <!-- Social sign-in -->
+      <div class="oauth">
+        <button type="button" class="oauth-btn" id="oauth-google">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.2c0-.6-.1-1.2-.2-1.8H12v3.4h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.1z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9z"/><path fill="#EA4335" d="M12 6.1c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.8 9.4 6.1 12 6.1z"/></svg>
+          <span data-i18n="acc.google">Continue with Google</span>
+        </button>
+        <button type="button" class="oauth-btn apple" id="oauth-apple">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.9c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.8-.8-3-.8c-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.8 1.1 9 .7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7s1.7.7 2.9.7c1.2 0 2-1.1 2.7-2.2.5-.7.9-1.5 1.2-2.4-2.7-1-2.7-3.8-2.7-3.9zM14.3 6.3c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-1 2.7 1 .1 2-.5 2.7-1.2z"/></svg>
+          <span data-i18n="acc.apple">Continue with Apple</span>
+        </button>
+      </div>
+      <div class="divider"><span data-i18n="acc.or">or</span></div>
+
       <form id="auth-form" novalidate>
         <div class="field" id="name-field" hidden>
-          <label for="a-name">Votre nom</label>
+          <label for="a-name" data-i18n="acc.name">Your name</label>
           <input id="a-name" type="text" autocomplete="name" placeholder="David G.">
         </div>
         <div class="field">
-          <label for="a-email">E-mail</label>
-          <input id="a-email" type="email" autocomplete="email" placeholder="vous@exemple.fr" inputmode="email">
+          <label for="a-email" data-i18n="acc.email">Email</label>
+          <input id="a-email" type="email" autocomplete="email" data-i18n-ph="acc.email.ph" placeholder="you@example.com" inputmode="email">
         </div>
         <div class="field">
-          <label for="a-pass">Mot de passe</label>
-          <input id="a-pass" type="password" autocomplete="current-password" placeholder="Au moins 6 caractères">
+          <label for="a-pass" data-i18n="acc.password">Password</label>
+          <input id="a-pass" type="password" autocomplete="current-password" data-i18n-ph="acc.password.ph" placeholder="At least 6 characters">
         </div>
         <p class="err-msg" id="auth-err"></p>
-        <button class="btn primary lg block" type="submit" id="auth-submit" style="margin-top:16px">Se connecter</button>
+        <button class="btn primary lg block" type="submit" id="auth-submit" data-i18n="acc.submit.login" style="margin-top:16px">Log in</button>
       </form>
       <div style="text-align:center;margin-top:14px">
-        <button type="button" class="link-btn" id="forgot">Mot de passe oublié ?</button>
+        <button type="button" class="link-btn" id="forgot" data-i18n="acc.forgot">Forgot password?</button>
       </div>
     </div>
     <div class="msg info" id="auth-msg" hidden></div>
@@ -84,16 +105,16 @@
   <section id="dash-view" hidden>
     <div class="dash-head">
       <div>
-        <div class="eyebrow">Mon compte</div>
-        <h1 style="font-size:clamp(24px,4vw,32px)">Mes animaux</h1>
+        <div class="eyebrow" data-i18n="acc.dash.eyebrow">My account</div>
+        <h1 style="font-size:clamp(24px,4vw,32px)" data-i18n="acc.dash.title">My pets</h1>
         <p class="muted" style="font-size:14px" id="dash-email"></p>
       </div>
-      <button class="btn soft" id="logout" type="button">Se déconnecter</button>
+      <button class="btn soft" id="logout" type="button" data-i18n="acc.logout">Log out</button>
     </div>
-    <a class="btn primary" href="create.html" id="new-pet">+ Créer une nouvelle médaille</a>
+    <a class="btn primary" href="create.html" id="new-pet" data-i18n="acc.newpet">+ Create a new tag</a>
     <div id="pets-list" style="margin-top:8px"></div>
-    <div class="msg info" id="empty-msg" hidden>
-      Vous n'avez pas encore d'animal. Cliquez sur « Créer une nouvelle médaille » pour commencer.
+    <div class="msg info" id="empty-msg" hidden data-i18n="acc.empty">
+      You don't have any pet yet. Click "Create a new tag" to start.
     </div>
   </section>
 </main>
@@ -101,9 +122,9 @@
 <footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/supabase.js?v=2"></script>
+<script src="assets/js/supabase.js?v=4"></script>
 <script src="assets/js/petfind.js?v=4"></script>
-<script src="assets/js/i18n.js?v=7"></script>
-<script src="assets/js/account.js?v=1"></script>
+<script src="assets/js/i18n.js?v=8"></script>
+<script src="assets/js/account.js?v=3"></script>
 </body>
 </html>
