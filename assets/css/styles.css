@@ -49,6 +49,10 @@ h1,h2,h3{letter-spacing:-.4px;line-height:1.15}
 .nav-links a:hover{color:var(--ink)}
 .nav-cta{display:inline-flex}
 .lang-switch{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
+/* Header language switch: push to the right of the row; stays visible on
+   mobile beside the hamburger (it lives in .nav, not the collapsible menu). */
+.site-head .nav > .lang-switch{margin-left:auto;margin-right:14px}
+@media (max-width:720px){.site-head .nav > .lang-switch{margin-right:10px}}
 .lang-switch button{border:0;background:transparent;color:var(--muted);font-weight:700;font-size:12.5px;padding:7px 11px;cursor:pointer;font-family:inherit}
 .lang-switch button.on{background:var(--teal);color:#fff}
 .menu-btn{display:none;background:none;border:0;cursor:pointer;padding:8px}

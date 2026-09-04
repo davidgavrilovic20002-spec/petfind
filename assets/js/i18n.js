@@ -276,14 +276,18 @@
   }
 
   function injectSwitch() {
-    var host = document.querySelector('.site-head .nav-links') || document.querySelector('.site-head .nav');
+    // Place the switch in the header row itself (not inside .nav-links) so it
+    // stays visible on mobile, where .nav-links collapses into the hamburger.
+    var host = document.querySelector('.site-head .nav') || document.querySelector('.site-head .nav-links');
     if (!host || document.getElementById('lang-switch')) return;
     var d = document.createElement('div');
     d.id = 'lang-switch'; d.className = 'lang-switch'; d.setAttribute('role', 'group'); d.setAttribute('aria-label', 'Language / Langue');
     d.innerHTML = '<button type="button" data-l="en">EN</button><button type="button" data-l="fr">FR</button>';
     d.querySelector('[data-l="en"]').addEventListener('click', function () { set('en'); });
     d.querySelector('[data-l="fr"]').addEventListener('click', function () { set('fr'); });
-    host.appendChild(d);
+    // Sit just before the hamburger button when present, otherwise at the end.
+    var menuBtn = host.querySelector('.menu-btn');
+    if (menuBtn) host.insertBefore(d, menuBtn); else host.appendChild(d);
   }
 
   global.PFI18n = { apply: apply, set: set, lang: 'en', FR: FR };
