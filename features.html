@@ -10,19 +10,19 @@
 <link rel="canonical" href="https://petfind.example/features.html">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0A1413">
-<link rel="stylesheet" href="assets/css/styles.css?v=4">
+<link rel="stylesheet" href="assets/css/styles.css?v=5">
 <link rel="stylesheet" href="assets/css/landing.css?v=6">
 <style>
   .tier-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:18px 0 4px}
   .tier{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--ink)}
   .dot{width:12px;height:12px;border-radius:50%}
-  .dot.inc{background:#0F766E}.dot.prem{background:#B4791F}
+  .dot.inc{background:#C6382D}.dot.prem{background:#B4791F}
   .badge-tier{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.3px;padding:4px 10px;border-radius:999px;text-transform:uppercase}
-  .badge-tier.inc{background:#E7F5F3;color:#0B5651}
+  .badge-tier.inc{background:#FBEAE8;color:#A82E25}
   .badge-tier.prem{background:#FBEFD9;color:#8A5A12}
   .fn{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:26px 0;border-top:1px solid var(--line);align-items:start;scroll-margin-top:84px}
   .fn:target{animation:fnflash 1.4s ease}
-  @keyframes fnflash{0%{background:rgba(20,184,166,.12)}100%{background:transparent}}
+  @keyframes fnflash{0%{background:rgba(198,56,45,.12)}100%{background:transparent}}
   @media(max-width:640px){.fn{grid-template-columns:1fr;gap:12px}}
   .fn .fic{width:56px;height:56px;border-radius:16px;background:var(--soft);display:flex;align-items:center;justify-content:center}
   .fn .fic svg{width:30px;height:30px}
@@ -71,7 +71,7 @@
 
     <!-- 1. QR identity -->
     <div class="fn" id="f-qr">
-      <div class="fic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><path d="M13 13h3v3M20 13v7M16 20h4" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div class="fic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#C6382D" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#C6382D" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#C6382D" stroke-width="1.6"/><path d="M13 13h3v3M20 13v7M16 20h4" stroke="#C6382D" stroke-width="1.6" stroke-linecap="round"/></svg></div>
       <div>
         <h3><span data-i18n="ft.f1.h">Always-on QR identity tag</span> <span class="badge-tier inc" data-i18n="ft.tier.inc">Included</span></h3>
         <p class="lead" data-i18n="ft.f1.lead">The paw tag carries a unique QR code that needs no battery, no app and no account for the finder. Anyone who finds your pet scans it and instantly reaches you — your home address is never shown.</p>
