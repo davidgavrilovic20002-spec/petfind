@@ -316,6 +316,31 @@
     /* ---------- public QR page ---------- */
     getPublicPet: function (slug) {
       return client.rpc('get_public_pet', { p_slug: slug });
+    },
+
+    /* ---------- site product ratings ----------
+       One stars (+ optional comment) row per account. Requires migration 0007. */
+    getMyRating: async function () {
+      var user = await currentUser();
+      if (!user) return { data: null };
+      return client.from('site_ratings')
+        .select('rating, comment, updated_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    },
+    upsertMyRating: async function (rating, comment) {
+      var user = await currentUser();
+      if (!user) return { error: { message: 'Not signed in' } };
+      var n = parseInt(rating, 10);
+      if (!(n >= 1 && n <= 5)) return { error: { message: 'Invalid rating' } };
+      var text = (comment == null ? '' : String(comment)).trim();
+      if (text.length > 1000) text = text.slice(0, 1000);
+      return client.from('site_ratings').upsert({
+        user_id: user.id,
+        rating: n,
+        comment: text || null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' }).select('rating, comment, updated_at').single();
     }
   };
 

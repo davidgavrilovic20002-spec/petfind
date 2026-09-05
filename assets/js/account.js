@@ -50,7 +50,8 @@
       mfaEnabledOk: 'Two-factor authentication is on. You’ll be asked for a code each time you log in.',
       mfaDisabledOk: 'Two-factor authentication has been turned off.',
       mfaConfirmDisable: 'Turn off two-factor authentication? Your account will be less protected.',
-      mfaSecretLabel: 'Can’t scan? Enter this key manually:'
+      mfaSecretLabel: 'Can’t scan? Enter this key manually:',
+      rateNeedAuth: 'To rate PetFind and leave a comment, you need to log in or create an account.'
     },
     fr: {
       loginTitle: 'Connectez-vous', signupTitle: 'Créer un compte',
@@ -84,7 +85,8 @@
       mfaEnabledOk: 'La double authentification est activée. Un code vous sera demandé à chaque connexion.',
       mfaDisabledOk: 'La double authentification a été désactivée.',
       mfaConfirmDisable: 'Désactiver la double authentification ? Votre compte sera moins protégé.',
-      mfaSecretLabel: 'Impossible de scanner ? Saisissez cette clé manuellement :'
+      mfaSecretLabel: 'Impossible de scanner ? Saisissez cette clé manuellement :',
+      rateNeedAuth: 'Pour noter PetFind et laisser un commentaire, vous devez vous connecter ou créer un compte.'
     }
   };
   function lang() { return (window.PFI18n && window.PFI18n.lang) || 'fr'; }
@@ -115,6 +117,18 @@
     var n = nextTarget();
     if (n) { location.href = n; return true; }
     return false;
+  }
+
+  // Came from the homepage rating widget without being signed in.
+  function cameToRate() {
+    return new URLSearchParams(location.search).get('reason') === 'rate';
+  }
+  function showRateNotice() {
+    var el = $('auth-rate-notice');
+    if (!el) return;
+    if (!cameToRate()) { el.hidden = true; el.textContent = ''; return; }
+    el.textContent = t('rateNeedAuth');
+    el.hidden = false;
   }
 
   function show(view) {
@@ -521,7 +535,10 @@
 
   // Re-render language-dependent dynamic text when the site language changes.
   window.PFI18nOnChange = function () {
-    if (!$('auth-view').hidden) setMode(mode);
+    if (!$('auth-view').hidden) {
+      setMode(mode);
+      showRateNotice();
+    }
     if ($('mfa-view') && !$('mfa-view').hidden) return;
     if (!$('dash-view').hidden) {
       if (lastPets) renderPets(lastPets);
@@ -543,12 +560,14 @@
 
   /* ---------- boot ---------- */
   (async function init() {
-    setMode('login');
+    // Prefer sign-up when the user arrived because they tried to rate.
+    setMode(cameToRate() ? 'signup' : 'login');
+    showRateNotice();
     var user = await window.PFDB.getUser();
-    if (user) { await routeSignedIn(); } else { show('auth'); }
+    if (user) { await routeSignedIn(); } else { show('auth'); showRateNotice(); }
     window.PFDB.onAuth(function (event) {
       if (event === 'SIGNED_IN') { if (!pendingFactorId) routeSignedIn(); }
-      if (event === 'SIGNED_OUT') show('auth');
+      if (event === 'SIGNED_OUT') { show('auth'); showRateNotice(); }
       if (event === 'PASSWORD_RECOVERY') {
         recovering = true;
         show('auth'); setMode('login');

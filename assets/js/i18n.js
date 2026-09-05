@@ -117,7 +117,10 @@
     'rev.t3.l': 'Propriétaire de chat · Paris',
 
     'rate.h2': "Feriez-vous confiance à PetFind pour votre animal ?",
-    'rate.p': "Touchez les étoiles pour noter l'idée. Votre note est enregistrée sur votre appareil — au lancement des comptes, elles aideront à façonner le produit.",
+    'rate.p': "Touchez les étoiles pour noter PetFind. Vous devez vous connecter ou créer un compte pour laisser une note et un commentaire.",
+    'rate.comment.label': "Commentaire optionnel",
+    'rate.comment.ph': "Qu'est-ce qui vous plaît — ou que pourrions-nous améliorer ?",
+    'rate.submit': 'Enregistrer la note',
 
     'cta.h2': 'Donnez à votre animal un chemin vers la maison.',
     'cta.p': "Créez la page PetFind de votre animal — gratuite à configurer, prête en une minute, et active dès qu'on la scanne.",

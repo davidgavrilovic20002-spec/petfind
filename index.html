@@ -21,7 +21,7 @@
 <meta name="twitter:description" content="A paw-shaped QR pet tag that always works — no battery, no app, no account.">
 <meta name="twitter:image" content="assets/img/og-image.svg">
 <link rel="stylesheet" href="assets/css/styles.css?v=4">
-<link rel="stylesheet" href="assets/css/landing.css?v=18">
+<link rel="stylesheet" href="assets/css/landing.css?v=21">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Product","name":"PetFind Tag","description":"A paw-shaped QR pet identity tag that works with no battery and no app. Scan to reach the owner and find the nearest vet.","brand":{"@type":"Brand","name":"PetFind"}}
 </script>
@@ -227,8 +227,6 @@
     <div class="center reveal" style="margin-bottom:30px">
       <div class="eyebrow" data-i18n="rev.eyebrow">Loved by pet people</div>
       <h2 data-i18n="rev.h2">What early users are saying</h2>
-      <!-- NOTE: Sample testimonials for the demo. Replace with real, consented reviews before public launch. -->
-      <span class="sample-note" data-i18n="rev.sample">Sample reviews — we'll show real ones at launch</span>
     </div>
     <div class="grid cols-3">
       <div class="tcard reveal" data-reveal-delay="0">
@@ -257,10 +255,11 @@
   </section>
 
   <!-- RATING WIDGET -->
-  <section class="section container">
+  <section class="section container" id="rate">
     <div class="rate-card reveal">
       <h2 data-i18n="rate.h2">Would you trust PetFind for your pet?</h2>
-      <p data-i18n="rate.p">Tap the stars to rate the idea. Your rating is saved on your device — once accounts launch, these will help shape the product.</p>
+      <p data-i18n="rate.p">Tap the stars to rate PetFind. You’ll need to log in or create an account to leave a rating and comment.</p>
+
       <div class="rate-stars" id="rate-stars" role="group" aria-label="Rate PetFind from 1 to 5 stars">
         <button type="button" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
         <button type="button" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
@@ -268,6 +267,14 @@
         <button type="button" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
         <button type="button" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 2l2.9 6.2 6.8.8-5 4.6 1.3 6.7L12 17.8 5.9 21l1.4-6.7-5-4.6 6.8-.8z"/></svg></button>
       </div>
+
+      <!-- signed-in only: optional comment + save -->
+      <div class="rate-form" id="rate-form" hidden>
+        <label class="rate-comment-label" for="rate-comment" data-i18n="rate.comment.label">Optional comment</label>
+        <textarea id="rate-comment" class="rate-comment" rows="3" maxlength="1000" data-i18n-ph="rate.comment.ph" placeholder="What do you like — or what should we improve?"></textarea>
+        <button type="button" class="btn accent" id="rate-submit" data-i18n="rate.submit">Save rating</button>
+      </div>
+
       <div class="rate-thanks" id="rate-thanks" aria-live="polite"></div>
     </div>
   </section>
@@ -307,11 +314,13 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js" integrity="sha384-CLZeq1dk8+Uzrs7TVvBUdlFoV5F0DMqgRoeHa8g5wJcuPe5SkVfEvdxB0ZuzlnBQ" crossorigin="anonymous"></script>
+<script src="assets/js/supabase.js?v=8"></script>
 <script src="assets/js/petfind.js"></script>
 <script src="assets/js/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
 <script src="assets/js/tag3d.js?v=8"></script>
-<script src="assets/js/i18n.js?v=10"></script>
-<script src="assets/js/landing.js?v=2"></script>
+<script src="assets/js/i18n.js?v=12"></script>
+<script src="assets/js/landing.js?v=5"></script>
 </body>
 </html>

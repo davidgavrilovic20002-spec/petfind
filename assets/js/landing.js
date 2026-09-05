@@ -153,34 +153,114 @@
     els.forEach(function (e) { io.observe(e); });
   }
 
-  /* ---- rating widget ---- */
+  /* ---- rating widget (account required; optional comment) ---- */
   function initRating() {
     var wrap = document.getElementById('rate-stars'); if (!wrap) return;
     var thanks = document.getElementById('rate-thanks');
+    var form = document.getElementById('rate-form');
+    var comment = document.getElementById('rate-comment');
+    var submit = document.getElementById('rate-submit');
     var btns = [].slice.call(wrap.querySelectorAll('button'));
-    var saved = 0, justRated = false;
-    try { saved = parseInt(localStorage.getItem('pf_rating') || '0', 10); } catch (e) {}
+    var saved = 0;
+    var signedIn = false;
+    var busy = false;
+    // Guests who tap stars are sent to account.html with this URL so the
+    // login/signup page can explain why they need an account.
+    var AUTH_URL = 'account.html?next=' + encodeURIComponent('index.html#rate') + '&reason=rate';
 
     function isFr() { return window.PFI18n && window.PFI18n.lang === 'fr'; }
-    function msg() {
-      if (!saved) return '';
-      if (isFr()) return justRated ? 'Merci d’avoir noté PetFind ' + saved + '/5 ! ★' : 'Vous avez noté PetFind ' + saved + '/5 — merci !';
-      return justRated ? 'Thanks for rating PetFind ' + saved + '/5! ★' : 'You rated PetFind ' + saved + '/5 — thank you!';
-    }
+    function t(en, fr) { return isFr() ? fr : en; }
     function paint(n) { btns.forEach(function (b, i) { b.classList.toggle('lit', i < n); }); }
+    function setStatus(text) { if (thanks) thanks.textContent = text || ''; }
+    function showForm() { if (form) form.hidden = false; }
+    function hideForm() { if (form) form.hidden = true; }
+    function goAuth() { window.location.href = AUTH_URL; }
+
+    function saveRating(opts) {
+      opts = opts || {};
+      if (busy || !signedIn || !window.PFDB) return Promise.resolve();
+      if (!(saved >= 1 && saved <= 5)) {
+        setStatus(t('Choose a star rating first.', 'Choisissez d’abord une note en étoiles.'));
+        return Promise.resolve();
+      }
+      busy = true;
+      if (submit) submit.disabled = true;
+      if (opts.showSaving) setStatus(t('Saving…', 'Enregistrement…'));
+      return window.PFDB.upsertMyRating(saved, comment ? comment.value : '').then(function (res) {
+        busy = false;
+        if (submit) submit.disabled = false;
+        if (res && res.error) {
+          setStatus(t(
+            'Could not save your rating. Please try again.',
+            'Impossible d’enregistrer votre note. Réessayez.'
+          ));
+          return res;
+        }
+        if (res && res.data && res.data.rating) saved = res.data.rating;
+        paint(saved);
+        setStatus(t(
+          'Thanks for rating PetFind ' + saved + '/5! ★ You can still edit your comment below.',
+          'Merci d’avoir noté PetFind ' + saved + '/5 ! ★ Vous pouvez encore modifier votre commentaire ci-dessous.'
+        ));
+        showForm();
+        if (opts.focusComment && comment) {
+          try { comment.focus(); } catch (e) {}
+        }
+        return res;
+      }).catch(function () {
+        busy = false;
+        if (submit) submit.disabled = false;
+        setStatus(t(
+          'Could not save your rating. Please try again.',
+          'Impossible d’enregistrer votre note. Réessayez.'
+        ));
+      });
+    }
+
     btns.forEach(function (b, i) {
       b.addEventListener('mouseenter', function () { paint(i + 1); });
       b.addEventListener('focus', function () { paint(i + 1); });
       b.addEventListener('click', function () {
-        saved = i + 1; justRated = true;
-        try { localStorage.setItem('pf_rating', String(saved)); } catch (e) {}
-        paint(saved); thanks.textContent = msg();
+        // Not logged in → leave the homepage for login/signup with a clear reason.
+        if (!signedIn) { goAuth(); return; }
+        saved = i + 1;
+        paint(saved);
+        showForm();
+        saveRating({ showSaving: true, focusComment: true });
       });
     });
     wrap.addEventListener('mouseleave', function () { paint(saved); });
-    if (saved) { paint(saved); thanks.textContent = msg(); }
-    // update the thank-you text when the language changes
-    window.PFI18nOnChange = function () { thanks.textContent = msg(); };
+
+    if (submit) {
+      submit.addEventListener('click', function () {
+        if (!signedIn) { goAuth(); return; }
+        saveRating({ showSaving: true });
+      });
+    }
+
+    hideForm();
+    if (!window.PFDB || !window.PFDB.getUser) return;
+
+    window.PFDB.getUser().then(function (user) {
+      signedIn = !!user;
+      if (!signedIn) { hideForm(); return; }
+      showForm();
+      return window.PFDB.getMyRating().then(function (res) {
+        if (res && res.error) return;
+        if (res && res.data && res.data.rating) {
+          saved = res.data.rating;
+          paint(saved);
+          if (comment && res.data.comment) comment.value = res.data.comment;
+          setStatus(t(
+            'You rated PetFind ' + saved + '/5 — thank you! Edit below anytime.',
+            'Vous avez noté PetFind ' + saved + '/5 — merci ! Modifiez ci-dessous à tout moment.'
+          ));
+        }
+      });
+    }).catch(function () {
+      signedIn = false;
+      hideForm();
+    });
   }
 
   /* ---- QR function detail reveal ----
