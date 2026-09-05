@@ -82,6 +82,33 @@
     getUser: currentUser,
     onAuth: function (cb) { return client.auth.onAuthStateChange(cb); },
 
+    // Set a new password for the signed-in user (used by the reset flow after
+    // the recovery link opens a session, and could be reused for "change
+    // password"). Strength + leak checks are enforced by the caller.
+    updatePassword: function (password) {
+      return client.auth.updateUser({ password: password });
+    },
+
+    /* ---------- two-factor auth (TOTP) ----------
+       Uses Supabase's built-in MFA. A user enrolls an authenticator app once
+       (QR code); afterwards every password login must clear a TOTP challenge
+       before the session is trusted (AAL2). getAAL tells us whether a logged-in
+       session still owes a challenge. TOTP enrollment must be enabled in the
+       Supabase dashboard (Authentication → Multi-Factor). */
+    mfaList: function () { return client.auth.mfa.listFactors(); },
+    mfaAAL: function () { return client.auth.mfa.getAuthenticatorAssuranceLevel(); },
+    mfaEnroll: function (friendlyName) {
+      return client.auth.mfa.enroll({ factorType: 'totp', friendlyName: friendlyName || 'Authenticator' });
+    },
+    // Verify a code against a factor in one step (used both to finish
+    // enrollment and to answer a login challenge).
+    mfaChallengeAndVerify: function (factorId, code) {
+      return client.auth.mfa.challengeAndVerify({ factorId: factorId, code: code });
+    },
+    mfaUnenroll: function (factorId) {
+      return client.auth.mfa.unenroll({ factorId: factorId });
+    },
+
     /* ---------- profile ---------- */
     getProfile: async function () {
       var user = await currentUser();

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://plausible.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://pcbuyfnmzucywjtlodju.supabase.co wss://pcbuyfnmzucywjtlodju.supabase.co https://api.pwnedpasswords.com https://overpass-api.de https://overpass.kumi.systems https://plausible.io; base-uri 'self'; object-src 'none'; form-action 'self'">
 <title>Mon compte — PetFind</title>
 <meta name="description" content="Connectez-vous pour créer et gérer les pages PetFind de vos animaux.">
 <meta name="robots" content="noindex">
@@ -35,6 +36,28 @@
   .msg.info{background:#FEF3E2;color:#7A5312;border:1px solid #F7D9A8}
   .link-btn{background:none;border:0;color:var(--teal-d);font-weight:600;cursor:pointer;font-size:13.5px;padding:0;font-family:inherit;text-decoration:underline}
   .dash-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+  /* password strength */
+  .pw-strength{margin-top:8px}
+  .pw-bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+  .pw-bar>i{display:block;height:100%;width:0;border-radius:99px;transition:width .2s,background .2s}
+  .pw-bar.s1>i{width:25%;background:#DC2626}
+  .pw-bar.s2>i{width:50%;background:#F59E0B}
+  .pw-bar.s3>i{width:75%;background:#84CC16}
+  .pw-bar.s4>i{width:100%;background:#15803D}
+  .pw-hint{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+  .pw-hint.bad{color:#B91C1C}
+  .pw-hint.good{color:#15803D}
+  /* 2FA */
+  .twofa{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:#fff;margin-top:16px;box-shadow:var(--shadow-sm)}
+  .twofa h3{font-size:16px;margin-bottom:4px}
+  .twofa .tf-sub{color:var(--muted);font-size:13px;margin-bottom:12px;line-height:1.5}
+  .tf-badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;vertical-align:middle;margin-left:6px}
+  .tf-badge.on{background:#EAF7EE;color:#15803D;border:1px solid #BFE6CC}
+  .tf-badge.off{background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB}
+  .tf-qr{display:flex;justify-content:center;margin:12px 0}
+  .tf-qr svg,.tf-qr img{width:180px;height:180px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px}
+  .tf-secret{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:#F8FAF9;border:1px solid var(--line);border-radius:8px;padding:8px 10px;word-break:break-all;text-align:center;margin-bottom:12px}
+  .tf-code{max-width:200px;letter-spacing:3px;text-align:center;font-size:18px}
 </style>
 </head>
 <body>
@@ -91,6 +114,10 @@
         <div class="field">
           <label for="a-pass" data-i18n="acc.password">Password</label>
           <input id="a-pass" type="password" autocomplete="current-password" data-i18n-ph="acc.password.ph" placeholder="At least 6 characters">
+          <div class="pw-strength" id="pw-strength" hidden>
+            <div class="pw-bar" id="pw-meter"><i></i></div>
+            <div class="pw-hint" id="pw-hint"></div>
+          </div>
         </div>
         <label class="checkbox" id="marketing-field" hidden style="margin-top:6px">
           <input type="checkbox" id="a-marketing">
@@ -104,6 +131,26 @@
       </div>
     </div>
     <div class="msg info" id="auth-msg" hidden></div>
+  </section>
+
+  <!-- Two-factor challenge (after password, before the session is trusted) -->
+  <section id="mfa-view" class="auth-wrap" hidden>
+    <div class="eyebrow center" data-i18n="acc.2fa.eyebrow">Security check</div>
+    <h1 style="font-size:clamp(22px,4vw,28px);text-align:center;margin-bottom:8px" data-i18n="acc.2fa.challenge.title">Enter your verification code</h1>
+    <p class="muted center" style="font-size:14px;margin-bottom:18px" data-i18n="acc.2fa.challenge.sub">Open your authenticator app and enter the 6-digit code.</p>
+    <div class="card">
+      <form id="mfa-form" novalidate>
+        <div class="field">
+          <label for="mfa-code" data-i18n="acc.2fa.code">6-digit code</label>
+          <input id="mfa-code" class="tf-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+        </div>
+        <p class="err-msg" id="mfa-err"></p>
+        <button class="btn primary lg block" type="submit" id="mfa-verify" data-i18n="acc.2fa.verify" style="margin-top:8px">Verify</button>
+      </form>
+      <div style="text-align:center;margin-top:14px">
+        <button type="button" class="link-btn" id="mfa-cancel" data-i18n="acc.2fa.cancel">Cancel and sign out</button>
+      </div>
+    </div>
   </section>
 
   <!-- Logged IN: dashboard -->
@@ -125,15 +172,41 @@
     <div class="msg info" id="empty-msg" hidden data-i18n="acc.empty">
       You don't have any pet yet. Click "Create a new tag" to start.
     </div>
+
+    <!-- Two-factor authentication -->
+    <div class="twofa" id="twofa-card" hidden>
+      <h3><span data-i18n="acc.2fa.title">Two-factor authentication</span><span class="tf-badge off" id="twofa-badge">—</span></h3>
+      <p class="tf-sub" data-i18n="acc.2fa.desc">Add a second step at login using an authenticator app (Google Authenticator, Authy, 1Password…). Even if your password leaks, no one can sign in without your phone.</p>
+      <div id="twofa-actions">
+        <button class="btn primary" type="button" id="twofa-enable" data-i18n="acc.2fa.enable">Enable two-factor</button>
+        <button class="btn soft" type="button" id="twofa-disable" hidden data-i18n="acc.2fa.disable">Turn off</button>
+      </div>
+      <!-- Enrollment panel -->
+      <div id="twofa-enroll" hidden style="margin-top:14px">
+        <p class="tf-sub" data-i18n="acc.2fa.scan">Scan this QR code with your authenticator app, then enter the 6-digit code it shows to confirm.</p>
+        <div class="tf-qr" id="twofa-qr"></div>
+        <div class="tf-secret" id="twofa-secret" title="Manual entry key"></div>
+        <div class="field">
+          <label for="twofa-code" data-i18n="acc.2fa.code">6-digit code</label>
+          <input id="twofa-code" class="tf-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+        </div>
+        <p class="err-msg" id="twofa-err"></p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" type="button" id="twofa-confirm" data-i18n="acc.2fa.confirm">Confirm</button>
+          <button class="btn soft" type="button" id="twofa-cancel-enroll" data-i18n="acc.2fa.cancel2">Cancel</button>
+        </div>
+      </div>
+    </div>
   </section>
 </main>
 
 <footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/supabase.js?v=7"></script>
+<script src="assets/js/supabase.js?v=8"></script>
+<script src="assets/js/pwsec.js?v=1"></script>
 <script src="assets/js/petfind.js?v=4"></script>
 <script src="assets/js/i18n.js?v=10"></script>
-<script src="assets/js/account.js?v=6"></script>
+<script src="assets/js/account.js?v=7"></script>
 </body>
 </html>
