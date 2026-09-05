@@ -219,6 +219,16 @@
 
     // Demo checkout: record a pending order (no card charged yet) and mint a
     // tag to "ship". Returns { order, tag:{tag_uid, claim_secret, public_slug} }.
+    //
+    // SECURITY (when Stripe is added): NEVER mark an order 'paid' or grant an
+    // entitlement from the browser. Payment success must be confirmed only by a
+    // Stripe *webhook* whose signature you verify server-side (Edge Function:
+    // stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET)). The
+    // client may create a 'pending' order (as here); a verified webhook is the
+    // only thing allowed to flip it to 'paid'. Also FORCE inserted status to
+    // 'pending' (a policy WITH CHECK or a BEFORE INSERT trigger) so a client
+    // can't self-insert an order already marked 'paid', and gate entitlement on
+    // status='paid', not merely "an order exists".
     createOrder: async function (data) {
       var user = await currentUser();
       if (!user) return { error: { message: 'Not signed in' } };

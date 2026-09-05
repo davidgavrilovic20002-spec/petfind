@@ -256,7 +256,15 @@
     renderStatus();
     var list = $('pets-list'); list.innerHTML = '<div class="spin" style="margin:24px auto"></div>';
     var res = await window.PFDB.listPets();
-    if (res.error) { list.innerHTML = '<p class="muted">' + t('loadPetsErr') + res.error.message + '</p>'; return; }
+    if (res.error) {
+      // Use textContent (not innerHTML) so a server error string can never
+      // inject markup — defense in depth even though this shows only to the
+      // signed-in user themselves.
+      list.innerHTML = '';
+      var ep = document.createElement('p'); ep.className = 'muted';
+      ep.textContent = t('loadPetsErr') + res.error.message;
+      list.appendChild(ep); return;
+    }
     lastPets = res.data || [];
     renderPets(lastPets);
   }
