@@ -31,7 +31,7 @@
     'acc.email': 'E-mail',
     'acc.email.ph': 'vous@exemple.fr',
     'acc.password': 'Mot de passe',
-    'acc.password.ph': 'Au moins 6 caractères',
+    'acc.password.ph': 'Au moins 8 caractères',
     'acc.submit.login': 'Se connecter',
     'acc.submit.signup': 'Créer mon compte',
     'acc.forgot': 'Mot de passe oublié ?',
