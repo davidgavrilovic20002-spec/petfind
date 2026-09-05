@@ -15,9 +15,7 @@
       submitLogin: 'Log in', submitSignup: 'Create my account',
       needCreds: 'Enter your email and password.',
       pwShort: 'Password must be at least 6 characters.',
-      badCreds: 'Incorrect email or password.',
-      exists: 'An account already exists for this email. Please log in.',
-      notConfirmed: 'Please confirm your email before logging in (check your inbox).',
+      badCreds: 'Incorrect email or password. If you just signed up, confirm your email via the link we sent, then try again.',
       rate: 'Too many attempts. Try again in a few minutes.',
       generic: 'Something went wrong. Please try again.',
       checkEmail: function (e) { return 'Account created! Check your inbox (' + e + ') and click the confirmation link to activate your account.'; },
@@ -33,9 +31,7 @@
       submitLogin: 'Se connecter', submitSignup: 'Créer mon compte',
       needCreds: 'Entrez votre e-mail et votre mot de passe.',
       pwShort: 'Le mot de passe doit contenir au moins 6 caractères.',
-      badCreds: 'E-mail ou mot de passe incorrect.',
-      exists: 'Un compte existe déjà avec cet e-mail. Connectez-vous.',
-      notConfirmed: 'Confirmez votre e-mail avant de vous connecter (vérifiez votre boîte mail).',
+      badCreds: 'E-mail ou mot de passe incorrect. Si vous venez de créer un compte, confirmez votre e-mail via le lien envoyé, puis réessayez.',
       rate: 'Trop de tentatives. Réessayez dans quelques minutes.',
       generic: 'Une erreur est survenue. Réessayez.',
       checkEmail: function (e) { return 'Compte créé ! Vérifiez votre boîte mail (' + e + ') et cliquez sur le lien de confirmation pour activer votre compte.'; },
@@ -99,10 +95,13 @@
 
   function translateAuthError(msg) {
     msg = String(msg || '');
-    if (/Invalid login credentials/i.test(msg)) return t('badCreds');
-    if (/already registered|already exists|already been registered/i.test(msg)) return t('exists');
-    if (/Email not confirmed/i.test(msg)) return t('notConfirmed');
+    // Anti-enumeration: "wrong password" and "email not confirmed" collapse to
+    // ONE neutral message, so a failed login never reveals whether the email is
+    // registered. "Already registered" is handled at the signup call site (it
+    // shows the same "check your inbox" message as a brand-new signup).
+    if (/Invalid login credentials/i.test(msg) || /Email not confirmed/i.test(msg)) return t('badCreds');
     if (/rate limit|too many/i.test(msg)) return t('rate');
+    if (/already registered|already exists|already been registered/i.test(msg)) return t('generic');
     return msg;
   }
 
@@ -120,7 +119,16 @@
       if (mode === 'signup') {
         var mk = $('a-marketing');
         var r = await window.PFDB.signUp(email, pass, name, mk && mk.checked);
-        if (r.error) { showErr(translateAuthError(r.error.message)); return; }
+        if (r.error) {
+          // Don't leak that the email is already taken: show the same neutral
+          // "check your inbox" message a new signup would get. (Supabase with
+          // email-confirmation on usually returns a decoy instead of an error;
+          // this covers configs where an explicit "already registered" leaks.)
+          if (/already registered|already exists|already been registered/i.test(r.error.message)) {
+            showMsg(t('checkEmail')(email), 'ok'); return;
+          }
+          showErr(translateAuthError(r.error.message)); return;
+        }
         if (r.data && r.data.session) { if (!redirectNext()) await loadDashboard(); }
         else { showMsg(t('checkEmail')(email), 'ok'); }
       } else {
