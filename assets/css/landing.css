@@ -65,7 +65,7 @@ body.home main{margin-top:-64px}
 .statement p{color:var(--muted);font-size:clamp(16px,2.2vw,20px);max-width:54ch;margin:20px auto 0}
 .section-dark{background:#fff;color:var(--ink)}
 .section-dark .statement p{color:var(--muted)}
-.section-dark h2 .hl{color:var(--accent)}
+.section-dark h2 .hl{color:var(--teal)}
 /* red highlights requested on the home page: the 1-2-3 step badges */
 .hiw .num{background:var(--accent)}
 
