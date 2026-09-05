@@ -66,8 +66,6 @@ body.home main{margin-top:-64px}
 .section-dark{background:#fff;color:var(--ink)}
 .section-dark .statement p{color:var(--muted)}
 .section-dark h2 .hl{color:var(--teal)}
-/* red highlights requested on the home page: the 1-2-3 step badges */
-.hiw .num{background:var(--accent)}
 
 /* ---- "Whole system" showcase (home) ----
    A dark, glowing grid of all six functions that deep-links into
