@@ -4,7 +4,7 @@
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&display=swap');
 :root{
-  --teal:#C6382D; --teal-d:#A82E25; --teal-l:#DC5A4E;
+  --teal:#0F766E; --teal-d:#0B5651; --teal-l:#14B8A6;
   --amber:#F59E0B; --accent:#C6382D; --accent-d:#A82E25;
   --ink:#0F1B1A; --muted:#5B6B69; --line:#E6ECEB;
   --bg:#EDF2F1; --card:#FFFFFF; --soft:#F4F8F7; --ok:#16A34A; --danger:#B91C1C;
@@ -71,8 +71,8 @@ h1,h2,h3{letter-spacing:-.4px;line-height:1.15}
   transition:transform .06s ease, box-shadow .2s ease;white-space:nowrap}
 .btn:active{transform:scale(.98)}
 .btn svg{width:18px;height:18px}
-.btn.primary{background:var(--teal);color:#fff;box-shadow:0 10px 22px rgba(198,56,45,.28)}
-.btn.primary:hover{box-shadow:0 12px 26px rgba(198,56,45,.36)}
+.btn.primary{background:var(--teal);color:#fff;box-shadow:0 10px 22px rgba(15,118,110,.28)}
+.btn.primary:hover{box-shadow:0 12px 26px rgba(15,118,110,.36)}
 .btn.accent,.btn.amber{background:var(--accent);color:#fff;box-shadow:0 10px 22px rgba(198,56,45,.32)}
 .btn.accent:hover,.btn.amber:hover{background:var(--accent-d);box-shadow:0 12px 26px rgba(198,56,45,.4)}
 .btn.ghost{background:#fff;color:var(--teal-d);border:1.6px solid var(--teal)}
@@ -85,7 +85,7 @@ h1,h2,h3{letter-spacing:-.4px;line-height:1.15}
 
 /* Hero (landing) */
 .hero{padding:64px 0 40px;text-align:center}
-.badge{display:inline-flex;align-items:center;gap:7px;background:#FBEAE8;color:var(--teal-d);
+.badge{display:inline-flex;align-items:center;gap:7px;background:#E7F5F3;color:var(--teal-d);
   padding:7px 14px;border-radius:999px;font-size:13px;font-weight:700;margin-bottom:18px}
 .badge svg{width:15px;height:15px}
 .hero h1{font-size:clamp(30px,6vw,50px);max-width:14ch;margin:0 auto 16px}

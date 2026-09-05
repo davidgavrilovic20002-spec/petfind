@@ -22,13 +22,13 @@ body.home .site-head.scrolled{background:rgba(255,255,255,.86);backdrop-filter:s
    Pull the hero up behind the (transparent) sticky header so the white
    header text always sits on the dark hero, not the light page glow. */
 body.home main{margin-top:-64px}
-.hero-dark{position:relative;overflow:hidden;background:radial-gradient(1100px 700px at 50% 8%,#4A1613 0%,#0A1413 55%);color:#fff;padding:150px 0 90px;text-align:center}
+.hero-dark{position:relative;overflow:hidden;background:radial-gradient(1100px 700px at 50% 8%,#123f3a 0%,#0A1413 55%);color:#fff;padding:150px 0 90px;text-align:center}
 .hero-dark .glow{position:absolute;left:50%;top:44%;width:760px;height:760px;transform:translate(-50%,-50%);
-  background:radial-gradient(circle,rgba(198,56,45,.28),transparent 62%);filter:blur(10px);pointer-events:none}
-.hero-dark .badge{background:rgba(255,255,255,.1);color:#F4A9A0;border:1px solid rgba(255,255,255,.16)}
-.hero-dark .badge svg path{stroke:#F87171}
+  background:radial-gradient(circle,rgba(20,184,166,.28),transparent 62%);filter:blur(10px);pointer-events:none}
+.hero-dark .badge{background:rgba(255,255,255,.1);color:#9EEAE0;border:1px solid rgba(255,255,255,.16)}
+.hero-dark .badge svg path{stroke:#5EEAD4}
 .hero-dark h1{font-size:clamp(36px,7.5vw,76px);line-height:1.03;letter-spacing:-1.5px;max-width:15ch;margin:14px auto 18px;font-weight:800}
-.hero-dark h1 em{font-style:normal;background:linear-gradient(120deg,#F87171,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-dark h1 em{font-style:normal;background:linear-gradient(120deg,#5EEAD4,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-dark p.lede{color:rgba(255,255,255,.72);font-size:clamp(16px,2.4vw,21px);max-width:52ch;margin:0 auto 30px}
 .hero-dark .hero-cta .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
 .hero-dark .hero-cta .btn.ghost:hover{border-color:#fff}
@@ -70,18 +70,18 @@ body.home main{margin-top:-64px}
 /* ---- "Whole system" showcase (home) ----
    A dark, glowing grid of all six functions that deep-links into
    features.html. Teal = included with the tag, amber = premium. */
-.system{position:relative;overflow:hidden;background:radial-gradient(1000px 640px at 50% -12%,#4A1613 0%,#0A1413 58%);color:#fff;padding:92px 0}
+.system{position:relative;overflow:hidden;background:radial-gradient(1000px 640px at 50% -12%,#123f3a 0%,#0A1413 58%);color:#fff;padding:92px 0}
 .system .glow{position:absolute;left:50%;top:-6%;width:720px;height:720px;transform:translateX(-50%);
-  background:radial-gradient(circle,rgba(198,56,45,.18),transparent 62%);filter:blur(12px);pointer-events:none}
+  background:radial-gradient(circle,rgba(20,184,166,.18),transparent 62%);filter:blur(12px);pointer-events:none}
 .system .sys-head{position:relative;text-align:center;max-width:60ch;margin:0 auto 12px}
-.system .eyebrow{color:#F87171}
+.system .eyebrow{color:#5EEAD4}
 .system h2{font-size:clamp(26px,4.6vw,44px);letter-spacing:-1px;line-height:1.08;font-weight:800;margin:6px 0 12px}
-.system h2 em{font-style:normal;background:linear-gradient(120deg,#F87171,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.system h2 em{font-style:normal;background:linear-gradient(120deg,#5EEAD4,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
 .system .sys-sub{color:rgba(255,255,255,.66);font-size:clamp(15px,2vw,18px);margin:0 auto}
 .sys-legend{position:relative;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:16px 0 4px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.8)}
 .sys-legend span{display:inline-flex;align-items:center;gap:7px}
 .sys-legend i{width:10px;height:10px;border-radius:50%}
-.sys-legend i.t{background:#F87171}.sys-legend i.a{background:#F59E0B}
+.sys-legend i.t{background:#5EEAD4}.sys-legend i.a{background:#F59E0B}
 .sys-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
 @media(max-width:860px){.sys-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.sys-grid{grid-template-columns:1fr}}
@@ -89,21 +89,21 @@ body.home main{margin-top:-64px}
   border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:22px 20px;overflow:hidden;
   transition:transform .28s cubic-bezier(.2,.7,.2,1),border-color .28s,background .28s,box-shadow .28s}
 .sys-card::after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;
-  background:radial-gradient(340px 160px at 20% -10%,rgba(248,113,113,.14),transparent 70%);opacity:0;transition:opacity .3s}
+  background:radial-gradient(340px 160px at 20% -10%,rgba(94,234,212,.14),transparent 70%);opacity:0;transition:opacity .3s}
 .sys-card.prem::after{background:radial-gradient(340px 160px at 20% -10%,rgba(245,158,11,.16),transparent 70%)}
-.sys-card:hover{transform:translateY(-6px);border-color:rgba(248,113,113,.5);background:rgba(255,255,255,.075);box-shadow:0 22px 44px rgba(0,0,0,.45)}
+.sys-card:hover{transform:translateY(-6px);border-color:rgba(94,234,212,.5);background:rgba(255,255,255,.075);box-shadow:0 22px 44px rgba(0,0,0,.45)}
 .sys-card.prem:hover{border-color:rgba(245,158,11,.5)}
 .sys-card:hover::after{opacity:1}
-.sys-card:focus-visible{outline:2px solid #F87171;outline-offset:3px}
-.sys-ic{position:relative;width:50px;height:50px;border-radius:14px;background:rgba(248,113,113,.13);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.sys-card:focus-visible{outline:2px solid #5EEAD4;outline-offset:3px}
+.sys-ic{position:relative;width:50px;height:50px;border-radius:14px;background:rgba(94,234,212,.13);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
 .sys-card.prem .sys-ic{background:rgba(245,158,11,.14)}
 .sys-ic svg{width:27px;height:27px}
 .sys-pill{position:absolute;top:18px;right:18px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:4px 9px;border-radius:999px}
-.sys-pill.inc{background:rgba(248,113,113,.16);color:#F87171}
+.sys-pill.inc{background:rgba(94,234,212,.16);color:#5EEAD4}
 .sys-pill.prem{background:rgba(245,158,11,.18);color:#FBBF24}
 .sys-card h3{position:relative;font-size:17px;margin:0 0 6px;letter-spacing:-.2px}
 .sys-card p{position:relative;color:rgba(255,255,255,.62);font-size:13.5px;line-height:1.55;margin:0}
-.sys-arrow{position:relative;margin-top:14px;display:inline-flex;align-items:center;gap:6px;color:#F87171;font-weight:700;font-size:13px;transition:gap .22s}
+.sys-arrow{position:relative;margin-top:14px;display:inline-flex;align-items:center;gap:6px;color:#5EEAD4;font-weight:700;font-size:13px;transition:gap .22s}
 .sys-card.prem .sys-arrow{color:#FBBF24}
 .sys-card:hover .sys-arrow{gap:11px}
 .sys-arrow svg{width:15px;height:15px}
@@ -117,13 +117,13 @@ body.home main{margin-top:-64px}
 .stars svg{width:17px;height:17px}
 .tcard blockquote{font-size:15.5px;line-height:1.6;color:#25403c;margin:0 0 18px}
 .tperson{display:flex;align-items:center;gap:11px;margin-top:auto}
-.tavatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#F87171,#C6382D);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}
+.tavatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#5EEAD4,#0F766E);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:16px}
 .tperson .tn{font-weight:700;font-size:14.5px}
 .tperson .tl{color:var(--muted);font-size:12.5px}
 .sample-note{display:inline-block;background:#FEF3E2;color:#7A5312;border:1px solid #F7D9A8;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;margin-top:12px}
 
 /* ---- Rating widget ---- */
-.rate-card{background:linear-gradient(180deg,#C6382D,#A82E25);color:#fff;border-radius:22px;padding:40px 28px;text-align:center}
+.rate-card{background:linear-gradient(180deg,#0F766E,#0B5651);color:#fff;border-radius:22px;padding:40px 28px;text-align:center}
 .rate-card h2{font-size:clamp(22px,3.5vw,30px);margin-bottom:8px}
 .rate-card p{opacity:.85;max-width:44ch;margin:0 auto 20px}
 .rate-stars{display:inline-flex;gap:6px}
