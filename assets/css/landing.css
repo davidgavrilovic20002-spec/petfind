@@ -63,7 +63,7 @@ body.home main{margin-top:-64px}
 .statement h2{font-size:clamp(28px,5.5vw,58px);letter-spacing:-1px;max-width:18ch;margin:0 auto;line-height:1.08;font-weight:800}
 .statement h2 .hl{color:var(--teal)}
 .statement p{color:var(--muted);font-size:clamp(16px,2.2vw,20px);max-width:54ch;margin:20px auto 0}
-.section-dark{background:#0E4A44;color:#fff}
+.section-dark{background:#12655B;color:#fff}
 .section-dark .statement p{color:rgba(255,255,255,.66)}
 .section-dark h2 .hl{color:#5EEAD4}
 
@@ -110,6 +110,10 @@ body.home main{margin-top:-64px}
 .sys-cta{position:relative;text-align:center;margin-top:32px}
 
 /* ---- Testimonials ---- */
+/* testimonials sit on a teal band; the white cards pop against it */
+#reviews{background:#12655B}
+#reviews .eyebrow{color:#5EEAD4}
+#reviews h2{color:#fff}
 .tcard{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-sm);padding:24px;display:flex;flex-direction:column;height:100%}
 .stars{display:inline-flex;gap:3px;color:#F59E0B;margin-bottom:12px}
 .stars svg{width:17px;height:17px}
