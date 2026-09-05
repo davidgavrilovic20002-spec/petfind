@@ -63,13 +63,9 @@ body.home main{margin-top:-64px}
 .statement h2{font-size:clamp(28px,5.5vw,58px);letter-spacing:-1px;max-width:18ch;margin:0 auto;line-height:1.08;font-weight:800}
 .statement h2 .hl{color:var(--teal)}
 .statement p{color:var(--muted);font-size:clamp(16px,2.2vw,20px);max-width:54ch;margin:20px auto 0}
-.section-dark{background:#0A1413;color:#fff;position:relative}
+.section-dark{background:#0A1413;color:#fff}
 .section-dark .statement p{color:rgba(255,255,255,.66)}
 .section-dark h2 .hl{color:#5EEAD4}
-/* soft fade where the dark region melts back into the light section below */
-.section-dark::after{content:"";position:absolute;left:0;right:0;bottom:0;height:110px;
-  background:linear-gradient(180deg,transparent,var(--bg));pointer-events:none}
-.section-dark>*{position:relative;z-index:1}
 
 /* ---- "Whole system" showcase (home) ----
    A dark, glowing grid of all six functions that deep-links into
