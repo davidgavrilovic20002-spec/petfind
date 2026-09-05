@@ -183,6 +183,66 @@
     window.PFI18nOnChange = function () { thanks.textContent = msg(); };
   }
 
+  /* ---- QR function detail reveal ----
+     The "Always-on QR" card in the whole-system grid is a disclosure control:
+     tapping it reveals the "Why PetFind" + "How it works" sections directly
+     below the grid (they live in #qr-detail, hidden by default). The nav
+     "How it works" link and the hero "See how it works" button open it too. */
+  function initQrReveal() {
+    var detail = document.getElementById('qr-detail');
+    var card = document.getElementById('sys-qr-card');
+    if (!detail || !card) return;
+    var label = document.getElementById('sys-qr-label');
+    var closeTimer = null;
+
+    function isFr() { return window.PFI18n && window.PFI18n.lang === 'fr'; }
+    function isOpen() { return card.getAttribute('aria-expanded') === 'true'; }
+    function setLabel() {
+      if (!label) return;
+      label.textContent = isOpen()
+        ? (isFr() ? 'Masquer' : 'Hide')
+        : (isFr() ? 'Voir comment ça marche' : 'See how it works');
+    }
+
+    function open(scrollTarget) {
+      if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+      if (detail.hidden) {
+        detail.hidden = false;
+        // reveal children that the scroll-observer can't reach while hidden
+        [].slice.call(detail.querySelectorAll('.reveal')).forEach(function (e) {
+          e.style.transitionDelay = '0ms'; e.classList.add('in');
+        });
+        // next frame so the opacity/transform transition actually runs
+        requestAnimationFrame(function () { detail.classList.add('open'); });
+      }
+      card.setAttribute('aria-expanded', 'true'); setLabel();
+      var t = (scrollTarget && document.getElementById(scrollTarget)) || detail;
+      requestAnimationFrame(function () {
+        t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      });
+    }
+    function close() {
+      card.setAttribute('aria-expanded', 'false'); setLabel();
+      detail.classList.remove('open');
+      if (reduce) { detail.hidden = true; return; }
+      closeTimer = setTimeout(function () { detail.hidden = true; }, 460);
+    }
+
+    card.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (isOpen()) { close(); } else { open('qr-detail'); }
+    });
+    // Any link pointing at #how (nav + hero button) opens and scrolls to it.
+    [].slice.call(document.querySelectorAll('a[href="#how"]')).forEach(function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); open('how'); });
+    });
+
+    // Keep the card label in the right language. Chain onto any existing handler.
+    var prev = window.PFI18nOnChange;
+    window.PFI18nOnChange = function () { if (typeof prev === 'function') prev(); setLabel(); };
+    setLabel();
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     var stage = document.getElementById('tagStage');
     if (stage) {
@@ -193,5 +253,6 @@
     initHeader();
     initReveals();
     initRating();
+    initQrReveal();
   });
 })();

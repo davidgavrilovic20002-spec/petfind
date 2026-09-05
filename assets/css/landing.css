@@ -136,3 +136,17 @@ body.home main{margin-top:-64px}
   .reveal{opacity:1;transform:none;transition:none}
   .scroll-cue svg{animation:none}
 }
+
+/* ---- QR function detail: revealed when the "Always-on QR" card is tapped ---- */
+.qr-detail[hidden]{display:none}
+.qr-detail,.qr-detail>section{scroll-margin-top:84px}
+.qr-detail{opacity:0;transform:translateY(-10px);transition:opacity .45s ease,transform .45s ease}
+.qr-detail.open{opacity:1;transform:none}
+/* the QR card reads as an expander: arrow points down, and rotates up when open */
+#sys-qr-card .sys-arrow svg{transform:rotate(90deg);transition:transform .3s ease}
+#sys-qr-card[aria-expanded="true"] .sys-arrow svg{transform:rotate(-90deg)}
+@media (prefers-reduced-motion:reduce){
+  .qr-detail{transition:none;opacity:1;transform:none}
+  #sys-qr-card .sys-arrow svg,
+  #sys-qr-card[aria-expanded="true"] .sys-arrow svg{transition:none}
+}
