@@ -22,7 +22,7 @@ body.home .site-head.scrolled{background:rgba(255,255,255,.86);backdrop-filter:s
    Pull the hero up behind the (transparent) sticky header so the white
    header text always sits on the dark hero, not the light page glow. */
 body.home main{margin-top:-64px}
-.hero-dark{position:relative;overflow:hidden;background:radial-gradient(1100px 700px at 50% 8%,#1c6f64 0%,#0E4A44 55%);color:#fff;padding:150px 0 90px;text-align:center}
+.hero-dark{position:relative;overflow:hidden;background:radial-gradient(1100px 700px at 50% 8%,#123f3a 0%,#0A1413 55%);color:#fff;padding:150px 0 90px;text-align:center}
 .hero-dark .glow{position:absolute;left:50%;top:44%;width:760px;height:760px;transform:translate(-50%,-50%);
   background:radial-gradient(circle,rgba(20,184,166,.28),transparent 62%);filter:blur(10px);pointer-events:none}
 .hero-dark .badge{background:rgba(255,255,255,.1);color:#9EEAE0;border:1px solid rgba(255,255,255,.16)}
@@ -70,7 +70,7 @@ body.home main{margin-top:-64px}
 /* ---- "Whole system" showcase (home) ----
    A dark, glowing grid of all six functions that deep-links into
    features.html. Teal = included with the tag, amber = premium. */
-.system{position:relative;overflow:hidden;background:radial-gradient(1000px 640px at 50% -12%,#1c6f64 0%,#0E4A44 58%);color:#fff;padding:92px 0}
+.system{position:relative;overflow:hidden;background:radial-gradient(1000px 640px at 50% -12%,#123f3a 0%,#0A1413 58%);color:#fff;padding:92px 0}
 .system .glow{position:absolute;left:50%;top:-6%;width:720px;height:720px;transform:translateX(-50%);
   background:radial-gradient(circle,rgba(20,184,166,.18),transparent 62%);filter:blur(12px);pointer-events:none}
 .system .sys-head{position:relative;text-align:center;max-width:60ch;margin:0 auto 12px}
