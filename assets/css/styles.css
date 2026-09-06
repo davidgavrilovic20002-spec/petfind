@@ -44,10 +44,16 @@ h1,h2,h3{letter-spacing:-.4px;line-height:1.15}
 .logo img{width:30px;height:30px;border-radius:0;margin-right:9px}
 .logo span{color:inherit}
 .foot-col .logo{font-size:22px}
-.nav-links{display:flex;align-items:center;gap:22px}
+.nav-links{display:flex;align-items:center;gap:22px;position:relative}
 .nav-links a{color:var(--muted);text-decoration:none;font-weight:600;font-size:14.5px}
 .nav-links a:hover{color:var(--ink)}
 .nav-cta{display:inline-flex}
+/* Sliding underline that glides under the hovered / current menu item. */
+.nav-ind{position:absolute;bottom:-5px;left:0;height:3px;width:0;border-radius:3px;
+  background:linear-gradient(90deg,#14B8A6,#5EEAD4);opacity:0;pointer-events:none;
+  transition:transform .4s cubic-bezier(.5,.05,.2,1),width .4s cubic-bezier(.5,.05,.2,1),opacity .25s ease}
+@media (max-width:720px){.nav-ind{display:none}}
+@media (prefers-reduced-motion:reduce){.nav-ind{transition:opacity .01s}}
 .lang-switch{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
 /* Header language switch: push to the right of the row; stays visible on
    mobile beside the hamburger (it lives in .nav, not the collapsible menu). */

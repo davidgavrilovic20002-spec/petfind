@@ -79,6 +79,76 @@
     }
   }
 
+  /* ---- sliding menu underline ----
+     A little teal line glides under the menu item you hover, rests under the
+     page you're on, and — on the home page — follows the section you scroll
+     to. Desktop only (the mobile menu is a dropdown). */
+  function initNavUnderline() {
+    var nav = document.querySelector('.nav-links');
+    if (!nav) return;
+    var links = [].slice.call(nav.querySelectorAll('a:not(.btn)'));
+    if (!links.length) return;
+
+    var ind = document.createElement('span');
+    ind.className = 'nav-ind';
+    ind.setAttribute('aria-hidden', 'true');
+    nav.appendChild(ind);
+
+    function isDesktop() { return window.matchMedia('(min-width:721px)').matches; }
+    function move(a) {
+      if (!a || !isDesktop()) { ind.style.opacity = '0'; return; }
+      ind.style.opacity = '1';
+      ind.style.width = a.offsetWidth + 'px';
+      ind.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+    }
+
+    // The link that marks "the page you're on".
+    var here = (location.pathname.split('/').pop() || 'index.html');
+    var active = null;
+    links.forEach(function (a) {
+      var file = (a.getAttribute('href') || '').split('#')[0];
+      if (file && file === here) active = a;
+    });
+
+    // Hover glides the line; leaving the menu returns it to the active item.
+    links.forEach(function (a) {
+      a.addEventListener('mouseenter', function () { move(a); });
+      a.addEventListener('focus', function () { move(a); });
+    });
+    nav.addEventListener('mouseleave', function () { move(active); });
+
+    // On the home page, let the line follow the section you scroll to.
+    if (document.body.classList.contains('home') && 'IntersectionObserver' in window) {
+      var map = [];
+      links.forEach(function (a) {
+        var href = a.getAttribute('href') || '';
+        var id = href.charAt(0) === '#' ? href.slice(1) : null;
+        if (id && document.getElementById(id)) map.push([document.getElementById(id), a]);
+      });
+      // the "whole system" showcase stands in for Features on the home page
+      var sys = document.getElementById('system');
+      var featLink = links.filter(function (a) { return /features\.html/.test(a.getAttribute('href') || ''); })[0];
+      if (sys && featLink) map.push([sys, featLink]);
+
+      if (map.length) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            var pair = map.filter(function (m) { return m[0] === en.target; })[0];
+            if (pair) { active = pair[1]; move(active); }
+          });
+        }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+        map.forEach(function (m) { spy.observe(m[0]); });
+      }
+    }
+
+    window.addEventListener('resize', function () { move(active); }, { passive: true });
+    var prev = global.PFI18nOnChange;
+    global.PFI18nOnChange = function (l) { if (typeof prev === 'function') prev(l); move(active); };
+    move(active);
+    setTimeout(function () { move(active); }, 350);
+  }
+
   /* ---------- Cookie consent + analytics ----------
      Analytics stays OFF until the visitor accepts. Set MEASUREMENT_ID
      (e.g. a Plausible domain or GA id) once the real domain is live. */
@@ -128,6 +198,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initNav();
+    initNavUnderline();
     initConsent();
     var y = document.getElementById('year');
     if (y) y.textContent = new Date().getFullYear();
