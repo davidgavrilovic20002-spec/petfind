@@ -119,6 +119,7 @@
     $('co-summary').hidden = true;
     var s = $('co-success'); s.hidden = false;
     $('setup-code').textContent = issuedTag ? issuedTag.tag_uid : '—';
+    if ($('setup-secret')) $('setup-secret').textContent = issuedTag ? issuedTag.claim_secret : '—';
     renderQR($('setup-qr'), setupLink());
     $('co-setup-now').href = setupLink();
     s.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

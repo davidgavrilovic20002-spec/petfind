@@ -413,6 +413,8 @@
     'co.ok.p': 'Voici ce qui sera imprimé sur la carte livrée avec votre médaille. Vous pouvez aussi la configurer tout de suite.',
     'co.ok.card': 'Configurez votre médaille PetFind',
     'co.ok.code': 'Votre code de configuration unique',
+    'co.ok.tagcode': 'Code de la médaille',
+    'co.ok.secret': 'Code de configuration (mot de passe)',
     'co.ok.now': 'Configurer ma médaille maintenant',
     'co.ok.copy': 'Copier le lien de configuration',
 
