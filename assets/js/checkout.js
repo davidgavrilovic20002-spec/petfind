@@ -18,8 +18,15 @@
     return;
   }
 
-  var selectedPlan = 'tag';
-  var selectedPeriod = 'monthly';
+  // Only recognized pricing choices can preselect a subscription.
+  var requestedPeriod = new URLSearchParams(window.location.search).get('period');
+  var hasPricingChoice = ['monthly', 'quarterly', 'yearly'].indexOf(requestedPeriod) !== -1;
+  var selectedPlan = hasPricingChoice ? 'tag_plus_sub' : 'tag';
+  var selectedPeriod = hasPricingChoice ? requestedPeriod : 'monthly';
+  var loginLink = document.querySelector('#co-auth a');
+  if (loginLink && hasPricingChoice) {
+    loginLink.href = 'account.html?next=' + encodeURIComponent('checkout.html?period=' + selectedPeriod);
+  }
   var issuedTag = null;
 
   function periodLabel(p) {
@@ -45,6 +52,7 @@
   });
   // Billing-period dropdown (only meaningful for Tag + Premium).
   var periodSel = $('s-period');
+  if (periodSel) periodSel.value = selectedPeriod;
   if (periodSel) periodSel.addEventListener('change', function () {
     selectedPeriod = periodSel.value;
     if ($('sum-period')) $('sum-period').textContent = periodLabel(selectedPeriod);
@@ -145,7 +153,7 @@
     var user = await window.PFDB.getUser();
     if (!user) { $('co-auth').hidden = false; return; }
     $('co-body').hidden = false;
-    selectPlan('tag');
+    selectPlan(selectedPlan);
     var prof = await window.PFDB.getProfile();
     if (prof && prof.data) {
       if (prof.data.full_name) $('s-name').value = prof.data.full_name;
