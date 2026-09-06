@@ -20,6 +20,7 @@
     'nav.create': 'Créer une médaille',
     'nav.account': 'Mon compte',
     'nav.login': 'Se connecter',
+    'nav.logout': 'Se déconnecter',
 
     /* ---- account page ---- */
     'acc.eyebrow': 'Espace propriétaire',
@@ -41,7 +42,7 @@
     'acc.dash.eyebrow': 'Mon compte',
     'acc.dash.title': 'Mes animaux',
     'acc.logout': 'Se déconnecter',
-    'acc.newpet': '+ Créer une nouvelle médaille',
+    'acc.newpet': '+ Obtenir une autre médaille',
     'acc.empty': "Vous n'avez pas encore d'animal. Cliquez sur « Créer une nouvelle médaille » pour commencer.",
     'cookie.text': "Nous utilisons uniquement un stockage essentiel au fonctionnement du site. Avec votre accord, nous utiliserions aussi des statistiques respectueuses de la vie privée pour améliorer PetFind. Voir notre <a href=\"privacy.html\">politique de confidentialité</a>.",
     'cookie.decline': 'Refuser',

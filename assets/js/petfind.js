@@ -196,9 +196,55 @@
     toast: toast
   };
 
+  /* ---- login / logout nav ----
+     When the visitor is signed in, the header "Log in" link becomes
+     "Log out". We detect the session from Supabase's stored token so this
+     works even on pages that don't load supabase-js; the click signs out
+     (via supabase-js when present, else by clearing the local session). */
+  function isSignedIn() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (/^sb-.*-auth-token$/.test(k)) {
+          var v = localStorage.getItem(k);
+          if (v && v.indexOf('access_token') !== -1) return true;
+        }
+      }
+    } catch (e) {}
+    return false;
+  }
+  function clearLocalSession() {
+    try {
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (/^sb-.*-auth-token$/.test(k)) localStorage.removeItem(k);
+      }
+    } catch (e) {}
+  }
+  function initAuthNav() {
+    var link = document.querySelector('.nav-links a[data-i18n="nav.login"]');
+    if (!link || !isSignedIn()) return;
+    var fr = window.PFI18n && window.PFI18n.lang === 'fr';
+    link.setAttribute('data-i18n', 'nav.logout');
+    link.dataset.i18nEn = 'Log out';            // correct EN fallback for i18n
+    link.textContent = fr ? 'Se déconnecter' : 'Log out';
+    link.setAttribute('href', '#');
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (window.PFDB && window.PFDB.signOut) {
+        window.PFDB.signOut().then(function () { location.href = 'index.html'; })
+          .catch(function () { clearLocalSession(); location.href = 'index.html'; });
+      } else {
+        clearLocalSession();
+        location.href = 'index.html';
+      }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initNav();
     initNavUnderline();
+    initAuthNav();
     initConsent();
     var y = document.getElementById('year');
     if (y) y.textContent = new Date().getFullYear();

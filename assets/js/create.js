@@ -428,6 +428,54 @@
     document.getElementById('generate-btn').textContent = crT('Save changes', 'Enregistrer les modifications');
   }
 
+  // Editing a saved tag requires its unique setup code (the claim_secret that
+  // came with the tag). Resolves true once unlocked; true immediately for a
+  // pet that has no code (e.g. an older free-created page). This is a
+  // confirmation layer on top of the account ownership already enforced by RLS.
+  function editSecretGate(petId) {
+    return new Promise(function (resolve) {
+      if (!window.PFDB || !window.PFDB.client) { resolve(true); return; }
+      window.PFDB.client.from('pet_tags').select('claim_secret').eq('pet_id', petId).limit(1)
+        .then(function (r) {
+          var row = r && r.data && r.data[0];
+          var secret = row && row.claim_secret;
+          if (!secret) { resolve(true); return; }   // no code on this tag → no gate
+
+          var form = el('pet-form'); if (form) form.style.display = 'none';
+          var host = el('account-hint'); if (host) host.innerHTML = '';
+          var box = document.createElement('div');
+          box.className = 'card'; box.style.cssText = 'max-width:460px;margin:14px auto 0';
+          var h = document.createElement('h2'); h.style.cssText = 'font-size:18px;margin-bottom:6px';
+          h.textContent = crT('Enter your setup code to edit', 'Entrez votre code de configuration pour modifier');
+          var p = document.createElement('p'); p.className = 'muted'; p.style.cssText = 'font-size:13.5px;margin-bottom:12px';
+          p.textContent = crT('For your security, editing this tag requires the unique setup code that came with it.',
+                              'Pour votre sécurité, la modification de cette médaille nécessite le code de configuration unique fourni avec elle.');
+          var inp = document.createElement('input'); inp.type = 'text'; inp.id = 'edit-secret';
+          inp.setAttribute('autocomplete', 'off'); inp.setAttribute('spellcheck', 'false');
+          inp.placeholder = '••••••••••••'; inp.style.width = '100%';
+          var err = document.createElement('p'); err.className = 'err-msg';
+          err.textContent = crT('That code isn’t valid. Check the setup code for this tag.',
+                               'Ce code n’est pas valide. Vérifiez le code de configuration de cette médaille.');
+          var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn primary lg block';
+          btn.style.marginTop = '12px';
+          btn.textContent = crT('Unlock editing', 'Déverrouiller la modification');
+          box.appendChild(h); box.appendChild(p); box.appendChild(inp); box.appendChild(err); box.appendChild(btn);
+          if (host) host.appendChild(box);
+
+          function tryUnlock() {
+            if ((inp.value || '').trim() === secret) {
+              if (host) host.innerHTML = '';
+              if (form) form.style.display = '';
+              resolve(true);
+            } else { err.classList.add('show'); }
+          }
+          btn.addEventListener('click', tryUnlock);
+          inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); } });
+          try { inp.focus(); } catch (e2) {}
+        }, function () { resolve(true); });   // if the lookup fails, don't hard-block the owner
+    });
+  }
+
   // Banner + button label reflecting the account's entitlement (gate.mode).
   function renderGate() {
     var host = el('account-hint');
@@ -568,9 +616,15 @@
       window.PFDB.getUser().then(function (user) {
         var params = new URLSearchParams(location.search);
         var edit = user ? params.get('edit') : null;
-        Promise.resolve(edit ? loadForEdit(edit) : null).then(function () {
+        if (edit) {
+          // Require the tag's setup code before revealing/loading the editor.
+          editSecretGate(edit).then(function (ok) {
+            if (!ok) return;
+            loadForEdit(edit).then(function () { computeGate().then(renderGate); });
+          });
+        } else {
           computeGate().then(renderGate);
-        });
+        }
       });
     })();
   });

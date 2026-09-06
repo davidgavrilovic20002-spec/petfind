@@ -448,13 +448,6 @@
       if (url) {
         var open = document.createElement('a'); open.className = 'btn ghost'; open.textContent = t('seePage'); open.href = url; open.target = '_blank'; open.rel = 'noopener';
         actions.appendChild(open);
-        var copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn soft'; copy.textContent = t('copy');
-        copy.addEventListener('click', function () {
-          (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
-            .then(function () { copy.textContent = t('copied'); setTimeout(function () { copy.textContent = t('copy'); }, 1800); })
-            .catch(function () { window.prompt(t('copy'), url); });
-        });
-        actions.appendChild(copy);
       }
       item.appendChild(actions); list.appendChild(item);
     });
