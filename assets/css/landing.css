@@ -146,16 +146,86 @@ body.home main{margin-top:-64px}
   .scroll-cue svg{animation:none}
 }
 
-/* ---- QR function detail: revealed when the "Always-on QR" card is tapped ---- */
-.qr-detail[hidden]{display:none}
-.qr-detail,.qr-detail>section{scroll-margin-top:84px}
-.qr-detail{opacity:0;transform:translateY(-10px);transition:opacity .45s ease,transform .45s ease}
-.qr-detail.open{opacity:1;transform:none}
-/* the QR card reads as an expander: arrow points down, and rotates up when open */
-#sys-qr-card .sys-arrow svg{transform:rotate(90deg);transition:transform .3s ease}
-#sys-qr-card[aria-expanded="true"] .sys-arrow svg{transform:rotate(-90deg)}
+/* ============================================================
+   One-page navigation — animated sliding indicator + section focus
+   The top menu now scrolls between sections on the home page. A little
+   teal bar glides under the active item as you move "from one thought
+   to the next", and the target section gives a soft pulse on arrival.
+   ============================================================ */
+/* Sections the nav jumps to sit clear of the sticky 64px header. */
+#how,#features,#pricing,#faq{scroll-margin-top:72px}
+.nav-links{position:relative}
+.nav-ind{position:absolute;left:0;bottom:-6px;height:3px;width:0;border-radius:3px;
+  background:linear-gradient(90deg,#14B8A6,#5EEAD4);opacity:0;pointer-events:none;
+  transition:transform .42s cubic-bezier(.5,.05,.2,1),width .42s cubic-bezier(.5,.05,.2,1),opacity .25s ease}
+body.home .site-head:not(.scrolled) .nav-ind{background:linear-gradient(90deg,#5EEAD4,#F59E0B)}
+.nav-links a.active:not(.btn){color:var(--ink)}
+body.home .site-head:not(.scrolled) .nav-links a.active:not(.btn){color:#fff}
+@media (max-width:720px){.nav-ind{display:none}}
+
+/* Soft pulse when you land on a section via the menu. */
+@keyframes secFocus{0%{box-shadow:0 0 0 0 rgba(20,184,166,0)}
+  30%{box-shadow:inset 0 0 0 9999px rgba(20,184,166,.05)}
+  100%{box-shadow:0 0 0 0 rgba(20,184,166,0)}}
+.sec-focus{animation:secFocus 1s ease-out}
 @media (prefers-reduced-motion:reduce){
-  .qr-detail{transition:none;opacity:1;transform:none}
-  #sys-qr-card .sys-arrow svg,
-  #sys-qr-card[aria-expanded="true"] .sys-arrow svg{transition:none}
+  .nav-ind{transition:opacity .01s}
+  .sec-focus{animation:none}
 }
+
+/* ============================================================
+   Pricing — dark "choose how you pay" section (home)
+   Three glass cards on a deep-teal ground, one highlighted as the
+   best value. No live prices yet — each shows "announced at launch".
+   ============================================================ */
+.pricing{position:relative;overflow:hidden;color:#fff;padding:92px 0;
+  background:radial-gradient(1000px 640px at 50% -14%,#123f3a 0%,#0A1413 60%)}
+.pricing .glow{position:absolute;left:50%;top:-8%;width:760px;height:760px;transform:translateX(-50%);
+  background:radial-gradient(circle,rgba(245,158,11,.12),transparent 62%);filter:blur(12px);pointer-events:none}
+.pricing-head{position:relative;text-align:center;max-width:62ch;margin:0 auto}
+.pricing .eyebrow{color:#5EEAD4}
+.pricing-head h2{font-size:clamp(26px,4.6vw,44px);letter-spacing:-1px;line-height:1.08;font-weight:800;margin:6px 0 12px}
+.pricing-head h2 em{font-style:normal;background:linear-gradient(120deg,#5EEAD4,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pricing-sub{color:rgba(255,255,255,.66);font-size:clamp(15px,2vw,18px);margin:0 auto}
+
+.price-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  margin-top:40px;align-items:stretch}
+@media (max-width:900px){.price-grid{grid-template-columns:1fr;max-width:460px;margin-left:auto;margin-right:auto}}
+
+.price-card{position:relative;display:flex;flex-direction:column;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:26px 24px;transition:transform .28s cubic-bezier(.2,.7,.2,1),border-color .28s,background .28s,box-shadow .28s}
+.price-card:hover{transform:translateY(-6px);border-color:rgba(94,234,212,.4);
+  background:rgba(255,255,255,.07);box-shadow:0 22px 44px rgba(0,0,0,.4)}
+.price-card.best{border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.06);
+  box-shadow:0 18px 46px rgba(0,0,0,.4)}
+.price-card.best:hover{border-color:rgba(245,158,11,.75)}
+@media (min-width:901px){.price-card.best{transform:scale(1.035)}.price-card.best:hover{transform:scale(1.035) translateY(-6px)}}
+.pc-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  background:linear-gradient(120deg,#F59E0B,#FBBF24);color:#3a2600;font-size:11px;font-weight:800;
+  letter-spacing:.6px;text-transform:uppercase;padding:6px 14px;border-radius:999px;box-shadow:0 6px 16px rgba(245,158,11,.4)}
+.pc-kicker{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#5EEAD4;margin-bottom:6px}
+.price-card.best .pc-kicker{color:#FBBF24}
+.price-card h3{font-size:21px;margin:0 0 10px;letter-spacing:-.3px}
+.pc-price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pc-amt{font-size:26px;font-weight:800;line-height:1;background:linear-gradient(120deg,#5EEAD4,#9EEAE0);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.price-card.best .pc-amt{background:linear-gradient(120deg,#FBBF24,#F59E0B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pc-per{color:rgba(255,255,255,.6);font-size:14px;font-weight:600}
+.pc-note{color:rgba(255,255,255,.5);font-size:12.5px;margin:8px 0 0}
+.pc-list{list-style:none;padding:0;margin:18px 0 22px;flex:1;
+  border-top:1px solid rgba(255,255,255,.1);padding-top:18px}
+.pc-list li{position:relative;display:flex;gap:10px;align-items:flex-start;
+  font-size:13.7px;line-height:1.5;color:rgba(255,255,255,.82);margin:11px 0}
+.pc-list li svg{width:18px;height:18px;flex-shrink:0;margin-top:1px}
+.pc-list li.head{font-weight:700;color:#fff}
+.price-card .btn{margin-top:auto}
+.price-card .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.34)}
+.price-card .btn.ghost:hover{border-color:#fff}
+.pc-foot{color:rgba(255,255,255,.5);font-size:12px;text-align:center;margin-top:12px}
+.pricing-foot{position:relative;text-align:center;color:rgba(255,255,255,.62);
+  font-size:14px;max-width:52ch;margin:34px auto 0}
+
+/* FAQ block on the home page reuses the shared .faq accordion styles. */
+#faq{scroll-margin-top:72px}
+.faq-home{max-width:760px;margin:0 auto}

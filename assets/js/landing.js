@@ -263,64 +263,90 @@
     });
   }
 
-  /* ---- QR function detail reveal ----
-     The "Always-on QR" card in the whole-system grid is a disclosure control:
-     tapping it reveals the "Why PetFind" + "How it works" sections directly
-     below the grid (they live in #qr-detail, hidden by default). The nav
-     "How it works" link and the hero "See how it works" button open it too. */
-  function initQrReveal() {
-    var detail = document.getElementById('qr-detail');
-    var card = document.getElementById('sys-qr-card');
-    if (!detail || !card) return;
-    var label = document.getElementById('sys-qr-label');
-    var closeTimer = null;
+  /* ---- one-page navigation ----
+     The top menu now moves between sections of this page. A little teal
+     bar glides under the active item as you go "from one thought to the
+     next", a scroll-spy keeps it in sync, and the target section gives a
+     soft pulse when you land on it. Cross-page links (Log in, Create) and
+     anything that isn't an on-page anchor keep their normal behaviour. */
+  function initOnePageNav() {
+    var nav = document.querySelector('.nav-links');
+    if (!nav) return;
 
-    function isFr() { return window.PFI18n && window.PFI18n.lang === 'fr'; }
-    function isOpen() { return card.getAttribute('aria-expanded') === 'true'; }
-    function setLabel() {
-      if (!label) return;
-      label.textContent = isOpen()
-        ? (isFr() ? 'Masquer' : 'Hide')
-        : (isFr() ? 'Voir comment ça marche' : 'See how it works');
+    // Only same-page section links (href="#id" pointing at a real section).
+    var links = [].slice.call(nav.querySelectorAll('a[href^="#"]')).filter(function (a) {
+      var id = a.getAttribute('href').slice(1);
+      return id && document.getElementById(id);
+    });
+    if (!links.length) return;
+    var sections = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+
+    var ind = document.createElement('span');
+    ind.className = 'nav-ind';
+    ind.setAttribute('aria-hidden', 'true');
+    nav.appendChild(ind);
+
+    var current = null;
+    function isDesktop() { return window.matchMedia('(min-width:721px)').matches; }
+    function moveInd(a) {
+      if (!a || !isDesktop()) { ind.style.opacity = '0'; return; }
+      ind.style.opacity = '1';
+      ind.style.width = a.offsetWidth + 'px';
+      ind.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+    }
+    function setActive(a) {
+      current = a;
+      links.forEach(function (l) { l.classList.toggle('active', l === a); });
+      moveInd(a);
     }
 
-    function open(scrollTarget) {
-      if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
-      if (detail.hidden) {
-        detail.hidden = false;
-        // reveal children that the scroll-observer can't reach while hidden
-        [].slice.call(detail.querySelectorAll('.reveal')).forEach(function (e) {
-          e.style.transitionDelay = '0ms'; e.classList.add('in');
-        });
-        // next frame so the opacity/transform transition actually runs
-        requestAnimationFrame(function () { detail.classList.add('open'); });
+    var menuBtn = document.querySelector('.menu-btn');
+    function closeMenu() {
+      if (nav.classList.contains('open')) {
+        nav.classList.remove('open');
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
       }
-      card.setAttribute('aria-expanded', 'true'); setLabel();
-      var t = (scrollTarget && document.getElementById(scrollTarget)) || detail;
-      requestAnimationFrame(function () {
-        t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    }
+
+    var pulseTimer = null;
+    links.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var sec = document.getElementById(a.getAttribute('href').slice(1));
+        if (!sec) return;                 // let the browser handle it
+        e.preventDefault();
+        closeMenu();
+        setActive(a);
+        sec.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        try { history.replaceState(null, '', a.getAttribute('href')); } catch (err) {}
+        if (!reduce) {                    // soft pulse on arrival
+          clearTimeout(pulseTimer);
+          sections.forEach(function (s) { s.classList.remove('sec-focus'); });
+          void sec.offsetWidth;           // restart the animation
+          sec.classList.add('sec-focus');
+          pulseTimer = setTimeout(function () { sec.classList.remove('sec-focus'); }, 1100);
+        }
       });
-    }
-    function close() {
-      card.setAttribute('aria-expanded', 'false'); setLabel();
-      detail.classList.remove('open');
-      if (reduce) { detail.hidden = true; return; }
-      closeTimer = setTimeout(function () { detail.hidden = true; }, 460);
-    }
-
-    card.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (isOpen()) { close(); } else { open('qr-detail'); }
-    });
-    // Any link pointing at #how (nav + hero button) opens and scrolls to it.
-    [].slice.call(document.querySelectorAll('a[href="#how"]')).forEach(function (a) {
-      a.addEventListener('click', function (e) { e.preventDefault(); open('how'); });
     });
 
-    // Keep the card label in the right language. Chain onto any existing handler.
+    // Scroll-spy: highlight whichever section is in the middle of the viewport.
+    if ('IntersectionObserver' in window) {
+      var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            var a = links[sections.indexOf(en.target)];
+            if (a && a !== current) setActive(a);
+          }
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (s) { spy.observe(s); });
+    }
+
+    // Keep the indicator aligned as layout/fonts/language settle or resize.
+    window.addEventListener('resize', function () { moveInd(current); }, { passive: true });
     var prev = window.PFI18nOnChange;
-    window.PFI18nOnChange = function () { if (typeof prev === 'function') prev(); setLabel(); };
-    setLabel();
+    window.PFI18nOnChange = function (l) { if (typeof prev === 'function') prev(l); moveInd(current); };
+    setActive(links[0]);
+    setTimeout(function () { moveInd(current); }, 350);
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -333,6 +359,6 @@
     initHeader();
     initReveals();
     initRating();
-    initQrReveal();
+    initOnePageNav();
   });
 })();

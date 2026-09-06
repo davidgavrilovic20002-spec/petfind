@@ -21,7 +21,7 @@
 <meta name="twitter:description" content="A paw-shaped QR pet tag that always works — no battery, no app, no account.">
 <meta name="twitter:image" content="assets/img/og-image.svg">
 <link rel="stylesheet" href="assets/css/styles.css?v=4">
-<link rel="stylesheet" href="assets/css/landing.css?v=21">
+<link rel="stylesheet" href="assets/css/landing.css?v=22">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Product","name":"PetFind Tag","description":"A paw-shaped QR pet identity tag that works with no battery and no app. Scan to reach the owner and find the nearest vet.","brand":{"@type":"Brand","name":"PetFind"}}
 </script>
@@ -34,9 +34,9 @@
     <button class="menu-btn" aria-label="Open menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="#0F1B1A" stroke-width="2" stroke-linecap="round"/></svg></button>
     <nav class="nav-links" aria-label="Primary">
       <a href="#how" data-i18n="nav.how">How it works</a>
-      <a href="features.html" data-i18n="nav.features">Features</a>
-      <a href="pricing.html" data-i18n="nav.pricing">Pricing</a>
-      <a href="faq.html" data-i18n="nav.faq">FAQ</a>
+      <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#pricing" data-i18n="nav.pricing">Pricing</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
       <a href="account.html" data-i18n="nav.login">Log in</a><a class="btn accent nav-cta" href="create.html" data-i18n="nav.create">Create a tag</a>
     </nav>
   </div>
@@ -74,8 +74,74 @@
 
   
 
-  <!-- WHOLE SYSTEM SHOWCASE -->
-  <section class="system" id="system">
+  <!-- HOW IT WORKS -->
+  <section class="section container" id="how">
+    <div class="grid cols-2" style="align-items:center;gap:40px">
+      <div class="reveal">
+        <div class="eyebrow" data-i18n="how.eyebrow">How it works</div>
+        <h2 data-i18n="how.h2">Three steps to a safer pet.</h2>
+        <div class="hiw" style="margin-top:22px">
+          <div class="step"><div class="num">1</div><div><h3 data-i18n="how.s1.h">Create your pet's page</h3><p data-i18n="how.s1.p">Add your pet's details and your phone number, and pick what a finder should do. Takes about a minute.</p></div></div>
+          <div class="step"><div class="num">2</div><div><h3 data-i18n="how.s2.h">Get your unique QR code</h3><p data-i18n="how.s2.p">We generate a one-of-a-kind QR you can print at home or put on a tag. Every pet gets its own.</p></div></div>
+          <div class="step"><div class="num">3</div><div><h3 data-i18n="how.s3.h">A finder scans, you reunite</h3><p data-i18n="how.s3.p">Anyone who finds your pet scans the code, calls you, and sees the nearest vet — no app required.</p></div></div>
+        </div>
+        <a class="btn accent lg" href="create.html" style="margin-top:26px" data-i18n="how.cta">Create your tag</a>
+      </div>
+      <div class="card reveal" data-reveal-delay="120" style="padding:0;overflow:hidden">
+        <div style="background:linear-gradient(180deg,#0F766E,#0B5651);color:#fff;padding:26px 24px">
+          <div style="font-size:12.5px;font-weight:700;opacity:.85;letter-spacing:.4px" data-i18n="how.card.tag">TAG SCANNED</div>
+          <div style="font-size:24px;font-weight:800;margin-top:6px" data-i18n="how.card.title">You found Luna 🐾</div>
+        </div>
+        <div style="padding:22px 24px">
+          <p class="muted" style="font-size:14px" data-i18n="how.card.p">"Luna has a loving home — her family is looking for her." One tap to call, and the nearest vet is right there. That's the whole experience a finder sees.</p>
+          <a class="btn ghost block" href="create.html" style="margin-top:16px" data-i18n="how.card.cta">Make one for your pet</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY — everything a finder needs -->
+  <section class="section container" id="why">
+    <div class="center reveal" style="max-width:60ch;margin:0 auto 34px">
+      <div class="eyebrow" data-i18n="feat.eyebrow">Why PetFind</div>
+      <h2 data-i18n="feat.h2">Everything a finder needs, on one page.</h2>
+    </div>
+    <div class="grid cols-3">
+      <div class="card feature reveal" data-reveal-delay="0">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><path d="M13 13h3v3M20 13v7M16 20h4" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3 data-i18n="feat.qr.h">Always-on QR</h3>
+        <p data-i18n="feat.qr.p">The paw tag carries a QR code that draws no power. It works forever as an ID fallback — even when a battery is flat.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="90">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.3 6.7 15 15 15 .9 0 1.7-.6 2-1.5l.5-1.6a1.4 1.4 0 00-.8-1.7l-3-1.2a1.4 1.4 0 00-1.6.4l-.9 1.1a11.3 11.3 0 01-5-5l1.1-.9a1.4 1.4 0 00.4-1.6L10 3.3A1.4 1.4 0 008.3 2.5" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3 data-i18n="feat.tap.h">One-tap contact</h3>
+        <p data-i18n="feat.tap.p">The finder calls or texts you directly from the page. No sign-up, no waiting, no middleman.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="180">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="#0F766E" stroke-width="1.6"/><circle cx="12" cy="10" r="2.4" stroke="#0F766E" stroke-width="1.6"/></svg></div>
+        <h3 data-i18n="feat.vet.h">Nearest vet, live</h3>
+        <p data-i18n="feat.vet.p">The page finds the closest clinic to wherever your pet is found — not a fixed address — so help is always close.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="0">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 9.5-4-1.2-7-5-7-9.5V6l7-3z" stroke="#0F766E" stroke-width="1.5"/><path d="M9.5 12l1.8 1.8 3.2-3.6" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3 data-i18n="feat.priv.h">Private by design</h3>
+        <p data-i18n="feat.priv.p">Your home address is never shown. Only your phone number and the nearest vet appear on the page.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="90">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <h3 data-i18n="feat.steps.h">You write the steps</h3>
+        <p data-i18n="feat.steps.p">Choose exactly what a finder should do — from friendly suggestions or your own words, in English or French.</p>
+      </div>
+      <div class="card feature reveal" data-reveal-delay="180">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#0F766E" stroke-width="1.6"/><path d="M2 12h20M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="#0F766E" stroke-width="1.3"/></svg></div>
+        <h3 data-i18n="feat.lang.h">Any phone, any language</h3>
+        <p data-i18n="feat.lang.p">Opens in any browser worldwide. Finders can switch between English and French with one tap.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHOLE SYSTEM SHOWCASE (Features) -->
+  <section class="system" id="features">
     <div class="glow" aria-hidden="true"></div>
     <div class="container">
       <div class="sys-head reveal">
@@ -89,12 +155,12 @@
       </div>
 
       <div class="sys-grid">
-        <a class="sys-card reveal" data-reveal-delay="0" href="#qr-detail" id="sys-qr-card" aria-controls="qr-detail" aria-expanded="false">
+        <a class="sys-card reveal" data-reveal-delay="0" href="#how">
           <span class="sys-pill inc" data-i18n="ft.tier.inc">Included</span>
           <div class="sys-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#5EEAD4" stroke-width="1.7"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#5EEAD4" stroke-width="1.7"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#5EEAD4" stroke-width="1.7"/><path d="M13 13h3v3M20 13v7M16 20h4" stroke="#5EEAD4" stroke-width="1.7" stroke-linecap="round"/></svg></div>
           <h3 data-i18n="ft.f1.h">Always-on QR identity tag</h3>
           <p data-i18n="hs.qr.d">Scan to reach you and the nearest vet — no battery, no app.</p>
-          <span class="sys-arrow"><span id="sys-qr-label">See how it works</span><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="sys-arrow"><span data-i18n="hs.qr.cta">See how it works</span><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </a>
 
         <a class="sys-card prem reveal" data-reveal-delay="70" href="features.html#f-location">
@@ -144,72 +210,72 @@
     </div>
   </section>
 
-  <!-- QR FUNCTION DETAIL — revealed when the "Always-on QR" card is tapped -->
-  <div id="qr-detail" class="qr-detail" hidden>
-<section class="section container" id="features">
-    <div class="center reveal" style="max-width:60ch;margin:0 auto 34px">
-      <div class="eyebrow" data-i18n="feat.eyebrow">Why PetFind</div>
-      <h2 data-i18n="feat.h2">Everything a finder needs, on one page.</h2>
-    </div>
-    <div class="grid cols-3">
-      <div class="card feature reveal" data-reveal-delay="0">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="#0F766E" stroke-width="1.6"/><path d="M13 13h3v3M20 13v7M16 20h4" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <h3 data-i18n="feat.qr.h">Always-on QR</h3>
-        <p data-i18n="feat.qr.p">The paw tag carries a QR code that draws no power. It works forever as an ID fallback — even when a battery is flat.</p>
+  <!-- PRICING — choose how you pay (prices announced at launch) -->
+  <section class="pricing" id="pricing">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="container">
+      <div class="pricing-head reveal">
+        <div class="eyebrow" data-i18n="pp.eyebrow">Pricing</div>
+        <h2 data-i18n-html="pp.h2">Start free. <em>Grow when you're ready.</em></h2>
+        <p class="pricing-sub" data-i18n="pp.sub">Design your tag free for an hour, buy the tag once when you're happy, and add Premium only if you want the five advanced functions. Same simple idea in every plan — the price is announced at launch.</p>
       </div>
-      <div class="card feature reveal" data-reveal-delay="90">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.3 6.7 15 15 15 .9 0 1.7-.6 2-1.5l.5-1.6a1.4 1.4 0 00-.8-1.7l-3-1.2a1.4 1.4 0 00-1.6.4l-.9 1.1a11.3 11.3 0 01-5-5l1.1-.9a1.4 1.4 0 00.4-1.6L10 3.3A1.4 1.4 0 008.3 2.5" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <h3 data-i18n="feat.tap.h">One-tap contact</h3>
-        <p data-i18n="feat.tap.p">The finder calls or texts you directly from the page. No sign-up, no waiting, no middleman.</p>
-      </div>
-      <div class="card feature reveal" data-reveal-delay="180">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="#0F766E" stroke-width="1.6"/><circle cx="12" cy="10" r="2.4" stroke="#0F766E" stroke-width="1.6"/></svg></div>
-        <h3 data-i18n="feat.vet.h">Nearest vet, live</h3>
-        <p data-i18n="feat.vet.p">The page finds the closest clinic to wherever your pet is found — not a fixed address — so help is always close.</p>
-      </div>
-      <div class="card feature reveal" data-reveal-delay="0">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 9.5-4-1.2-7-5-7-9.5V6l7-3z" stroke="#0F766E" stroke-width="1.5"/><path d="M9.5 12l1.8 1.8 3.2-3.6" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <h3 data-i18n="feat.priv.h">Private by design</h3>
-        <p data-i18n="feat.priv.p">Your home address is never shown. Only your phone number and the nearest vet appear on the page.</p>
-      </div>
-      <div class="card feature reveal" data-reveal-delay="90">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" stroke="#0F766E" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <h3 data-i18n="feat.steps.h">You write the steps</h3>
-        <p data-i18n="feat.steps.p">Choose exactly what a finder should do — from friendly suggestions or your own words, in English or French.</p>
-      </div>
-      <div class="card feature reveal" data-reveal-delay="180">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#0F766E" stroke-width="1.6"/><path d="M2 12h20M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="#0F766E" stroke-width="1.3"/></svg></div>
-        <h3 data-i18n="feat.lang.h">Any phone, any language</h3>
-        <p data-i18n="feat.lang.p">Opens in any browser worldwide. Finders can switch between English and French with one tap.</p>
-      </div>
-    </div>
-  </section>
 
-<section class="section container" id="how">
-    <div class="grid cols-2" style="align-items:center;gap:40px">
-      <div class="reveal">
-        <div class="eyebrow" data-i18n="how.eyebrow">How it works</div>
-        <h2 data-i18n="how.h2">Three steps to a safer pet.</h2>
-        <div class="hiw" style="margin-top:22px">
-          <div class="step"><div class="num">1</div><div><h3 data-i18n="how.s1.h">Create your pet's page</h3><p data-i18n="how.s1.p">Add your pet's details and your phone number, and pick what a finder should do. Takes about a minute.</p></div></div>
-          <div class="step"><div class="num">2</div><div><h3 data-i18n="how.s2.h">Get your unique QR code</h3><p data-i18n="how.s2.p">We generate a one-of-a-kind QR you can print at home or put on a tag. Every pet gets its own.</p></div></div>
-          <div class="step"><div class="num">3</div><div><h3 data-i18n="how.s3.h">A finder scans, you reunite</h3><p data-i18n="how.s3.p">Anyone who finds your pet scans the code, calls you, and sees the nearest vet — no app required.</p></div></div>
+      <div class="price-grid">
+        <!-- Free preview -->
+        <div class="price-card reveal" data-reveal-delay="0">
+          <div class="pc-kicker" data-i18n="pp.free.kicker">Try before you buy</div>
+          <h3 data-i18n="pp.free.h">Free preview</h3>
+          <div class="pc-price"><span class="pc-amt" data-i18n="pp.free.amt">Free</span> <span class="pc-per" data-i18n="pp.free.per">for 1 hour</span></div>
+          <p class="pc-note" data-i18n="pp.free.note">no card needed</p>
+          <ul class="pc-list">
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.free.l1">Design your pet's tag in the builder</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.free.l2">See the finder page exactly as it'll look</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.free.l3">A watermarked demo QR to try it out</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.free.l4">Upgrade to a real, scannable tag anytime</span></li>
+          </ul>
+          <a class="btn ghost block" href="create.html" data-i18n="pp.free.cta">Start free preview</a>
+          <p class="pc-foot" data-i18n="pp.free.foot">no commitment</p>
         </div>
-        <a class="btn accent lg" href="create.html" style="margin-top:26px" data-i18n="how.cta">Create your tag</a>
+
+        <!-- Tag (one-time) -->
+        <div class="price-card reveal" data-reveal-delay="80">
+          <div class="pc-kicker" data-i18n="pp.tag.kicker">One-time purchase</div>
+          <h3 data-i18n="pp.tag.h">PetFind Tag</h3>
+          <div class="pc-price"><span class="pc-amt" data-i18n="pp.tba">Announced at launch</span> <span class="pc-per" data-i18n="pp.tag.per">paid once</span></div>
+          <p class="pc-note" data-i18n="pp.tag.note">the tag works forever</p>
+          <ul class="pc-list">
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.tag.l1">The paw QR tag, shipped to your home</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.tag.l2">Always-on finder page — call you, nearest vet, your steps</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.tag.l3">Set it up at home — no subscription required</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#5EEAD4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.tag.l4">Edit anytime from your account</span></li>
+          </ul>
+          <a class="btn ghost block" href="checkout.html" data-i18n="pp.tag.cta">Get the tag</a>
+          <p class="pc-foot" data-i18n="pp.tag.foot">yours to keep</p>
+        </div>
+
+        <!-- Tag + Premium (best value) -->
+        <div class="price-card best reveal" data-reveal-delay="160">
+          <div class="pc-badge" data-i18n="pp.best.badge">Best value</div>
+          <div class="pc-kicker" data-i18n="pp.best.kicker">Tag + monthly subscription</div>
+          <h3 data-i18n="pp.best.h">Tag + Premium</h3>
+          <div class="pc-price"><span class="pc-amt" data-i18n="pp.tba">Announced at launch</span> <span class="pc-per" data-i18n="pp.best.per">per month</span></div>
+          <p class="pc-note" data-i18n="pp.best.note">cancel anytime</p>
+          <ul class="pc-list">
+            <li class="head"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.best.l0">Everything in the Tag, plus:</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.best.l1">Live location &amp; safe-zone alerts</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.best.l2">Health vitals &amp; trend alerts</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.best.l3">Medical records &amp; medication schedule</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.best.l4">Vet appointments &amp; emergency escalation</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#FBBF24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pp.best.l5">Smart bowls &amp; feeders</span></li>
+          </ul>
+          <a class="btn accent block" href="checkout.html" data-i18n="pp.best.cta">Get tag + Premium</a>
+          <p class="pc-foot" data-i18n="pp.best.foot">the whole connected system</p>
+        </div>
       </div>
-      <div class="card reveal" data-reveal-delay="120" style="padding:0;overflow:hidden">
-        <div style="background:linear-gradient(180deg,#0F766E,#0B5651);color:#fff;padding:26px 24px">
-          <div style="font-size:12.5px;font-weight:700;opacity:.85;letter-spacing:.4px" data-i18n="how.card.tag">TAG SCANNED</div>
-          <div style="font-size:24px;font-weight:800;margin-top:6px" data-i18n="how.card.title">You found Luna 🐾</div>
-        </div>
-        <div style="padding:22px 24px">
-          <p class="muted" style="font-size:14px" data-i18n="how.card.p">"Luna has a loving home — her family is looking for her." One tap to call, and the nearest vet is right there. That's the whole experience a finder sees.</p>
-          <a class="btn ghost block" href="create.html" style="margin-top:16px" data-i18n="how.card.cta">Make one for your pet</a>
-        </div>
-      </div>
+
+      <p class="pricing-foot reveal" data-i18n="pp.foot">The tag always works with no subscription. Premium is optional — add or cancel it whenever you like.</p>
     </div>
   </section>
-  </div>
 
   <!-- DARK STATEMENT -->
   <section class="section-dark">
@@ -279,6 +345,23 @@
     </div>
   </section>
 
+  <!-- FAQ -->
+  <section class="section container faq" id="faq">
+    <div class="center reveal" style="margin-bottom:24px">
+      <div class="eyebrow" data-i18n="faq.eyebrow">Help centre</div>
+      <h2 data-i18n="faq.h1">Frequently asked questions</h2>
+    </div>
+    <div class="faq-home reveal">
+      <details open><summary data-i18n="faq.q1">Do I need an app or a subscription?</summary><p data-i18n="faq.a1">No. PetFind opens as a normal web page in any browser. There's nothing to install for you or for the person who finds your pet, and the QR code works even if a GPS collar's battery is dead.</p></details>
+      <details><summary data-i18n="faq.q2">Is my home address shown to strangers?</summary><p data-i18n="faq.a2">Never. Only your phone number and the nearest vet clinic are shown on the page. Your home address stays private for your family's safety.</p></details>
+      <details><summary data-i18n="faq.q3">How does the "nearest vet" work?</summary><p data-i18n="faq.a3">With the finder's permission, the page reads their phone's location and looks up the closest veterinary clinic using OpenStreetMap. That means the vet shown is near wherever your pet actually is — not a fixed address you set once. If the finder declines location, the page shows a backup vet (if you added one) or a "search vets near me" link.</p></details>
+      <details><summary data-i18n="faq.q4">Can I choose what a finder should do?</summary><p data-i18n="faq.a4">Yes. When you create your tag you pick the steps a finder sees — from friendly suggestions like "keep me calm" or "offer me water," or in your own words. You can reorder, edit, or remove any of them.</p></details>
+      <details><summary data-i18n="faq.q6">Does this replace the mandatory microchip?</summary><p data-i18n="faq.a6">No. In France, identifying dogs, cats and ferrets with an I-CAD-registered microchip is legally required. PetFind is complementary: it gives finders an instant, friendly way to reach you so you reunite faster.</p></details>
+      <details><summary data-i18n="faq.q8">Is PetFind free?</summary><p data-i18n="faq.a8">Setting up your pet's page and generating a QR code is free. Physical tags, premium features and the wider connected-care app are on the roadmap.</p></details>
+    </div>
+    <div class="center" style="margin-top:28px"><a class="btn ghost" href="faq.html" data-i18n="faq.all">See all questions</a></div>
+  </section>
+
   <!-- CTA BAND -->
   <section class="section container">
     <div class="cta-band reveal">
@@ -320,7 +403,7 @@
 <script src="assets/js/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
 <script src="assets/js/tag3d.js?v=8"></script>
-<script src="assets/js/i18n.js?v=12"></script>
-<script src="assets/js/landing.js?v=5"></script>
+<script src="assets/js/i18n.js?v=13"></script>
+<script src="assets/js/landing.js?v=6"></script>
 </body>
 </html>
