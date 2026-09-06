@@ -121,6 +121,13 @@
       return client.from('profiles').update(fields).eq('id', user.id);
     },
 
+    // Both RPCs derive ownership from the authenticated session on the server.
+    deleteTag: function (slug) {
+      return client.rpc('delete_my_tag', { p_slug: slug });
+    },
+    deleteAccount: function (email) {
+      return client.rpc('delete_my_account', { p_confirmation: email });
+    },
     /* ---------- pets ---------- */
     listPets: async function () {
       var user = await currentUser();

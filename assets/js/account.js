@@ -494,6 +494,18 @@
         else badge(L('No active subscription', 'Sans abonnement actif'), 'inactive');
         var view = document.createElement('a'); view.href = petUrl(tag.public_slug);
         view.textContent = L('View tag', 'Voir la médaille'); row.appendChild(view);
+        var remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger';
+        remove.textContent = L('Delete tag', 'Supprimer la médaille');
+        remove.addEventListener('click', async function () {
+          if (!window.confirm(L('Permanently delete this tag? Its QR link will stop working. Your pet profile will be kept. This does not cancel a subscription.', 'Supprimer définitivement cette médaille ? Son lien QR ne fonctionnera plus. Le profil de votre animal sera conservé. Cela ne résilie pas un abonnement.'))) return;
+          remove.disabled = true;
+          try {
+            var result = await window.PFDB.deleteTag(tag.public_slug);
+            if (result.error) throw result.error;
+            await loadDashboard();
+          } catch (err) { showDeletionError(err); remove.disabled = false; }
+        });
+        row.appendChild(remove);
         item.appendChild(row);
       });
       if (!tags.length) {
@@ -505,6 +517,43 @@
   }
 
   function L(en, fr) { return lang() === 'fr' ? fr : en; }
+
+  function showDeletionError(error) {
+    var host = $('deletion-error'); host.hidden = false;
+    var message = String(error && error.message || '');
+    if (/function|schema cache/i.test(message)) {
+      host.textContent = L('Deletion is not enabled on the server yet. Please try again after setup is complete.', 'La suppression n’est pas encore activée sur le serveur. Réessayez après la configuration.');
+    } else if (/Cancel your paid subscription/i.test(message)) {
+      host.textContent = L('Cancel your paid subscription before deleting your account.', 'Résiliez votre abonnement payant avant de supprimer votre compte.');
+    } else if (/uploaded files/i.test(message)) {
+      host.textContent = L('Please contact support to remove your uploaded files before deleting your account.', 'Contactez l’assistance pour supprimer vos fichiers avant de supprimer votre compte.');
+    } else {
+      host.textContent = L('Deletion failed. Reload the page and try again.', 'La suppression a échoué. Rechargez la page et réessayez.');
+    }
+    host.scrollIntoView({ block: 'center' });
+  }
+  $('delete-account').addEventListener('click', async function () {
+    var button = this;
+    var user = await window.PFDB.getUser();
+    if (!user) { show('auth'); return; }
+    var confirmation = window.prompt(L('Permanently delete your account, pets, tags and account data? This cannot be undone. Type your account email to confirm:', 'Supprimer définitivement votre compte, vos animaux, vos médailles et les données du compte ? Cette action est irréversible. Saisissez l’e-mail de votre compte pour confirmer :'));
+    if (confirmation === null) return;
+    if (confirmation.trim().toLowerCase() !== user.email.toLowerCase()) {
+      var host = $('deletion-error'); host.hidden = false;
+      host.textContent = L('The email does not match. Nothing was deleted.', 'L’e-mail ne correspond pas. Rien n’a été supprimé.'); return;
+    }
+    button.disabled = true;
+    try {
+      var result = await window.PFDB.deleteAccount(confirmation.trim());
+      if (result.error) throw result.error;
+      clearInterval(statusTimer);
+      lastPets = null; dashboardOrders = []; dashboardSubscription = null;
+      $('pets-list').innerHTML = ''; $('dash-email').textContent = ''; show('auth');
+      try { await window.PFDB.signOut(); } catch (err) {}
+      location.replace('index.html');
+    } catch (err) { showDeletionError(err); button.disabled = false; }
+  });
+
   var statusTimer = null;
 
   function fmtRemaining(ms) {
