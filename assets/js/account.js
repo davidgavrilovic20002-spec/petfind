@@ -492,8 +492,6 @@
         else if (dashboardSubscription) badge(L('Premium · account', 'Premium · compte'), 'premium');
         else if (requested) badge(L('Subscription requested · pending', 'Abonnement demandé · en attente'), 'inactive');
         else badge(L('No active subscription', 'Sans abonnement actif'), 'inactive');
-        var view = document.createElement('a'); view.href = petUrl(tag.public_slug);
-        view.textContent = L('View tag', 'Voir la médaille'); row.appendChild(view);
         var remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger';
         remove.textContent = L('Delete tag', 'Supprimer la médaille');
         remove.addEventListener('click', async function () {
