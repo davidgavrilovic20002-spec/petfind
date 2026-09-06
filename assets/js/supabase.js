@@ -266,6 +266,9 @@
       if (tagRes.error) return tagRes;
       var tag = Array.isArray(tagRes.data) ? tagRes.data[0] : tagRes.data;
 
+      // Billing period only applies to the subscription plan. Stored in items
+      // (no price yet); when Stripe lands, map it to a real price/interval.
+      var period = data.subscription === true ? (data.period || 'monthly') : null;
       var orderRes = await client.from('orders').insert({
         owner_id: user.id,
         email: data.email || user.email || null,
@@ -273,7 +276,7 @@
         shipping_address: data.address || null,
         plan: data.plan || 'tag',
         subscription_opt_in: data.subscription === true,
-        items: [{ sku: 'petfind-tag', qty: 1 }],
+        items: [{ sku: 'petfind-tag', qty: 1, billing_period: period }],
         currency: 'eur',
         status: 'pending',
         tag_uid: tag ? tag.tag_uid : null

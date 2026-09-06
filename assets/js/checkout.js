@@ -19,7 +19,14 @@
   }
 
   var selectedPlan = 'tag';
+  var selectedPeriod = 'monthly';
   var issuedTag = null;
+
+  function periodLabel(p) {
+    return p === 'yearly' ? crT('Yearly', 'Annuel')
+         : p === 'quarterly' ? crT('Every 3 months', 'Tous les 3 mois')
+         : crT('Monthly', 'Mensuel');
+  }
 
   /* ---------- plan selector ---------- */
   function selectPlan(plan) {
@@ -30,9 +37,17 @@
     var isSub = plan === 'tag_plus_sub';
     $('sum-plan').textContent = isSub ? crT('Tag + Premium', 'Médaille + Premium') : crT('PetFind Tag', 'Médaille PetFind');
     $('sum-sub').hidden = !isSub;
+    if ($('co-period')) $('co-period').hidden = !isSub;   // reveal the 1/3/12-month picker
+    if ($('sum-period')) $('sum-period').textContent = periodLabel(selectedPeriod);
   }
   document.querySelectorAll('.plan').forEach(function (p) {
     p.addEventListener('click', function () { selectPlan(p.getAttribute('data-plan')); });
+  });
+  // Billing-period dropdown (only meaningful for Tag + Premium).
+  var periodSel = $('s-period');
+  if (periodSel) periodSel.addEventListener('change', function () {
+    selectedPeriod = periodSel.value;
+    if ($('sum-period')) $('sum-period').textContent = periodLabel(selectedPeriod);
   });
 
   /* ---------- plain QR into a canvas ---------- */
@@ -80,7 +95,8 @@
         fullName: addr.name,
         address: addr,
         plan: selectedPlan,
-        subscription: selectedPlan === 'tag_plus_sub'
+        subscription: selectedPlan === 'tag_plus_sub',
+        period: selectedPeriod
       });
       if (res.error) { PF.toast(crT('Could not place order: ', 'Commande impossible : ') + res.error.message); return; }
 

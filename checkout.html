@@ -82,10 +82,21 @@
         <label class="plan" data-plan="tag_plus_sub">
           <div class="pt">
             <div style="display:flex;gap:12px;align-items:center"><span class="radio"></span><h3 data-i18n="co.plan.sub.h">Tag + Premium</h3></div>
-            <span class="price" data-i18n="co.plan.subprice">One-time + monthly</span>
+            <span class="price" data-i18n="co.plan.subprice">One-time + subscription</span>
           </div>
           <ul><li data-i18n="co.plan.sub.f1">Everything in the Tag plan</li><li data-i18n="co.plan.sub.f2">Plus the 5 premium functions: live location, health vitals, records &amp; medication, vet appointments, smart bowls</li><li data-i18n="co.plan.sub.f3">Cancel anytime</li></ul>
         </label>
+
+        <!-- billing period — shown only when Tag + Premium is chosen -->
+        <div id="co-period" class="field" hidden style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+          <label for="s-period" data-i18n="co.period.label">Choose your subscription plan</label>
+          <select id="s-period">
+            <option value="monthly" data-i18n="co.period.m">1 month</option>
+            <option value="quarterly" data-i18n="co.period.q">3 months</option>
+            <option value="yearly" data-i18n="co.period.y">1 year — best value</option>
+          </select>
+          <p class="muted" style="font-size:12.5px;margin-top:6px" data-i18n="co.period.note">Every plan includes the same Premium features — only the billing period differs. Prices are announced at launch.</p>
+        </div>
       </div>
 
       <div class="card" style="margin-top:16px">
@@ -116,7 +127,7 @@
       <div class="card" id="co-summary">
         <h2 style="font-size:16px;margin-bottom:10px" data-i18n="co.sum.h">Order summary</h2>
         <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span id="sum-plan" data-i18n="co.plan.tag.h">PetFind Tag</span><span class="muted" data-i18n="co.plan.oneoff">One-time</span></div>
-        <div id="sum-sub" hidden style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span data-i18n="co.sum.premium">Premium subscription</span><span class="muted" data-i18n="co.sum.monthly">Monthly</span></div>
+        <div id="sum-sub" hidden style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><span data-i18n="co.sum.premium">Premium subscription</span><span class="muted" id="sum-period">Monthly</span></div>
         <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
         <div style="display:flex;justify-content:space-between;font-weight:800"><span data-i18n="co.sum.total">Total</span><span data-i18n="co.sum.tba">Announced at launch</span></div>
         <p class="muted" style="font-size:12.5px;margin-top:12px" data-i18n="co.sum.note">You’ll receive the tag with a printed setup link + code. Scan it, sign in, and set up your pet — takes a minute.</p>
@@ -142,10 +153,10 @@
 <footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js" integrity="sha384-CLZeq1dk8+Uzrs7TVvBUdlFoV5F0DMqgRoeHa8g5wJcuPe5SkVfEvdxB0ZuzlnBQ" crossorigin="anonymous"></script>
-<script src="assets/js/supabase.js?v=7"></script>
+<script src="assets/js/supabase.js?v=9"></script>
 <script src="assets/js/petfind.js?v=5"></script>
 <script src="assets/js/qrcode.js"></script>
-<script src="assets/js/i18n.js?v=10"></script>
-<script src="assets/js/checkout.js?v=1"></script>
+<script src="assets/js/i18n.js?v=12"></script>
+<script src="assets/js/checkout.js?v=2"></script>
 </body>
 </html>

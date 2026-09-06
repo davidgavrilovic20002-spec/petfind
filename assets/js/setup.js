@@ -33,9 +33,20 @@
     try {
       var res = await window.PFDB.claimTag(uid.trim(), secret.trim());
       if (res.error) {
-        $('su-err').textContent = /already/i.test(res.error.message)
-          ? crT('This tag is already set up on another account.', 'Cette médaille est déjà configurée sur un autre compte.')
-          : crT('That code isn’t valid. Check the code printed on your tag.', 'Ce code n’est pas valide. Vérifiez le code imprimé sur votre médaille.');
+        var m = (res.error && res.error.message) || '';
+        console.error('[PetFind] claimTag failed:', res.error);
+        var text;
+        if (/already/i.test(m)) {
+          text = crT('This tag is already set up on another account.', 'Cette médaille est déjà configurée sur un autre compte.');
+        } else if (/auth|jwt|sign|not signed/i.test(m)) {
+          text = crT('Please log in, then open your setup link again.', 'Connectez-vous, puis rouvrez votre lien de configuration.');
+        } else if (/invalid setup link|not found/i.test(m)) {
+          text = crT('That code isn’t valid. Check the code printed on your tag.', 'Ce code n’est pas valide. Vérifiez le code imprimé sur votre médaille.');
+        } else {
+          // Unexpected server error — surface it so it can be diagnosed/fixed.
+          text = crT('Activation failed: ', 'Échec de l’activation : ') + m;
+        }
+        $('su-err').textContent = text;
         $('su-err').classList.add('show');
         return;
       }
