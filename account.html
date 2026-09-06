@@ -27,6 +27,11 @@
   .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12.5px;margin:16px 0}
   .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
   .pet-item{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:#fff;margin-top:12px;box-shadow:var(--shadow-sm)}
+  .tag-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;font-size:13px;overflow-wrap:anywhere}
+  .tag-badge{border-radius:99px;padding:4px 9px;font-size:12px;font-weight:700}
+  .tag-badge.active{background:#EAF7EE;color:#15803D}
+  .tag-badge.inactive{background:#F3F4F6;color:#4B5563}
+  .tag-badge.premium{background:#EDE9FE;color:#6D28D9}
   .pet-item h3{font-size:18px;margin-bottom:2px}
   .pet-item .pi-sub{color:var(--muted);font-size:13px;margin-bottom:12px}
   .pet-item .pi-actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -160,7 +165,7 @@
     <div class="dash-head">
       <div>
         <div class="eyebrow" data-i18n="acc.dash.eyebrow">My account</div>
-        <h1 style="font-size:clamp(24px,4vw,32px)" data-i18n="acc.dash.title">My pets</h1>
+        <h1 style="font-size:clamp(24px,4vw,32px)" data-i18n="acc.dash.title">My tags &amp; pets</h1>
         <p class="muted" style="font-size:14px" id="dash-email"></p>
       </div>
       <button class="btn soft" id="logout" type="button" data-i18n="acc.logout">Log out</button>
@@ -205,10 +210,10 @@
 <footer class="site-foot"><div class="container center" style="font-size:13px">© <span id="year"></span> PetFind · <a href="privacy.html" data-i18n="foot.privacy">Privacy</a> · <a href="terms.html" data-i18n="foot.terms">Terms</a></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js" integrity="sha384-CLZeq1dk8+Uzrs7TVvBUdlFoV5F0DMqgRoeHa8g5wJcuPe5SkVfEvdxB0ZuzlnBQ" crossorigin="anonymous"></script>
-<script src="assets/js/supabase.js?v=8"></script>
+<script src="assets/js/supabase.js?v=9"></script>
 <script src="assets/js/pwsec.js?v=1"></script>
-<script src="assets/js/petfind.js?v=6"></script>
-<script src="assets/js/i18n.js?v=14"></script>
-<script src="assets/js/account.js?v=10"></script>
+<script src="assets/js/petfind.js?v=7"></script>
+<script src="assets/js/i18n.js?v=15"></script>
+<script src="assets/js/account.js?v=11"></script>
 </body>
 </html>

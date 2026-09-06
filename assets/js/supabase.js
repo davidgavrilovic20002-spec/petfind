@@ -122,11 +122,14 @@
     },
 
     /* ---------- pets ---------- */
-    listPets: function () {
+    listPets: async function () {
+      var user = await currentUser();
+      if (!user) return { data: [] };
       return client.from('pets')
         .select('id,name,species,breed,sex,age,created_at,' +
-                'pet_tags(public_slug,status),' +
+                'pet_tags(public_slug,tag_uid,status),' +
                 'pet_public_profile(show_phone,home_message,finder_steps,backup_vet)')
+        .eq('owner_id', user.id)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
     },
@@ -230,11 +233,13 @@
       return client.from('orders').select('*').eq('owner_id', user.id)
         .order('created_at', { ascending: false });
     },
-    // The active subscription row, if any.
+    // Current Premium coverage is account-wide in the existing schema.
     getSubscription: async function () {
       var user = await currentUser();
       if (!user) return { data: null };
       return client.from('subscriptions').select('*').eq('owner_id', user.id)
+        .eq('plan', 'premium').in('status', ['active', 'trialing'])
+        .or('current_period_end.is.null,current_period_end.gt.' + new Date().toISOString())
         .order('created_at', { ascending: false }).limit(1).maybeSingle();
     },
     // True once the account has any tag it can activate (i.e. has been through

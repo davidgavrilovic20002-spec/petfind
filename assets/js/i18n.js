@@ -19,6 +19,7 @@
     'nav.faq': 'FAQ',
     'nav.create': 'Créer une médaille',
     'nav.account': 'Mon compte',
+    'nav.tags': 'Mes médailles',
     'nav.login': 'Se connecter',
     'nav.logout': 'Se déconnecter',
 
@@ -40,7 +41,7 @@
     'acc.google': 'Continuer avec Google',
     'acc.apple': 'Continuer avec Apple',
     'acc.dash.eyebrow': 'Mon compte',
-    'acc.dash.title': 'Mes animaux',
+    'acc.dash.title': 'Mes médailles et animaux',
     'acc.logout': 'Se déconnecter',
     'acc.newpet': '+ Obtenir une autre médaille',
     'acc.empty': "Vous n'avez pas encore d'animal. Cliquez sur « Créer une nouvelle médaille » pour commencer.",

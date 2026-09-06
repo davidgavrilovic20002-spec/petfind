@@ -99,6 +99,9 @@
 
   var mode = 'login';
   var lastPets = null;
+  var dashboardOrders = [];
+  var dashboardSubscription = null;
+  var commerceUnavailable = false;
   var recovering = false;       // true while setting a new password via a reset link
   var pendingFactorId = null;   // TOTP factor awaiting a login challenge
   var enrollingFactorId = null; // TOTP factor mid-enrollment (not yet verified)
@@ -433,9 +436,27 @@
 
   function renderPets(pets) {
     var list = $('pets-list'); list.innerHTML = '';
-    if (!pets || !pets.length) { $('empty-msg').hidden = false; return; }
-    $('empty-msg').hidden = true;
+    pets = pets || [];
+    var linked = [];
+    pets.forEach(function (p) { (p.pet_tags || []).forEach(function (tag) { if (tag.tag_uid) linked.push(tag.tag_uid); }); });
+    var unlinked = dashboardOrders.filter(function (order) {
+      if (!order.tag_uid || linked.indexOf(order.tag_uid) !== -1) return false;
+      linked.push(order.tag_uid); return true;
+    });
+    $('empty-msg').hidden = !!(pets.length || unlinked.length);
+    unlinked.forEach(function (order) {
+      var item = document.createElement('div'); item.className = 'pet-item';
+      var heading = document.createElement('h3'); heading.textContent = order.tag_uid; item.appendChild(heading);
+      var detail = document.createElement('p'); detail.className = 'pi-sub';
+      detail.textContent = L('Not linked to a pet on this account', 'Non associée à un animal de ce compte');
+      if (order.subscription_opt_in) detail.textContent += L(' · Subscription requested', ' · Abonnement demandé');
+      item.appendChild(detail);
+      var activate = document.createElement('a'); activate.className = 'btn soft'; activate.href = 'setup.html';
+      activate.textContent = L('Activate with your tag’s setup code', 'Activer avec le code de votre médaille');
+      item.appendChild(activate); list.appendChild(item);
+    });
     pets.forEach(function (p) {
+      var tags = p.pet_tags || [];
       var slug = window.PFDB.slugForPet(p);
       var url = slug ? petUrl(slug) : null;
       var sub = [p.breed || p.species, p.sex, p.age].filter(Boolean).join(' · ');
@@ -448,6 +469,36 @@
       if (url) {
         var open = document.createElement('a'); open.className = 'btn ghost'; open.textContent = t('seePage'); open.href = url; open.target = '_blank'; open.rel = 'noopener';
         actions.appendChild(open);
+      }
+      tags.forEach(function (tag) {
+        var row = document.createElement('div'); row.className = 'tag-row';
+        var label = document.createElement('span');
+        label.textContent = tag.tag_uid || tag.public_slug;
+        row.appendChild(label);
+        function badge(text, kind) {
+          var b = document.createElement('span'); b.className = 'tag-badge ' + kind;
+          b.textContent = text; row.appendChild(b);
+        }
+        var states = {
+          active: L('Active', 'Active'), unassigned: L('Not activated', 'Non activée'),
+          lost: L('Lost', 'Perdue'), disabled: L('Disabled', 'Désactivée')
+        };
+        badge(states[tag.status] || L('Unknown status', 'Statut inconnu'), tag.status === 'active' ? 'active' : 'inactive');
+        var requested = dashboardOrders.some(function (order) {
+          return order.tag_uid === tag.tag_uid && order.subscription_opt_in &&
+            ['pending', 'paid', 'shipped', 'delivered'].indexOf(order.status) !== -1;
+        });
+        if (commerceUnavailable) badge(L('Subscription unavailable', 'Abonnement indisponible'), 'inactive');
+        else if (dashboardSubscription) badge(L('Premium · account', 'Premium · compte'), 'premium');
+        else if (requested) badge(L('Subscription requested · pending', 'Abonnement demandé · en attente'), 'inactive');
+        else badge(L('No active subscription', 'Sans abonnement actif'), 'inactive');
+        var view = document.createElement('a'); view.href = petUrl(tag.public_slug);
+        view.textContent = L('View tag', 'Voir la médaille'); row.appendChild(view);
+        item.appendChild(row);
+      });
+      if (!tags.length) {
+        var noTag = document.createElement('p'); noTag.className = 'pi-sub';
+        noTag.textContent = L('No tag linked yet.', 'Aucune médaille associée.'); item.appendChild(noTag);
       }
       item.appendChild(actions); list.appendChild(item);
     });
@@ -467,9 +518,10 @@
     var host = $('status-banner');
     if (!host) return;
     clearInterval(statusTimer);
-    var orders = await window.PFDB.listOrders();
+    var orders = { data: dashboardOrders };
+    if (commerceUnavailable) { host.textContent = L('Could not load subscription and order status. Reload to try again.', 'Impossible de charger les abonnements et commandes. Rechargez la page.'); return; }
     var hasOrder = !!(orders.data && orders.data.length);
-    var sub = await window.PFDB.getSubscription();
+    var sub = { data: dashboardSubscription };
     var hasSub = !!(sub && sub.data);
 
     function box(cls, html) {
@@ -509,9 +561,14 @@
     show('dash');
     var user = await window.PFDB.getUser();
     if (user) $('dash-email').textContent = user.email || '';
-    renderStatus();
     var list = $('pets-list'); list.innerHTML = '<div class="spin" style="margin:24px auto"></div>';
-    var res = await window.PFDB.listPets();
+    $('empty-msg').hidden = true;
+    var results = await Promise.all([window.PFDB.listPets(), window.PFDB.listOrders(), window.PFDB.getSubscription()]);
+    var res = results[0];
+    dashboardOrders = results[1].data || [];
+    dashboardSubscription = results[2].data || null;
+    commerceUnavailable = !!(results[1].error || results[2].error);
+    renderStatus();
     if (res.error) {
       // Use textContent (not innerHTML) so a server error string can never
       // inject markup — defense in depth even though this shows only to the
