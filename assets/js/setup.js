@@ -24,6 +24,7 @@
     $('su-loading').hidden = which !== 'loading';
     $('su-auth').hidden = which !== 'auth';
     $('su-form').hidden = which !== 'form';
+    var ok = $('su-success'); if (ok) ok.hidden = which !== 'success';
   }
 
   async function claim(uid, secret) {
@@ -50,9 +51,14 @@
         $('su-err').classList.add('show');
         return;
       }
-      PF.toast(crT('Tag activated! Now set up your pet.', 'Médaille activée ! Configurez votre animal.'));
-      // Hand off to the builder to fill in the pet details for this tag.
-      location.href = 'create.html?edit=' + encodeURIComponent(res.data.pet_id);
+      PF.toast(crT('Tag activated!', 'Médaille activée !'));
+      // Show the thank-you screen (codes + "keep it safe / only you can edit"),
+      // then let them continue to the builder to fill in the pet details.
+      if ($('su-ok-uid')) $('su-ok-uid').textContent = uid.trim();
+      if ($('su-ok-secret')) $('su-ok-secret').textContent = secret.trim();
+      if ($('su-continue')) $('su-continue').href = 'create.html?edit=' + encodeURIComponent(res.data.pet_id);
+      show('success');
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
     } catch (e) {
       PF.toast(crT('Something went wrong', 'Une erreur est survenue'));
     } finally {

@@ -432,6 +432,13 @@
     'su.err': 'Ce code n’est pas valide. Vérifiez le code imprimé sur votre médaille.',
     'su.submit': 'Activer & configurer mon animal',
     'su.note': 'Une médaille ne peut être revendiquée qu’une seule fois. Ensuite, la modifier nécessite de se connecter à ce compte — la scanner ne permet jamais de la modifier.',
+    'su.ok.h': 'Merci — votre médaille est active !',
+    'su.ok.p': 'Merci pour votre achat. Votre médaille PetFind est maintenant liée à votre compte. Ajoutez ensuite les détails de votre animal et choisissez quoi faire pour la personne qui le trouve — modifiable à tout moment.',
+    'su.ok.warn.h': '⚠️ Conservez votre code de configuration',
+    'su.ok.warn.p': 'Ce code active votre médaille et prouve que vous en êtes le propriétaire — gardez-le en lieu sûr. Vous seul, connecté à ce compte, pouvez modifier la page de votre animal. Quiconque scanne le QR voit seulement la page ; personne ne peut la modifier.',
+    'su.ok.tagcode': 'Code de la médaille',
+    'su.ok.secret': 'Code de configuration (mot de passe)',
+    'su.ok.cta': 'Configurer les détails de mon animal',
 
     /* ---- privacy ---- */
     'meta.title.privacy': 'Politique de confidentialité — PetFind',
