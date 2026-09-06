@@ -38,6 +38,7 @@
   /* ---------- plan selector ---------- */
   function selectPlan(plan) {
     selectedPlan = plan;
+    if ($('s-period')) $('s-period').value = selectedPeriod;
     document.querySelectorAll('.plan').forEach(function (p) {
       p.classList.toggle('sel', p.getAttribute('data-plan') === plan);
     });
@@ -52,7 +53,7 @@
   });
   // Billing-period dropdown (only meaningful for Tag + Premium).
   var periodSel = $('s-period');
-  if (periodSel) periodSel.value = selectedPeriod;
+  selectPlan(selectedPlan);
   if (periodSel) periodSel.addEventListener('change', function () {
     selectedPeriod = periodSel.value;
     if ($('sum-period')) $('sum-period').textContent = periodLabel(selectedPeriod);
