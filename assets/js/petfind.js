@@ -98,8 +98,7 @@
     function move(a) {
       if (!a || !isDesktop()) { ind.style.opacity = '0'; return; }
       ind.style.opacity = '1';
-      ind.style.width = a.offsetWidth + 'px';
-      ind.style.transform = 'translateX(' + a.offsetLeft + 'px)';
+      ind.style.transform = 'translateX(' + a.offsetLeft + 'px) scaleX(' + (a.offsetWidth / 100) + ')';
     }
 
     // The link that marks "the page you're on".
@@ -110,12 +109,20 @@
       if (file && file === here) active = a;
     });
 
-    // Hover glides the line; leaving the menu returns it to the active item.
+    var hovered = null;
+    function refresh() {
+      var focused = links.indexOf(document.activeElement) !== -1 ? document.activeElement : null;
+      move(hovered || focused || active);
+    }
+
+    // Keep hover / focus in control while the page updates behind the menu.
     links.forEach(function (a) {
-      a.addEventListener('mouseenter', function () { move(a); });
-      a.addEventListener('focus', function () { move(a); });
+      a.addEventListener('mouseenter', function () { hovered = a; refresh(); });
+      a.addEventListener('mouseleave', function () { hovered = null; });
+      a.addEventListener('focus', refresh);
     });
-    nav.addEventListener('mouseleave', function () { move(active); });
+    nav.addEventListener('mouseleave', function () { hovered = null; refresh(); });
+    nav.addEventListener('focusout', function () { requestAnimationFrame(refresh); });
 
     // On the home page, let the line follow the section you scroll to.
     if (document.body.classList.contains('home') && 'IntersectionObserver' in window) {
@@ -135,18 +142,20 @@
           entries.forEach(function (en) {
             if (!en.isIntersecting) return;
             var pair = map.filter(function (m) { return m[0] === en.target; })[0];
-            if (pair) { active = pair[1]; move(active); }
+            if (pair) { active = pair[1]; refresh(); }
           });
         }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
         map.forEach(function (m) { spy.observe(m[0]); });
       }
     }
 
-    window.addEventListener('resize', function () { move(active); }, { passive: true });
+    window.addEventListener('resize', refresh, { passive: true });
     var prev = global.PFI18nOnChange;
-    global.PFI18nOnChange = function (l) { if (typeof prev === 'function') prev(l); move(active); };
-    move(active);
-    setTimeout(function () { move(active); }, 350);
+    global.PFI18nOnChange = function (l) { if (typeof prev === 'function') prev(l); refresh(); };
+    refresh();
+    nav.addEventListener('authnavchange', refresh);
+    if (document.fonts) document.fonts.ready.then(refresh);
+    setTimeout(refresh, 350);
   }
 
   /* ---------- Cookie consent + analytics ----------
@@ -206,9 +215,20 @@
       nav.insertBefore(link, nav.querySelector('.nav-cta'));
     }
     link.href = 'account.html';
-    link.setAttribute('data-i18n', 'nav.tags');
-    link.dataset.i18nEn = 'My tags';
-    link.textContent = window.PFI18n && window.PFI18n.lang === 'fr' ? 'Mes médailles' : 'My tags';
+    function render(session) {
+      var signedIn = !!(session && session.user);
+      var en = signedIn ? 'My tags' : 'Log in';
+      var fr = signedIn ? 'Mes médailles' : 'Se connecter';
+      link.setAttribute('data-i18n', signedIn ? 'nav.tags' : 'nav.login');
+      link.dataset.i18nEn = en;
+      link.textContent = window.PFI18n && window.PFI18n.lang === 'fr' ? fr : en;
+      nav.dispatchEvent(new Event('authnavchange'));
+    }
+    render(null);
+    // INITIAL_SESSION and subsequent sign-in/out events share one source of truth.
+    if (window.PFDB && window.PFDB.onAuth) {
+      window.PFDB.onAuth(function (event, session) { render(session); });
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function () {

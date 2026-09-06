@@ -90,7 +90,7 @@
     if (!W || !H) { W = 340; H = 340; }
     var renderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: false });
     } catch (e) { return false; }
     renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2));
     renderer.setSize(W, H);
@@ -165,7 +165,22 @@
     }
     global.addEventListener('resize', resize);
 
+    var visible = true;
+    var frameId = null;
+    function resume() {
+      if (visible && !document.hidden && frameId === null) frame();
+    }
+    if ('IntersectionObserver' in global) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[0].isIntersecting;
+        resume();
+      }).observe(stage);
+    }
+    document.addEventListener('visibilitychange', resume);
+
     function frame() {
+      frameId = null;
+      if (!visible || document.hidden) return;
       if (!dragging) {
         if (Math.abs(velY) > 0.0008) { rotY += velY; velY *= 0.95; }
         else if (!reduce && Date.now() - lastMove > 900) { rotY += 0.0045; }
@@ -173,7 +188,7 @@
       }
       tag.rotation.y = rotY; tag.rotation.x = rotX;
       renderer.render(scene, camera);
-      requestAnimationFrame(frame);
+      frameId = requestAnimationFrame(frame);
     }
     frame();
 
