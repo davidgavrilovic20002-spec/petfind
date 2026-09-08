@@ -524,6 +524,30 @@
     document.getElementById('generate-btn').textContent = crT('Save changes', 'Enregistrer les modifications');
   }
 
+  /* ---------- edit lock ----------
+     editlock.js puts `edit-locked` on <html> before the page paints when the
+     URL carries ?edit=<id>, so the builder is never visible while we check
+     the tag. Everything below just swaps what is shown inside #edit-gate and
+     lifts the lock once the editor is ready. */
+  function gateHost() { return el('edit-gate'); }
+
+  function unlockEditor() {
+    document.documentElement.classList.remove('edit-locked');
+    var host = gateHost(); if (host) host.innerHTML = '';
+  }
+
+  // Replace the gate area with a single centred message (loading states).
+  function gateMessage(text) {
+    var host = gateHost(); if (!host) return;
+    host.innerHTML = '';
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.style.cssText = 'max-width:460px;margin:14px auto 0;text-align:center';
+    var p = document.createElement('p');
+    p.className = 'muted'; p.style.margin = '0'; p.textContent = text;
+    card.appendChild(p); host.appendChild(card);
+  }
+
   // Editing a saved tag requires its unique setup code (the claim_secret that
   // came with the tag). Resolves true once unlocked; true immediately for a
   // pet that has no code (e.g. an older free-created page). This is a
@@ -537,8 +561,8 @@
           var secret = row && row.claim_secret;
           if (!secret) { resolve(true); return; }   // no code on this tag → no gate
 
-          var form = el('pet-form'); if (form) form.style.display = 'none';
-          var host = el('account-hint'); if (host) host.innerHTML = '';
+          var host = gateHost(); if (!host) { resolve(true); return; }
+          host.innerHTML = '';
           var box = document.createElement('div');
           box.className = 'card'; box.style.cssText = 'max-width:460px;margin:14px auto 0';
           var h = document.createElement('h2'); h.style.cssText = 'font-size:18px;margin-bottom:6px';
@@ -555,17 +579,19 @@
           var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn primary lg block';
           btn.style.marginTop = '12px';
           btn.textContent = crT('Unlock editing', 'Déverrouiller la modification');
-          box.appendChild(h); box.appendChild(p); box.appendChild(inp); box.appendChild(err); box.appendChild(btn);
-          if (host) host.appendChild(box);
+          var back = document.createElement('a'); back.className = 'btn ghost block'; back.href = 'account.html';
+          back.style.marginTop = '10px';
+          back.textContent = crT('Back to my account', 'Retour à mon compte');
+          box.appendChild(h); box.appendChild(p); box.appendChild(inp); box.appendChild(err);
+          box.appendChild(btn); box.appendChild(back);
+          host.appendChild(box);
 
           function tryUnlock() {
-            if ((inp.value || '').trim() === secret) {
-              if (host) host.innerHTML = '';
-              if (form) form.style.display = '';
-              resolve(true);
-            } else { err.classList.add('show'); }
+            if ((inp.value || '').trim() === secret) { resolve(true); }
+            else { err.classList.add('show'); }
           }
           btn.addEventListener('click', tryUnlock);
+          inp.addEventListener('input', function () { err.classList.remove('show'); });
           inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); } });
           try { inp.focus(); } catch (e2) {}
         }, function () { resolve(true); });   // if the lookup fails, don't hard-block the owner
@@ -714,20 +740,26 @@
 
     // Backend: reflect account state and load a pet for editing (?edit=<id>).
     (function initBackend() {
-      if (!window.PFDB) { gate.mode = 'guest'; renderGate(); return; }
+      if (!window.PFDB) { unlockEditor(); gate.mode = 'guest'; renderGate(); return; }
       window.PFDB.getUser().then(function (user) {
         var params = new URLSearchParams(location.search);
         var edit = user ? params.get('edit') : null;
         if (edit) {
-          // Require the tag's setup code before revealing/loading the editor.
+          // The builder stays hidden (edit-locked) until the setup code for
+          // this tag is entered and the saved details are loaded, so the
+          // editor is only ever revealed once, already filled in.
           editSecretGate(edit).then(function (ok) {
-            if (!ok) return;
-            loadForEdit(edit).then(function () { computeGate().then(renderGate); });
+            if (!ok) { unlockEditor(); return; }
+            gateMessage(crT('Loading your pet’s details…', 'Chargement des informations de votre animal…'));
+            loadForEdit(edit).then(function () {
+              return computeGate().then(renderGate);
+            }).then(unlockEditor, unlockEditor);
           });
         } else {
+          unlockEditor();
           computeGate().then(renderGate);
         }
-      });
+      }, function () { unlockEditor(); computeGate().then(renderGate); });
     })();
   });
 })();

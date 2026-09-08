@@ -164,6 +164,7 @@
 
     /* ---- create / builder ---- */
     'meta.title.create': 'Créez votre médaille PetFind',
+    'cr.edit.checking': 'Vérification de cette médaille…',
     'cr.eyebrow': 'Configurez votre médaille',
     'cr.h1': "Créez la page de votre animal",
     'cr.intro': "Renseignez vos informations, choisissez quoi faire pour la personne qui trouve, et nous générons un QR code unique. Aucun compte nécessaire — tout reste sur votre appareil jusqu'à la publication.",
