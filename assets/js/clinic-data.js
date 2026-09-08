@@ -126,12 +126,18 @@
       const value = String(fields[key] == null ? '' : fields[key]).trim();
       return value === '' ? null : value;
     };
-    return unwrap(await client.from('pets').insert({
-      name, species: text('species'), breed: text('breed'), sex,
-      birthdate: birthdate || null, icad_number: text('icad_number'),
-      created_by_vet: who.user.id
-    }).select('id,name,claim_code').single());
+    // Goes through create_patient() (0021) rather than a direct insert: the
+    // INSERT policy refused a request that met every one of its conditions and
+    // the cause was never found, so the rule is enforced inside a SECURITY
+    // DEFINER function instead -- the same pattern claim_pet_record() uses.
+    const rows = unwrap(await client.rpc('create_patient', {
+      p_name: name,
+      p_species: text('species'), p_breed: text('breed'), p_sex: sex,
+      p_birthdate: birthdate || null, p_icad: text('icad_number')
+    }));
+    return Array.isArray(rows) ? rows[0] : rows;
   }
+
 
   // Owner side: redeem the code the vet handed over.
   async function claimRecord(code) {
