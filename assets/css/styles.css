@@ -197,3 +197,7 @@ fieldset{border:0}
 #claim-code-input:focus{background:#fff;border-color:var(--teal-l);outline:none;box-shadow:0 0 0 3px rgba(20,184,166,.18)}
 #claim-form .btn{background:var(--teal);color:#fff}
 
+/* Research-consent checkbox row */
+.consent-row{display:flex;gap:10px;align-items:flex-start;margin-top:12px;cursor:pointer;font-size:14.5px;line-height:1.5;text-transform:none;letter-spacing:normal;font-weight:500;color:var(--ink)}
+.consent-row input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--teal);cursor:pointer}
+

@@ -578,6 +578,35 @@
     } finally { button.disabled = false; }
   });
 
+  // Research consent. Each change appends a new consents row; the newest wins.
+  async function renderResearchConsent() {
+    var box = $('research-consent');
+    if (!box) return;
+    try {
+      var res = await window.PFDB.getResearchConsent();
+      box.checked = !!(res.data && res.data.granted);
+    } catch (err) { box.checked = false; }
+  }
+
+  var researchBox = $('research-consent');
+  if (researchBox) researchBox.addEventListener('change', async function () {
+    var note = $('research-msg'), wanted = researchBox.checked;
+    researchBox.disabled = true; note.hidden = false;
+    note.textContent = L('Saving…', 'Enregistrement…');
+    try {
+      var res = await window.PFDB.setResearchConsent(wanted);
+      if (res.error) throw res.error;
+      note.textContent = wanted
+        ? L('Thank you — your pets\' anonymised records will help research.',
+            'Merci — les données anonymisées de vos animaux aideront la recherche.')
+        : L('Withdrawn. Nothing further will be kept.',
+            'Retiré. Plus rien ne sera conservé.');
+    } catch (err) {
+      researchBox.checked = !wanted;   // roll the box back to the true state
+      note.textContent = L('Could not save that. Try again.', 'Enregistrement impossible. Réessayez.');
+    } finally { researchBox.disabled = false; }
+  });
+
   var vetSignout = $('vet-signout');
   if (vetSignout) vetSignout.addEventListener('click', async function () {
     vetSignout.disabled = true;
@@ -669,6 +698,7 @@
     lastPets = res.data || [];
     renderPets(lastPets);
     renderTwoFA();
+    renderResearchConsent();
   }
 
   // Re-render language-dependent dynamic text when the site language changes.

@@ -147,6 +147,26 @@
       if (!user) return { data: null };
       return client.from('profiles').select('*').eq('id', user.id).single();
     },
+    // Research consent (GDPR: specific, informed, withdrawable). The consents
+    // table is append-only and versioned, so each choice is a NEW row and the
+    // most recent one wins -- which is exactly what migration 0017's
+    // archive_pet_for_research() reads. Never update or delete a prior row:
+    // the history is the audit trail that proves consent was given.
+    getResearchConsent: async function () {
+      var user = await currentUser();
+      if (!user) return { data: null };
+      return client.from('consents').select('granted, created_at, version')
+        .eq('profile_id', user.id).eq('purpose', 'ai_research')
+        .order('created_at', { ascending: false }).limit(1).maybeSingle();
+    },
+    setResearchConsent: async function (granted) {
+      var user = await currentUser();
+      if (!user) return { error: { message: 'Not signed in' } };
+      return client.from('consents').insert({
+        profile_id: user.id, purpose: 'ai_research',
+        granted: !!granted, version: '2026-09'
+      }).select('granted').single();
+    },
     updateProfile: async function (fields) {
       var user = await currentUser();
       if (!user) return { error: { message: 'Not signed in' } };
