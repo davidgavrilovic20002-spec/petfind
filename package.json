@@ -1,0 +1,1 @@
+{"name":"petfind-site","private":true,"scripts":{"test":"node --test tests/*.test.cjs","build":"node scripts/build.cjs"}}
