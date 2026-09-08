@@ -4,3 +4,7 @@
 # Deploy artifacts
 *.zip
 .DS_Store
+
+dist/
+node_modules/
+.env*

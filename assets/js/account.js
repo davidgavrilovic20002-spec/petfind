@@ -111,10 +111,11 @@
   function nextTarget() {
     var n = new URLSearchParams(location.search).get('next');
     if (!n) return null;
-    try { n = decodeURIComponent(n); } catch (e) {}
-    // Only allow relative in-site targets (no protocol / host).
-    if (/^https?:|^\/\//i.test(n)) return null;
-    return n;
+    try {
+      var target = new URL(n, location.href);
+      if (target.origin !== location.origin || !/^https?:$/.test(target.protocol)) return null;
+      return target.pathname + target.search + target.hash;
+    } catch (e) { return null; }
   }
   function redirectNext() {
     var n = nextTarget();
@@ -510,7 +511,9 @@
         var noTag = document.createElement('p'); noTag.className = 'pi-sub';
         noTag.textContent = L('No tag linked yet.', 'Aucune médaille associée.'); item.appendChild(noTag);
       }
-      item.appendChild(actions); list.appendChild(item);
+      item.appendChild(actions);
+      if (window.PFOwnerHealth) window.PFOwnerHealth.mount(item, p);
+      list.appendChild(item);
     });
   }
 
@@ -650,8 +653,8 @@
   // challenge can't be skipped by the SIGNED_IN event racing the form handler.
   async function routeSignedIn() {
     if (recovering) return;
-    if (redirectNext()) return;
     if (await needsMfaChallenge()) { startMfaChallenge(); return; }
+    if (redirectNext()) return;
     await loadDashboard();
   }
 
