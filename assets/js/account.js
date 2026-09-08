@@ -139,6 +139,7 @@
     $('loading').hidden = true;
     $('auth-view').hidden = view !== 'auth';
     $('dash-view').hidden = view !== 'dash';
+    var vv = $('vet-view'); if (vv) vv.hidden = view !== 'vet';
     var mv = $('mfa-view'); if (mv) mv.hidden = view !== 'mfa';
   }
 
@@ -577,6 +578,13 @@
     } finally { button.disabled = false; }
   });
 
+  var vetSignout = $('vet-signout');
+  if (vetSignout) vetSignout.addEventListener('click', async function () {
+    vetSignout.disabled = true;
+    try { await window.PFDB.signOut(); } catch (err) {}
+    location.replace('index.html');
+  });
+
   var statusTimer = null;
 
   function fmtRemaining(ms) {
@@ -630,6 +638,14 @@
   }
 
   async function loadDashboard() {
+    var profile = null;
+    try { profile = (await window.PFDB.getProfile()).data; } catch (err) {}
+    if (profile && profile.role === 'vet') {
+      clearInterval(statusTimer);
+      lastPets = null; $('pets-list').innerHTML = '';
+      show('vet');
+      return;
+    }
     show('dash');
     var user = await window.PFDB.getUser();
     if (user) $('dash-email').textContent = user.email || '';
