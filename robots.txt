@@ -5,4 +5,4 @@ Allow: /
 # and are marked noindex on the page itself.
 Disallow: /pet.html
 
-Sitemap: https://petfind.example/sitemap.xml
+Sitemap: https://davidgavrilovic20002-spec.github.io/petfind/sitemap.xml

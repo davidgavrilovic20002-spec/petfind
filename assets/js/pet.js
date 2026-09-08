@@ -16,6 +16,7 @@
       callName: 'Call ', textName: 'Text ',
       moreContacts: 'Other numbers for this pet', callShort: 'Call', textShort: 'Text',
       sexF: 'Female', sexM: 'Male',
+      sp: { dog: 'Dog', cat: 'Cat', rabbit: 'Rabbit', other: 'Pet' },
       nearestVet: 'Nearest vet', locating: 'Finding the nearest clinic near you…',
       callVet: 'Call vet', directions: 'Directions', away: 'away',
       noLocation: 'Turn on location to see the nearest clinic, or search below.',
@@ -34,6 +35,7 @@
       callName: 'Appeler ', textName: 'Écrire à ',
       moreContacts: 'Autres numéros pour cet animal', callShort: 'Appeler', textShort: 'Message',
       sexF: 'Femelle', sexM: 'Mâle',
+      sp: { dog: 'Chien', cat: 'Chat', rabbit: 'Lapin', other: 'Animal' },
       nearestVet: 'Vétérinaire le plus proche', locating: 'Recherche de la clinique la plus proche…',
       callVet: 'Appeler', directions: 'Itinéraire', away: '',
       noLocation: "Activez la localisation pour voir la clinique la plus proche, ou cherchez ci-dessous.",
@@ -75,10 +77,19 @@
     return v; // legacy / free-text values shown as-is
   }
 
+  /* The builder stores the canonical English species ("Dog", "Cat", …) so the
+     tag reads the same to every backend. The finder sees it in their own
+     language; anything we don't know is free text and shown as-is. */
+  function speciesLabel(v) {
+    var sp = LABELS[lang].sp;
+    var s = String(v || '').toLowerCase();
+    return sp[s] || v;
+  }
+
   function speciesChip() {
     var bits = [];
     if (profile.breed) bits.push(profile.breed);
-    else if (profile.species) bits.push(profile.species);
+    else if (profile.species) bits.push(speciesLabel(profile.species));
     if (profile.sex) bits.push(sexLabel(profile.sex));
     if (profile.age) bits.push(profile.age);
     return bits.join(' · ');

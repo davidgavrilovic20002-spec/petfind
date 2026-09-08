@@ -2,7 +2,7 @@
   "name": "PetFind",
   "short_name": "PetFind",
   "description": "The QR pet tag that always works — scan, call the owner, find the nearest vet.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#EDF2F1",
   "theme_color": "#0F766E",
