@@ -135,7 +135,7 @@
     /* Hero */
     var hero = el('div', 'hero');
     var badge = el('div', 'found-badge');
-    badge.appendChild(svg('<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'));
+    badge.appendChild(svg('<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'));
     badge.appendChild(el('span', null, L.scanned));
     hero.appendChild(badge);
     hero.appendChild(el('h1', null, name ? (L.found + ' ' + name) : L.foundGeneric));
