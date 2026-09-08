@@ -13,6 +13,8 @@
       thanks: "Thank you for stopping to help. Here's everything you need to get me safely back home.",
       home: 'I have a loving home — my family is looking for me.',
       owner: 'Owner', call: 'Call the owner', text: 'Send a text message',
+      callName: 'Call ', textName: 'Text ',
+      moreContacts: 'Other numbers for this pet', callShort: 'Call', textShort: 'Text',
       sexF: 'Female', sexM: 'Male',
       nearestVet: 'Nearest vet', locating: 'Finding the nearest clinic near you…',
       callVet: 'Call vet', directions: 'Directions', away: 'away',
@@ -29,6 +31,8 @@
       thanks: "Merci de vous être arrêté pour aider. Voici tout ce qu'il faut pour me ramener à la maison.",
       home: "J'ai une famille qui m'aime — elle me cherche.",
       owner: 'Propriétaire', call: 'Appeler le propriétaire', text: 'Envoyer un message',
+      callName: 'Appeler ', textName: 'Écrire à ',
+      moreContacts: 'Autres numéros pour cet animal', callShort: 'Appeler', textShort: 'Message',
       sexF: 'Femelle', sexM: 'Mâle',
       nearestVet: 'Vétérinaire le plus proche', locating: 'Recherche de la clinique la plus proche…',
       callVet: 'Appeler', directions: 'Itinéraire', away: '',
@@ -80,6 +84,35 @@
     return bits.join(' · ');
   }
 
+  var PHONE_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.3 6.7 15 15 15 .9 0 1.7-.6 2-1.5l.5-1.6a1.4 1.4 0 00-.8-1.7l-3-1.2a1.4 1.4 0 00-1.6.4l-.9 1.1a11.3 11.3 0 01-5-5l1.1-.9a1.4 1.4 0 00.4-1.6L10 3.3A1.4 1.4 0 008.3 2.5L6.7 3C5.7 3.3 5 4.1 5 5" fill="#fff"/></svg>';
+  var SMS_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H9l-4 4V6a1 1 0 011-1z" stroke="#0B5651" stroke-width="1.7" stroke-linejoin="round"/></svg>';
+
+  /* The owner may list several numbers (their mobile, a partner, the home
+     landline), each with an optional label. Older tags carry a single
+     owner.phone — treat that as a one-entry list so nothing regresses. */
+  function contactList(owner) {
+    var list = (Array.isArray(owner.phones) ? owner.phones : [])
+      .map(function (p) {
+        return {
+          label: (p && p.label != null) ? String(p.label).trim() : '',
+          number: (p && p.number != null) ? String(p.number).trim() : ''
+        };
+      })
+      .filter(function (p) { return p.number; });
+    if (!list.length && owner.phone) list = [{ label: '', number: String(owner.phone).trim() }];
+    return list;
+  }
+
+  function dial(scheme, number) { return scheme + ':' + number.replace(/\s+/g, ''); }
+
+  function contactBtn(cls, icon, label, href) {
+    var b = el('a', 'btn ' + cls);
+    b.href = href;
+    b.appendChild(svg(icon));
+    b.appendChild(el('span', null, label));
+    return b;
+  }
+
   function render() {
     var L = LABELS[lang];
     document.documentElement.lang = lang;
@@ -129,18 +162,31 @@
     pc.appendChild(el('div', 'lbl', L.owner));
     if (owner.name) pc.appendChild(el('div', 'owner-name', owner.name));
 
-    if (owner.phone) {
-      var callBtn = el('a', 'btn call');
-      callBtn.href = 'tel:' + owner.phone.replace(/\s+/g, '');
-      callBtn.appendChild(svg('<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5c0 8.3 6.7 15 15 15 .9 0 1.7-.6 2-1.5l.5-1.6a1.4 1.4 0 00-.8-1.7l-3-1.2a1.4 1.4 0 00-1.6.4l-.9 1.1a11.3 11.3 0 01-5-5l1.1-.9a1.4 1.4 0 00.4-1.6L10 3.3A1.4 1.4 0 008.3 2.5L6.7 3C5.7 3.3 5 4.1 5 5" fill="#fff"/></svg>'));
-      callBtn.appendChild(el('span', null, L.call));
-      pc.appendChild(callBtn);
+    var contacts = contactList(owner);
+    if (contacts.length) {
+      // First number = the one to try first: the two large buttons.
+      var first = contacts[0];
+      pc.appendChild(contactBtn('call', PHONE_ICON,
+        first.label ? (L.callName + first.label) : L.call, dial('tel', first.number)));
+      pc.appendChild(contactBtn('text', SMS_ICON,
+        first.label ? (L.textName + first.label) : L.text, dial('sms', first.number)));
 
-      var smsBtn = el('a', 'btn text');
-      smsBtn.href = 'sms:' + owner.phone.replace(/\s+/g, '');
-      smsBtn.appendChild(svg('<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H9l-4 4V6a1 1 0 011-1z" stroke="#0B5651" stroke-width="1.7" stroke-linejoin="round"/></svg>'));
-      smsBtn.appendChild(el('span', null, L.text));
-      pc.appendChild(smsBtn);
+      // Any further numbers, listed compactly so the page stays scannable.
+      if (contacts.length > 1) {
+        var more = el('div', 'more-contacts');
+        more.appendChild(el('div', 'lbl', L.moreContacts));
+        contacts.slice(1).forEach(function (c) {
+          var row = el('div', 'contact');
+          if (c.label) row.appendChild(el('div', 'cn', c.label));
+          row.appendChild(el('div', 'cnum', c.number));
+          var acts = el('div', 'c-actions');
+          acts.appendChild(contactBtn('call', PHONE_ICON, L.callShort, dial('tel', c.number)));
+          acts.appendChild(contactBtn('text', SMS_ICON, L.textShort, dial('sms', c.number)));
+          row.appendChild(acts);
+          more.appendChild(row);
+        });
+        pc.appendChild(more);
+      }
     }
     content.appendChild(pc);
 
@@ -232,7 +278,7 @@
       body.appendChild(actions);
     } else {
       body.appendChild(el('div', 'vs', L.noLocation));
-      var search = el('a', 'btn dir'); search.style.marginTop = '12px';
+      var search = el('a', 'btn vets'); search.style.marginTop = '12px';
       search.target = '_blank'; search.rel = 'noopener';
       search.href = 'https://www.google.com/maps/search/?api=1&query=veterinary+near+me';
       search.appendChild(el('span', null, L.searchVets));
@@ -285,7 +331,11 @@
     return {
       name: row.name, species: row.species, breed: row.breed,
       sex: row.sex, age: row.age, hasHome: row.home_message !== false,
-      owner: { name: row.owner_name, phone: row.owner_phone },
+      owner: {
+        name: row.owner_name,
+        phone: row.owner_phone,
+        phones: Array.isArray(row.contact_phones) ? row.contact_phones : []
+      },
       steps: Array.isArray(row.finder_steps) ? row.finder_steps : [],
       vet: (row.backup_vet && row.backup_vet.name) ? row.backup_vet : null,
       lang: 'fr'

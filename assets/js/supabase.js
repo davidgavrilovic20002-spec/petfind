@@ -37,6 +37,38 @@
     return (v === 'female' || v === 'male' || v === 'unknown') ? v : null;
   }
 
+  // The finder page's contact list: [{label, number}, …], trimmed, numbers
+  // required, capped. The account's own phone column keeps the first number.
+  function normPhones(list) {
+    if (!Array.isArray(list)) return [];
+    return list.map(function (p) {
+      return {
+        label: (p && p.label != null) ? String(p.label).trim().slice(0, 40) : '',
+        number: (p && p.number != null) ? String(p.number).trim().slice(0, 32) : ''
+      };
+    }).filter(function (p) { return p.number; }).slice(0, 5);
+  }
+
+  // True when a write failed only because migration 0011 (contact_phones)
+  // hasn't been applied to this Supabase project yet.
+  function needsPhonesMigration(err) {
+    if (!err) return false;
+    return /contact_phones/.test([err.message, err.details, err.hint].join(' '));
+  }
+
+  // Write the pet's public profile, retrying without the contact list if the
+  // column is missing. The rest of the tag must still save on an older schema.
+  async function savePublicProfile(row, write) {
+    var res = await write(row);
+    if (res && res.error && needsPhonesMigration(res.error)) {
+      console.warn('[PetFind] contact_phones column missing — apply backend/migrations/0011_contact_phones.sql. Saving the tag without the extra numbers.');
+      var fallback = {};
+      Object.keys(row).forEach(function (k) { if (k !== 'contact_phones') fallback[k] = row[k]; });
+      res = await write(fallback);
+    }
+    return res;
+  }
+
   // Build the profile-update object from owner fields (only defined keys).
   function ownerFields(data) {
     var f = {};
@@ -171,13 +203,14 @@
         .select('public_slug').single();
       if (tagRes.error) return tagRes;
 
-      var pubRes = await client.from('pet_public_profile').insert({
+      var pubRes = await savePublicProfile({
         pet_id: petId,
         show_phone: data.showPhone !== false,
         home_message: data.hasHome !== false,
         finder_steps: data.steps || [],
+        contact_phones: normPhones(data.contactPhones),
         backup_vet: (data.vet && data.vet.name) ? data.vet : null
-      });
+      }, function (row) { return client.from('pet_public_profile').insert(row); });
       if (pubRes.error) return pubRes;
 
       return { data: { id: petId, slug: tagRes.data.public_slug } };
@@ -198,13 +231,16 @@
       if (petRes.error) return petRes;
 
       // public profile may not exist yet → upsert on pet_id.
-      var pubRes = await client.from('pet_public_profile').upsert({
+      var pubRes = await savePublicProfile({
         pet_id: id,
         show_phone: data.showPhone !== false,
         home_message: data.hasHome !== false,
         finder_steps: data.steps || [],
+        contact_phones: normPhones(data.contactPhones),
         backup_vet: (data.vet && data.vet.name) ? data.vet : null
-      }, { onConflict: 'pet_id' });
+      }, function (row) {
+        return client.from('pet_public_profile').upsert(row, { onConflict: 'pet_id' });
+      });
       return pubRes;
     },
 

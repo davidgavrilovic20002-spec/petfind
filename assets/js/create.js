@@ -11,15 +11,31 @@
   var state = {
     lang: 'en',
     name: '', species: '', breed: '', sex: '', age: '', hasHome: true,
-    owner: { name: '', phone: '' },
+    owner: { name: '', phones: [{ label: '', number: '' }] },
     steps: PF.defaultSteps('en').map(function (s, i) { return { t: s.t, d: s.d, key: PF.DEFAULT_STEP_KEYS[i] }; }),
     vet: { name: '', address: '', phone: '' }
   };
+  var MAX_PHONES = 5;      // a finder page with more than this stops being scannable at a glance
   var stepsCustomized = false;
   var previewTimer = null;
   var syncingLang = false; // guards the two-way sync between setLang() and PFI18n
   var editId = null;       // set when editing a saved pet (?edit=<id>)
   var currentSlug = null;  // the saved pet's public slug
+
+  /* ---------- phone numbers ----------
+     The owner can list several ways to be reached (their mobile, a partner,
+     the home landline). The first non-empty number is the primary one: it is
+     the big "Call the owner" button on the pet page and the number mirrored
+     onto the account profile. Every entry may carry a short label. */
+  function cleanPhones() {
+    return state.owner.phones
+      .map(function (p) { return { label: (p.label || '').trim(), number: (p.number || '').trim() }; })
+      .filter(function (p) { return p.number; });
+  }
+  function primaryPhone() {
+    var list = cleanPhones();
+    return list.length ? list[0].number : '';
+  }
 
   /* ---------- profile <-> state ---------- */
   function syncFromForm() {
@@ -32,7 +48,6 @@
     var home = document.getElementById('f-home');
     if (home) state.hasHome = home.checked;
     state.owner.name = g('f-owner');
-    state.owner.phone = g('f-phone');
     state.vet.name = g('v-name');
     state.vet.address = g('v-addr');
     state.vet.phone = g('v-phone');
@@ -44,7 +59,7 @@
       v: 1, lang: state.lang,
       name: state.name, species: state.species, breed: state.breed,
       sex: state.sex, age: state.age, hasHome: state.hasHome,
-      owner: { name: state.owner.name, phone: state.owner.phone },
+      owner: { name: state.owner.name, phone: primaryPhone(), phones: cleanPhones() },
       steps: state.steps.map(function (s) { return { t: s.t, d: s.d }; }),
       vet: (state.vet.name ? state.vet : null)
     };
@@ -69,6 +84,79 @@
       // Assign a fresh URL (unique ?pv=) so the iframe always reloads.
       f.src = petUrl(true);
     }, 220);
+  }
+
+  /* ---------- phones editor ----------
+     One row per number: the number itself and an optional label the finder
+     sees ("Me", "Partner", "Home"). Rows are re-rendered only on add/remove
+     or a language switch, so typing never steals focus. */
+  function phoneField(id, labelText, setup) {
+    var wrap = document.createElement('div');
+    wrap.className = 'field';
+    var lab = document.createElement('label');
+    lab.setAttribute('for', id); lab.textContent = labelText;
+    var inp = document.createElement('input');
+    inp.id = id;
+    setup(inp);
+    wrap.appendChild(lab); wrap.appendChild(inp);
+    return wrap;
+  }
+
+  function hidePhoneErr() {
+    var e = document.getElementById('phone-err');
+    if (e) e.classList.remove('show');
+  }
+
+  function renderPhones() {
+    var host = document.getElementById('phones-list');
+    if (!host) return;
+    if (!state.owner.phones.length) state.owner.phones.push({ label: '', number: '' });
+    host.innerHTML = '';
+
+    state.owner.phones.forEach(function (entry, idx) {
+      var row = document.createElement('div');
+      row.className = 'phone-row';
+      var fields = document.createElement('div');
+      fields.className = 'pr-fields';
+
+      // The first row keeps the id f-phone: it is the primary number.
+      fields.appendChild(phoneField(
+        idx === 0 ? 'f-phone' : 'f-phone-' + idx,
+        idx === 0 ? crT('Phone number', 'Numéro de téléphone') : crT('Another number', 'Autre numéro'),
+        function (inp) {
+          inp.type = 'tel'; inp.setAttribute('inputmode', 'tel');
+          inp.placeholder = '+33 6 00 00 00 00';
+          if (idx === 0) inp.setAttribute('autocomplete', 'tel');
+          inp.value = entry.number || '';
+          inp.addEventListener('input', function () {
+            entry.number = inp.value;
+            if (primaryPhone()) hidePhoneErr();
+            updatePreview();
+          });
+        }));
+
+      fields.appendChild(phoneField(
+        'f-phone-label-' + idx,
+        crT('Label (optional)', 'Libellé (facultatif)'),
+        function (inp) {
+          inp.type = 'text';
+          inp.placeholder = idx === 0 ? crT('Me', 'Moi') : crT('Partner, home…', 'Conjoint(e), maison…');
+          inp.value = entry.label || '';
+          inp.addEventListener('input', function () { entry.label = inp.value; updatePreview(); });
+        }));
+
+      row.appendChild(fields);
+      row.appendChild(iconBtn('✕', crT('Remove this number', 'Supprimer ce numéro'),
+        state.owner.phones.length < 2,
+        function () {
+          state.owner.phones.splice(idx, 1);
+          renderPhones(); updatePreview();
+        }));
+      host.appendChild(row);
+    });
+
+    var add = document.getElementById('add-phone');
+    if (add) add.disabled = state.owner.phones.length >= MAX_PHONES;
   }
 
   /* ---------- steps editor ---------- */
@@ -169,7 +257,7 @@
     if (!stepsCustomized) {
       state.steps = PF.defaultSteps(l).map(function (s, i) { return { t: s.t, d: s.d, key: PF.DEFAULT_STEP_KEYS[i] }; });
     }
-    renderSteps(); renderSuggestions(); updatePreview();
+    renderSteps(); renderSuggestions(); renderPhones(); updatePreview();
     // Translate the interface chrome too (labels, headings, nav) so the choice
     // is visible immediately — not just in the pet-page preview further down.
     if (window.PFI18n && window.PFI18n.lang !== l && !syncingLang) {
@@ -237,7 +325,8 @@
     return {
       name: state.name, species: state.species, breed: state.breed,
       sex: state.sex, age: state.age, hasHome: state.hasHome,
-      ownerName: state.owner.name, ownerPhone: state.owner.phone, showPhone: true,
+      ownerName: state.owner.name, ownerPhone: primaryPhone(),
+      contactPhones: cleanPhones(), showPhone: true,
       steps: state.steps.map(function (s) { return { t: s.t, d: s.d }; }),
       vet: (state.vet.name ? { name: state.vet.name, address: state.vet.address, phone: state.vet.phone } : null),
       lang: state.lang
@@ -369,7 +458,7 @@
     if (gate.mode === 'expired') { renderGate(); el('account-hint').scrollIntoView({ behavior: 'smooth' }); return; }
 
     var realSave = (gate.mode === 'edit' || gate.mode === 'entitled');
-    if (realSave && !state.owner.phone.trim()) {
+    if (realSave && !primaryPhone()) {
       el('phone-err').classList.add('show');
       el('f-phone').focus();
       return;
@@ -418,7 +507,14 @@
     var homeEl = document.getElementById('f-home'); if (homeEl) homeEl.checked = pub.home_message !== false;
     if (pub.backup_vet) { setVal('v-name', pub.backup_vet.name); setVal('v-addr', pub.backup_vet.address); setVal('v-phone', pub.backup_vet.phone); }
     var prof = await window.PFDB.getProfile();
-    if (prof.data) { setVal('f-owner', prof.data.full_name); setVal('f-phone', prof.data.phone); }
+    if (prof.data) { setVal('f-owner', prof.data.full_name); }
+    // The saved list is the source of truth; older pets only have the single
+    // account number, so fall back to that.
+    var savedPhones = Array.isArray(pub.contact_phones) ? pub.contact_phones : [];
+    state.owner.phones = savedPhones.length
+      ? savedPhones.map(function (ph) { return { label: ph.label || '', number: ph.number || '' }; })
+      : [{ label: '', number: (prof.data && prof.data.phone) || '' }];
+    renderPhones();
     if (Array.isArray(pub.finder_steps) && pub.finder_steps.length) {
       state.steps = pub.finder_steps.map(function (s) { return { t: s.t, d: s.d }; });
       stepsCustomized = true;
@@ -563,11 +659,6 @@
     var home = document.getElementById('f-home');
     if (home) home.addEventListener('change', function (e) { state.hasHome = e.target.checked; updatePreview(); });
     bind('f-owner', function (e) { state.owner.name = e.target.value; updatePreview(); });
-    bind('f-phone', function (e) {
-      state.owner.phone = e.target.value;
-      if (e.target.value.trim()) document.getElementById('phone-err').classList.remove('show');
-      updatePreview();
-    });
     bind('v-name', function (e) { state.vet.name = e.target.value; updatePreview(); });
     bind('v-addr', function (e) { state.vet.address = e.target.value; updatePreview(); });
     bind('v-phone', function (e) { state.vet.phone = e.target.value; updatePreview(); });
@@ -576,6 +667,16 @@
     var plFr = document.getElementById('pl-fr');
     if (plEn) plEn.addEventListener('click', function (e) { e.preventDefault(); setLang('en'); });
     if (plFr) plFr.addEventListener('click', function (e) { e.preventDefault(); setLang('fr'); });
+
+    renderPhones();
+    var addPhone = document.getElementById('add-phone');
+    if (addPhone) addPhone.addEventListener('click', function () {
+      if (state.owner.phones.length >= MAX_PHONES) return;
+      state.owner.phones.push({ label: '', number: '' });
+      renderPhones();
+      var last = document.getElementById('f-phone-' + (state.owner.phones.length - 1));
+      if (last) last.focus();
+    });
 
     document.getElementById('add-custom').addEventListener('click', function () {
       state.steps.push({ t: '', d: '' }); stepsCustomized = true; renderSteps(); updatePreview();
@@ -601,6 +702,7 @@
       } else {
         renderSteps();
         renderSuggestions();
+        renderPhones();
       }
       renderGate();
       if (lastResult) showResult(lastResult);

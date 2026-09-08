@@ -31,14 +31,14 @@
   :focus-visible{outline:3px solid #14B8A6;outline-offset:2px}
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--teal)}
   .brand{display:flex;align-items:center;gap:8px}
-  .brand .lg{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.35)}
-  .brand .lg svg{width:17px;height:17px}
+  .brand .lg{width:28px;height:28px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.35)}
+  .brand .lg img{width:19px;height:19px;display:block}
   .brand b{color:#fff;font-size:15px;letter-spacing:-.2px}
   .lang{display:inline-flex;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:999px;overflow:hidden}
   .lang button{border:0;background:transparent;color:rgba(255,255,255,.75);font-weight:700;font-size:12px;padding:6px 12px;cursor:pointer}
   .lang button.on{background:#fff;color:var(--teal-d)}
   .hero{background:linear-gradient(180deg,var(--teal) 0%,var(--teal-d) 100%);padding:26px 22px 128px;text-align:center;color:#fff}
-  .found-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:16px}
+  .found-badge{display:inline-flex;align-items:center;gap:7px;background:#DC2626;border:1px solid rgba(255,255,255,.35);color:#fff;padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:16px}
   .found-badge svg{width:14px;height:14px}
   .hero h1{font-size:27px;letter-spacing:-.5px;line-height:1.15}
   .hero p{opacity:.92;font-size:14px;margin-top:8px;max-width:320px;margin-left:auto;margin-right:auto;line-height:1.5}
@@ -57,7 +57,15 @@
   .btn:active{transform:scale(.98)}
   .btn svg{width:19px;height:19px}
   .btn.call{background:var(--teal);color:#fff;box-shadow:0 10px 22px rgba(15,118,110,.3);margin-top:14px}
+  .petcard .btn.call{background:#C6382D;box-shadow:0 10px 22px rgba(198,56,45,.28)}
+  .petcard .btn.call:hover{background:#A82E25}
   .btn.text{background:#fff;color:var(--teal-d);border:1.6px solid var(--teal);margin-top:10px}
+  .more-contacts{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+  .contact{margin-top:12px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:13px 14px;text-align:left}
+  .contact .cn{font-size:14.5px;font-weight:800;line-height:1.25;word-break:break-word}
+  .contact .cnum{font-size:13px;color:var(--muted);margin-top:2px;word-break:break-word}
+  .c-actions{display:flex;gap:10px;margin-top:11px}
+  .c-actions .btn{padding:12px;font-size:14px;margin-top:0;box-shadow:none}
   .vetcard{background:#fff;border-radius:20px;box-shadow:0 4px 16px rgba(15,27,26,.05);padding:18px;margin-top:14px}
   .vet-head{display:flex;gap:13px;align-items:flex-start}
   .vet-ic{width:46px;height:46px;border-radius:14px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -68,6 +76,8 @@
   .vet-actions{display:flex;gap:10px;margin-top:14px}
   .vet-actions .btn{padding:13px;font-size:14px;margin-top:0}
   .btn.dir{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+  .btn.vets{background:#C6382D;color:#fff;box-shadow:0 10px 22px rgba(198,56,45,.28)}
+  .btn.vets:hover{background:#A82E25}
   .spinner{width:18px;height:18px;border:2.5px solid var(--line);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
   @keyframes spin{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion:reduce){.spinner{animation:none}}
@@ -95,7 +105,7 @@
 <div class="wrap" id="wrap">
   <div class="topbar">
     <a class="brand" href="index.html" style="text-decoration:none">
-      <div class="lg"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21c-1.2 0-2.3-.7-2.9-1.7C7.6 16.9 5 15.7 5 12.5 5 9.5 7 8 8.7 8.9c.7.4 1.1 1 1.3 1.6M12 21c1.2 0 2.3-.7 2.9-1.7C16.4 16.9 19 15.7 19 12.5 19 9.5 17 8 15.3 8.9c-.7.4-1.1 1-1.3 1.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="9" cy="5.5" r="1.6" fill="#fff"/><circle cx="15" cy="5.5" r="1.6" fill="#fff"/></svg></div>
+      <div class="lg"><img src="assets/img/favicon.svg" alt="PetFind logo" width="19" height="19"></div>
       <b>PetFind</b>
     </a>
     <div class="lang" role="group" aria-label="Language">
@@ -114,6 +124,6 @@
 <script src="assets/js/supabase.js?v=7"></script>
 <script src="assets/js/petfind.js?v=7"></script>
 <script src="assets/js/vet.js?v=4"></script>
-<script src="assets/js/pet.js?v=7"></script>
+<script src="assets/js/pet.js?v=8"></script>
 </body>
 </html>

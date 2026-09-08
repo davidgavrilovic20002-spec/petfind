@@ -29,9 +29,15 @@
   .icon-btn:hover{color:var(--ink);border-color:var(--muted)}
   .icon-btn:disabled{opacity:.35;cursor:not-allowed}
   .suggest-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .phone-row{display:flex;gap:8px;align-items:flex-end;margin-top:16px}
+  .phone-row .pr-fields{flex:1;display:grid;grid-template-columns:1.35fr 1fr;gap:12px;min-width:0}
+  .phone-row .pr-fields .field{margin-top:0}
+  .phone-row .icon-btn{margin-bottom:7px;flex-shrink:0}
+  @media (max-width:520px){.phone-row .pr-fields{grid-template-columns:1fr}}
   .chip-btn{border:1.5px dashed var(--teal);background:#fff;color:var(--teal-d);border-radius:999px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer}
   .chip-btn:hover{background:#E7F5F3}
   .chip-btn.added{opacity:.4;pointer-events:none;border-style:solid}
+  .chip-btn:disabled{opacity:.4;cursor:not-allowed;border-style:solid}
   .result{margin-top:20px;display:none}
   .result.show{display:block}
   .result canvas{width:100%;max-width:280px;height:auto;border-radius:14px;box-shadow:var(--shadow-sm);margin:0 auto;display:block}
@@ -107,10 +113,14 @@
 
         <div class="card" style="margin-top:16px">
           <h2 style="font-size:18px;margin-bottom:4px" data-i18n="cr.owner.h">How a finder reaches you</h2>
-          <p class="muted" style="font-size:13.5px;margin-bottom:12px" data-i18n="cr.owner.p">Your home address is never shown. Only your phone number and the nearest vet appear.</p>
+          <p class="muted" style="font-size:13.5px;margin-bottom:12px" data-i18n="cr.owner.p">Your home address is never shown. Only the numbers you add and the nearest vet appear.</p>
           <div class="field"><label for="f-owner" data-i18n="cr.owner.name">Your name</label><input id="f-owner" name="owner" type="text" placeholder="David G." autocomplete="name"></div>
-          <div class="field"><label for="f-phone" data-i18n="cr.owner.phone">Phone number</label><input id="f-phone" name="phone" type="tel" placeholder="+33 6 00 00 00 00" autocomplete="tel" inputmode="tel"></div>
+          <div id="phones-list"></div>
           <p id="phone-err" class="err-msg" data-i18n="cr.owner.err">Please add a phone number so finders can reach you.</p>
+          <div class="suggest-row">
+            <button type="button" class="chip-btn" id="add-phone" data-i18n="cr.owner.addphone">+ Add another number</button>
+          </div>
+          <p class="muted" style="font-size:12.5px;margin-top:10px" data-i18n="cr.owner.phones.hint">Add a partner, the home landline or a neighbour — a finder sees every number and can call or text any of them.</p>
         </div>
 
         <div class="card" style="margin-top:16px">
