@@ -555,6 +555,28 @@
     } catch (err) { showDeletionError(err); button.disabled = false; }
   });
 
+  // Claim a record a vet started before this owner had an account (0014).
+  var claimForm = $('claim-form');
+  if (claimForm) claimForm.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var button = $('claim-submit'), note = $('claim-msg'), input = $('claim-code-input');
+    note.hidden = false; note.textContent = L('Claiming…', 'Récupération…');
+    button.disabled = true;
+    try {
+      if (!window.PFVet || !window.PFVet.claimRecord) throw new Error(L('Try again in a moment.', 'Réessayez dans un instant.'));
+      await window.PFVet.claimRecord(input.value);
+      input.value = '';
+      note.textContent = L('Record claimed. Your pet appears above.', 'Dossier récupéré. Votre animal apparaît ci-dessus.');
+      await loadDashboard();
+    } catch (err) {
+      // Never echo the raw code back, and keep "unknown" and "already used"
+      // indistinguishable so the field cannot be used to probe for live codes.
+      var known = /claim code that looks like/.test(err.message || '');
+      note.textContent = known ? err.message
+        : L('Unknown or already-used code. Check with your vet.', 'Code inconnu ou déjà utilisé. Vérifiez auprès de votre vétérinaire.');
+    } finally { button.disabled = false; }
+  });
+
   var statusTimer = null;
 
   function fmtRemaining(ms) {

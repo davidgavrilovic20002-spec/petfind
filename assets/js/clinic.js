@@ -20,7 +20,7 @@
       const avatar = document.createElement('span'); avatar.className='patient-avatar'; avatar.textContent=(pet.name || '?').slice(0,1); avatar.setAttribute('aria-hidden','true');
       const info = document.createElement('div'), heading = document.createElement('h2'), detail = document.createElement('p'), badge = document.createElement('span'), arrow = document.createElement('span');
       heading.textContent=pet.name; detail.textContent=[pet.species,pet.breed,pet.age].filter(Boolean).join(' · ') || 'Patient'; detail.className='muted';
-      badge.className='badge'; badge.textContent=pet.scope === 'read' ? 'View records' : 'View & add records'; arrow.className='arrow'; arrow.textContent='→';
+      badge.className='badge'; badge.textContent=pet.unclaimed ? ('Unclaimed · ' + (pet.claim_code || 'no code')) : (pet.scope === 'read' ? 'View records' : 'View & add records'); if(pet.unclaimed) badge.classList.add('unclaimed'); arrow.className='arrow'; arrow.textContent='→';
       info.append(heading,detail,badge); card.append(avatar,info,arrow); list.append(card);
     }
   }
@@ -61,6 +61,31 @@
     catch(e){notice('Could not verify the code. Try a new code.',true);} finally{button.disabled=false;}
   });
   $('logout').addEventListener('click',async()=>{++revision; patients=[]; $('patient-list').replaceChildren(); show(null); try{const r=await PFDB.signOut();if(r.error)throw r.error;await route();}catch(e){notice('Could not sign out. Please retry.',true);}});
+  function showForm(open) {
+    $('new-patient-form').hidden = !open; $('claim-panel').hidden = true;
+    $('new-patient-notice').textContent = '';
+    if (open) $('new-patient-form').name.focus(); else $('new-patient-form').reset();
+  }
+  $('new-patient').addEventListener('click',()=>showForm($('new-patient-form').hidden));
+  $('cancel-patient').addEventListener('click',()=>showForm(false));
+  $('claim-done').addEventListener('click',()=>{$('claim-panel').hidden=true;});
+  $('new-patient-form').addEventListener('submit',async event=>{
+    event.preventDefault();
+    const form=event.currentTarget, button=$('create-patient'), note=$('new-patient-notice');
+    button.disabled=true; note.classList.remove('error'); note.textContent='Creating…';
+    try {
+      const pet=await PFVet.createPatient({
+        name:form.name.value, species:form.species.value, breed:form.breed.value,
+        sex:form.sex.value, birthdate:form.birthdate.value, icad_number:form.icad_number.value
+      });
+      form.reset(); $('new-patient-form').hidden=true; note.textContent='';
+      $('claim-code').textContent=pet.claim_code || '(no code issued)';
+      $('claim-panel').hidden=false;
+      await route();
+    } catch(e) {
+      note.textContent=e.message || 'Could not create the patient. Try again.'; note.classList.add('error');
+    } finally { button.disabled=false; }
+  });
   $('refresh').addEventListener('click',route); $('search').addEventListener('input',render);
   if(window.PFDB) PFDB.onAuth((event)=>{if(event==='SIGNED_OUT'){++revision;patients=[];$('patient-list').replaceChildren();show('login');$('logout').hidden=true;notice('');}});
   window.addEventListener('pageshow', event=>{if(event.persisted) route();});

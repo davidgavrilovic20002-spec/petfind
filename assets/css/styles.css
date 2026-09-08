@@ -188,3 +188,12 @@ fieldset{border:0}
 
 /* Visually hidden (a11y) */
 .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Claim-a-vet-record card (0014) */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+#claim-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px}
+#claim-code-input{flex:1 1 200px;min-width:0;font:inherit;font-size:16px;letter-spacing:1.5px;text-transform:uppercase;
+  padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink)}
+#claim-code-input:focus{background:#fff;border-color:var(--teal-l);outline:none;box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+#claim-form .btn{background:var(--teal);color:#fff}
+

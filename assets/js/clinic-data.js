@@ -35,6 +35,13 @@
       const previous = byPet.get(pet.id);
       if (!previous || grant.scope === 'write' || grant.scope === 'full') byPet.set(pet.id, { ...pet, scope: grant.scope });
     }
+    const walkIns = unwrap(await client.from('pets')
+      .select('id,name,species,breed,sex,age,deleted_at,claim_code')
+      .is('owner_id', null).eq('created_by_vet', who.user.id)) || [];
+    for (const pet of walkIns) {
+      if (pet.deleted_at) continue;
+      byPet.set(pet.id, { ...pet, scope: 'full', unclaimed: true });
+    }
     return Array.from(byPet.values()).sort((a,b) => a.name.localeCompare(b.name));
   }
   const definitions = {
@@ -64,17 +71,24 @@
   async function recordContext(petId) {
     if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(petId || '')) throw new Error('Open a patient from your list to view their record.');
     const who = await identity();
-    const pet = unwrap(await client.from('pets').select('id,owner_id,name,species,breed,sex,age,birthdate').eq('id', petId).is('deleted_at', null).maybeSingle());
+    const pet = unwrap(await client.from('pets').select('id,owner_id,created_by_vet,claim_code,name,species,breed,sex,age,birthdate').eq('id', petId).is('deleted_at', null).maybeSingle());
     if (!pet) throw new Error('This record is unavailable. Access may have been revoked.');
     const owner = pet.owner_id === who.user.id;
+    const unclaimed = pet.owner_id === null && pet.created_by_vet === who.user.id;
     let writable = false;
     if (!owner) {
       if (who.profile.role !== 'vet') throw new Error('This record is unavailable.');
-      const grants = unwrap(await client.from('vet_pet_access').select('scope').eq('pet_id', petId).eq('vet_id', who.user.id).eq('status','active')) || [];
-      if (!grants.length) throw new Error('This record is unavailable. Access may have been revoked.');
-      writable = grants.some(g => g.scope === 'write' || g.scope === 'full');
+      if (unclaimed) {
+        // A patient this vet created and nobody has claimed yet: theirs to write
+        // until an owner takes it over, at which point the grant decides.
+        writable = true;
+      } else {
+        const grants = unwrap(await client.from('vet_pet_access').select('scope').eq('pet_id', petId).eq('vet_id', who.user.id).eq('status','active')) || [];
+        if (!grants.length) throw new Error('This record is unavailable. Access may have been revoked.');
+        writable = grants.some(g => g.scope === 'write' || g.scope === 'full');
+      }
     }
-    return { ...who, pet, owner, writable };
+    return { ...who, pet, owner, unclaimed, writable };
   }
   async function records(petId) {
     const context = await recordContext(petId);
@@ -99,8 +113,37 @@
     if (!pet) throw new Error('Only the pet owner can manage access.');
     return unwrap(await client.from('vet_pet_access').select('id,vet_id,scope,status,created_at').eq('pet_id',petId).eq('status','active').order('created_at',{ascending:false})) || [];
   }
+  // Create a walk-in patient with no owner yet. The database issues the claim
+  // code (0014); the vet reads it back and hands it to the owner.
+  async function createPatient(fields) {
+    const who = await vetIdentity();
+    const name = String(fields.name || '').trim();
+    if (!name) throw new Error('Enter the patient name.');
+    const sex = ['female','male','unknown'].includes(fields.sex) ? fields.sex : null;
+    const birthdate = String(fields.birthdate || '').trim();
+    if (birthdate && !validDate(birthdate)) throw new Error('Enter a valid date of birth.');
+    const text = key => {
+      const value = String(fields[key] == null ? '' : fields[key]).trim();
+      return value === '' ? null : value;
+    };
+    return unwrap(await client.from('pets').insert({
+      name, species: text('species'), breed: text('breed'), sex,
+      birthdate: birthdate || null, icad_number: text('icad_number'),
+      created_by_vet: who.user.id
+    }).select('id,name,claim_code').single());
+  }
+
+  // Owner side: redeem the code the vet handed over.
+  async function claimRecord(code) {
+    await identity();
+    const clean = String(code || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (!/^PF-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(clean)) throw new Error('Enter a claim code that looks like PF-XXXX-XXXX.');
+    return unwrap(await client.rpc('claim_pet_record', { p_code: clean }));
+  }
+
   global.PFVet = {
     identity, vetIdentity, caseload, recordContext, records, addRecord, payload, definitions, ownerGrants,
+    createPatient, claimRecord,
     clinics: async function () {
       const who = await vetIdentity();
       return unwrap(await client.from('clinic_members').select('clinics(name)').eq('vet_id',who.user.id)) || [];
