@@ -485,11 +485,77 @@
       showResult({ url: permanentUrl(slug), preview: false, permanent: true });
       PF.toast(editId ? crT('Changes saved', 'Modifications enregistrées')
                       : crT('Saved to your account', 'Enregistré dans votre compte'));
+      if (!editId) maybeAskResearchConsent();
     } catch (err) {
       PF.toast(crT('Something went wrong', 'Une erreur est survenue'));
     } finally {
       btn.disabled = false; btn.textContent = label;
     }
+  }
+
+  // ---- research consent, asked once at the end of a first tag -------------
+  // Consent must stay freely given, so: asked at most ONCE per browser, both
+  // answers are ordinary buttons of equal weight, nothing is pre-selected, and
+  // declining costs nothing. Never shown to someone who already said yes.
+  async function maybeAskResearchConsent() {
+    try {
+      if (localStorage.getItem('pf_research_asked') === '1') return;
+    } catch (e) { /* private mode: fall through and ask */ }
+    if (!window.PFDB || !window.PFDB.getResearchConsent) return;
+    var current;
+    try { current = await window.PFDB.getResearchConsent(); } catch (e) { return; }
+    if (current && current.data && current.data.granted) return;   // already in
+
+    var wrap = document.createElement('div');
+    wrap.className = 'pf-ask';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.setAttribute('aria-labelledby', 'pf-ask-h');
+
+    var card = document.createElement('div'); card.className = 'pf-ask-card';
+    var h = document.createElement('h2'); h.id = 'pf-ask-h';
+    h.textContent = crT('Help research into animal disease?',
+                        'Aider la recherche sur les maladies animales ?');
+    var p1 = document.createElement('p');
+    p1.textContent = crT(
+      "Anonymised data sharing is off for your account. With it on, your pet's medical records are analysed by AI to find patterns in illness and help prevent disease in future — without your name, your pet's name, its microchip number or the exact dates.",
+      "Le partage de données anonymisées est désactivé sur votre compte. S'il est activé, les données médicales de votre animal sont analysées par IA afin de repérer des schémas de maladie et d'aider à prévenir les maladies à l'avenir — sans votre nom, celui de votre animal, son numéro de puce ni les dates exactes.");
+    var p2 = document.createElement('p'); p2.className = 'pf-ask-note';
+    p2.textContent = crT('It changes nothing about your tag, and you can switch it on or off at any time in My account.',
+                         "Cela ne change rien à votre médaille, et vous pouvez l'activer ou le désactiver à tout moment dans Mon compte.");
+
+    var row = document.createElement('div'); row.className = 'pf-ask-row';
+    var yes = document.createElement('button'); yes.type = 'button'; yes.className = 'btn primary';
+    yes.textContent = crT("Yes, include my pet's data", "Oui, inclure les données de mon animal");
+    var no = document.createElement('button'); no.type = 'button'; no.className = 'btn soft';
+    no.textContent = crT('Not now', 'Pas maintenant');
+
+    function close() {
+      try { localStorage.setItem('pf_research_asked', '1'); } catch (e) {}
+      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      document.removeEventListener('keydown', onKey);
+    }
+    function onKey(ev) { if (ev.key === 'Escape') close(); }
+
+    yes.addEventListener('click', async function () {
+      yes.disabled = no.disabled = true;
+      try {
+        var res = await window.PFDB.setResearchConsent(true);
+        if (res.error) throw res.error;
+        PF.toast(crT('Thank you — this helps research.', 'Merci — cela aide la recherche.'));
+      } catch (e) {
+        PF.toast(crT('Could not save that. You can turn it on in My account.',
+                     "Enregistrement impossible. Vous pouvez l'activer dans Mon compte."));
+      }
+      close();
+    });
+    no.addEventListener('click', close);
+    wrap.addEventListener('click', function (ev) { if (ev.target === wrap) close(); });
+    document.addEventListener('keydown', onKey);
+
+    row.append(yes, no); card.append(h, p1, p2, row); wrap.append(card);
+    document.body.appendChild(wrap);
+    yes.focus();
   }
 
   function setVal(id, v) { var el = document.getElementById(id); if (el && v != null) el.value = v; }
