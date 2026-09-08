@@ -39,11 +39,15 @@ test('caseload includes unclaimed patients this vet created',async()=>{
   assert.equal(list.length,2);const mine=list.find(p=>p.id===walkIn.id);
   assert.equal(mine.unclaimed,true);assert.equal(mine.claim_code,'PF-ABCD-2345');
 });
-test('createPatient binds the creating vet to the session, not to caller input',async()=>{
-  const {api,inserts}=setup();await api.createPatient({name:' Milo ',species:'dog',sex:'nonsense',created_by_vet:'attacker',owner_id:'attacker'});
-  assert.equal(inserts.length,1);const row=inserts[0].row;
-  assert.equal(row.created_by_vet,'user');assert.equal(row.name,'Milo');
-  assert.equal(row.sex,null);assert.equal(row.owner_id,undefined);
+test('createPatient sends only vetted fields to the RPC and cannot pass an owner or vet id',async()=>{
+  const {api,rpcs,inserts}=setup({rpcResult:[{id:'p1',name:'Milo',claim_code:'PF-ABCD-2345'}]});
+  const out=await api.createPatient({name:' Milo ',species:'dog',sex:'nonsense',created_by_vet:'attacker',owner_id:'attacker'});
+  assert.equal(inserts.length,0);
+  assert.equal(rpcs.length,1);assert.equal(rpcs[0].name,'create_patient');
+  const a=rpcs[0].args;
+  assert.equal(a.p_name,'Milo');assert.equal(a.p_sex,null);assert.equal(a.p_species,'dog');
+  assert.equal(a.created_by_vet,undefined);assert.equal(a.owner_id,undefined);
+  assert.equal(out.claim_code,'PF-ABCD-2345');
 });
 test('createPatient refuses a blank name and a non-vet account',async()=>{
   const {api,inserts}=setup();await assert.rejects(api.createPatient({name:'   '}),/patient name/);
