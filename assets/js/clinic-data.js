@@ -203,8 +203,87 @@
     return true;
   }
 
+  // ---- clinic diary (0032-0033) -------------------------------------------
+  // The schedule comes from an RPC rather than a table read on purpose: RLS on
+  // clinic_work_items only shows a vet their OWN patients, so a calendar built
+  // on the table would show a room as free while a colleague had it booked.
+  // clinic_schedule() returns every slot and blanks the identity of the ones
+  // this vet is not entitled to see (visible === false).
+  async function schedule(clinicId, from, to) {
+    await vetIdentity();
+    return unwrap(await client.rpc('clinic_schedule', {
+      p_clinic: clinicId,
+      p_from: from instanceof Date ? from.toISOString() : from,
+      p_to:   to   instanceof Date ? to.toISOString()   : to
+    })) || [];
+  }
+  async function rooms(clinicId) {
+    await vetIdentity();
+    return unwrap(await client.from('clinic_rooms')
+      .select('id,name,kind,sort_order,active')
+      .eq('clinic_id', clinicId).eq('active', true)
+      .order('sort_order', { ascending: true }).order('name', { ascending: true })) || [];
+  }
+  async function colleagues(clinicId) {
+    await vetIdentity();
+    return unwrap(await client.from('clinic_members')
+      .select('vet_id,title,profiles(full_name)')
+      .eq('clinic_id', clinicId)) || [];
+  }
+
+  // ---- client master file (0034) ------------------------------------------
+  async function clients(clinicId, term) {
+    await vetIdentity();
+    let q = client.from('clinic_clients')
+      .select('id,display_name,phone,phone_alt,email,address,postal_code,city,siret,billing_status,notes,updated_at')
+      .eq('clinic_id', clinicId).is('archived_at', null);
+    const clean = String(term || '').trim();
+    if (clean) q = q.ilike('display_name', '%' + clean.replace(/[%_]/g, '') + '%');
+    return unwrap(await q.order('display_name', { ascending: true }).limit(200)) || [];
+  }
+  async function saveClient(clinicId, fields, clientId) {
+    const who = await vetIdentity();
+    const name = String(fields.display_name || '').trim();
+    if (!name) throw new Error(T('Enter the client name.', 'Saisissez le nom du client.'));
+    if (name.length > 200) throw new Error(T('Keep the name under 200 characters.', 'Limitez le nom à 200 caractères.'));
+    const allowed = ['good_standing','credit_hold','payment_plan','vip','bad_debt'];
+    const row = {
+      display_name: name,
+      address: text(fields.address), postal_code: text(fields.postal_code), city: text(fields.city),
+      phone: text(fields.phone), phone_alt: text(fields.phone_alt), email: text(fields.email),
+      siret: text(fields.siret), notes: text(fields.notes),
+      billing_status: allowed.includes(fields.billing_status) ? fields.billing_status : 'good_standing'
+    };
+    if (clientId) {
+      return unwrap(await client.from('clinic_clients').update(row).eq('id', clientId).select('id').single());
+    }
+    row.clinic_id = clinicId; row.created_by = who.user.id;
+    return unwrap(await client.from('clinic_clients').insert(row).select('id').single());
+  }
+  async function clientAnimals(clientId) {
+    await vetIdentity();
+    return unwrap(await client.rpc('clinic_client_animals', { p_client: clientId })) || [];
+  }
+  async function linkClientPet(clientId, petId, relation, isPrimary) {
+    await vetIdentity();
+    return unwrap(await client.from('clinic_client_pets')
+      .insert({ client_id: clientId, pet_id: petId,
+                relation: ['owner','co_owner','contact'].includes(relation) ? relation : 'owner',
+                is_primary: !!isPrimary })
+      .select('pet_id').single());
+  }
+  async function unlinkClientPet(clientId, petId) {
+    await vetIdentity();
+    const r = await client.from('clinic_client_pets').delete().eq('client_id', clientId).eq('pet_id', petId);
+    if (r.error) throw r.error;
+    return true;
+  }
+  function text(v) { const s = String(v == null ? '' : v).trim(); return s === '' ? null : s; }
+
   global.PFVet = {
     alerts, raiseAlert, resolveAlert,
+    schedule, rooms, colleagues,
+    clients, saveClient, clientAnimals, linkClientPet, unlinkClientPet,
     identity, vetIdentity, caseload, recordContext, records, addRecord, payload, definitions, ownerGrants,
     createPatient, claimRecord, withdrawRecord, removePatient,
     clinics: async function () {

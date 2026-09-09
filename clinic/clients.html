@@ -1,0 +1,46 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Clients — PetFind</title><link rel="stylesheet" href="../assets/css/styles.css?v=9"><link rel="stylesheet" href="../assets/css/clinic.css?v=9"></head><body>
+<a class="skip" href="#main" data-i18n="cli.skip">Skip to the client list</a><header class="clinic-head"><span class="logo"><img src="../assets/img/favicon.svg" alt="PetFind logo" width="30" height="30">Pet<span>Find</span><span class="clinic-word" data-i18n="cli.word">/ Clients</span></span><nav aria-label="Clinic"><a href="index.html" data-i18n="cl.cal.back">← Patients</a><button id="logout" class="btn soft" type="button" hidden data-i18n="cl.signout">Sign out</button></nav></header>
+<main id="main" class="clinic-main"><p id="cli-notice" class="notice" role="status" aria-live="polite">Loading…</p>
+
+<section id="cli-signin" hidden><p><a href="index.html" class="btn primary" data-i18n="cl.cal.signin">Sign in from the patient list</a></p></section>
+
+<section id="cli" hidden>
+  <div class="page-heading"><div><span class="eyebrow" data-i18n="cli.eyebrow">CLIENT FILE</span><h1 data-i18n="cli.title">Clients</h1><p class="muted" data-i18n="cli.sub">The clinic's own record of the people behind the animals.</p></div>
+    <div class="head-actions"><button id="cli-new" class="btn primary" type="button" data-i18n="cli.new">New client</button><button id="cli-refresh" class="btn ghost" type="button" data-i18n="cl.cal.refresh">Refresh</button></div>
+  </div>
+
+  <div class="cal-controls">
+    <label><span data-i18n="cl.cal.clinic">Clinic</span><select id="cli-clinic"></select></label>
+    <label><span data-i18n="cli.search">Search</span><input id="cli-search" type="search" autocomplete="off" data-i18n-ph="cli.search.ph" placeholder="Name"></label>
+  </div>
+
+  <form id="cli-form" class="entry-form" hidden>
+    <h2 id="cli-form-title" data-i18n="cli.new">New client</h2>
+    <div class="cli-fields">
+      <label class="wide"><span data-i18n="cli.f.name">Name *</span><input name="display_name" maxlength="200" required></label>
+      <label><span data-i18n="cli.f.phone">Phone</span><input name="phone" type="tel" maxlength="40"></label>
+      <label><span data-i18n="cli.f.phone2">Other phone</span><input name="phone_alt" type="tel" maxlength="40"></label>
+      <label class="wide"><span data-i18n="cli.f.email">Email</span><input name="email" type="email" maxlength="200"></label>
+      <label class="wide"><span data-i18n="cli.f.address">Address</span><input name="address" maxlength="300"></label>
+      <label><span data-i18n="cli.f.postal">Postcode</span><input name="postal_code" maxlength="20"></label>
+      <label><span data-i18n="cli.f.city">City</span><input name="city" maxlength="120"></label>
+      <label><span data-i18n="cli.f.siret">SIRET (farms)</span><input name="siret" maxlength="40"></label>
+      <label><span data-i18n="cli.f.billing">Billing</span><select name="billing_status">
+        <option value="good_standing" data-i18n="cli.b.good">Good standing</option>
+        <option value="credit_hold" data-i18n="cli.b.hold">Credit hold</option>
+        <option value="payment_plan" data-i18n="cli.b.plan">Payment plan</option>
+        <option value="vip" data-i18n="cli.b.vip">VIP</option>
+        <option value="bad_debt" data-i18n="cli.b.debt">Bad debt</option>
+      </select></label>
+      <label class="wide"><span data-i18n="cli.f.notes">Notes</span><textarea name="notes" maxlength="4000"></textarea></label>
+    </div>
+    <p id="cli-form-notice" class="notice" role="status" aria-live="polite"></p>
+    <div class="head-actions"><button id="cli-save" class="btn primary" type="submit" data-i18n="cli.save">Save client</button><button id="cli-cancel" class="btn soft" type="button" data-i18n="cl.np.cancel">Cancel</button></div>
+    <p class="small muted" data-i18n="cli.privacy">This is your clinic's own record of a person, written by you. It is not linked to their PetFind account and never reads from it.</p>
+  </form>
+
+  <div id="cli-list" class="cli-list"></div>
+</section>
+
+</main><footer class="clinic-foot" data-i18n="cl.foot">PetFind Clinic · Records shared with permission</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js" integrity="sha384-CLZeq1dk8+Uzrs7TVvBUdlFoV5F0DMqgRoeHa8g5wJcuPe5SkVfEvdxB0ZuzlnBQ" crossorigin="anonymous"></script><script src="../assets/js/supabase.js?v=13"></script><script src="../assets/js/i18n.js?v=31"></script><script src="../assets/js/breeds.js?v=2"></script><script src="../assets/js/clinic-data.js?v=8"></script><script src="../assets/js/clients.js?v=1"></script></body></html>

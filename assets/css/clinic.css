@@ -44,3 +44,68 @@
    to confirm they have the right animal (chip, tattoo, passport, registry). */
 .patient-ids{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--muted);margin-top:6px}
 .patient-ids span strong{color:var(--ink);font-weight:600}
+
+/* Schedule (0032/0033). A time axis plus one absolutely-positioned block per
+   booking; columns change meaning per view (day, weekday, room, practitioner)
+   while the geometry stays identical. */
+.cal-controls{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+.cal-controls label{min-width:170px}
+.cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.cal-chip{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid}
+.cal-grid{display:flex;gap:0;overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:0 0 8px}
+.cal-axis{flex:none;width:58px;position:sticky;left:0;background:#fff;z-index:2;border-right:1px solid var(--line)}
+.cal-axisbody{position:relative}
+.cal-hour{position:absolute;left:0;right:6px;text-align:right;font-size:11.5px;color:var(--muted);transform:translateY(-6px)}
+.cal-track{display:grid;flex:1;min-width:0}
+.cal-col{border-right:1px solid var(--line);min-width:0}
+.cal-col:last-child{border-right:0}
+.cal-colhead{height:38px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+  border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1;padding:0 8px;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-colbody{position:relative}
+.cal-line{position:absolute;left:0;right:0;height:1px;background:var(--line)}
+.cal-block{position:absolute;left:3px;right:3px;border-radius:7px;border:1px solid;padding:4px 7px;overflow:hidden;
+  display:flex;flex-direction:column;gap:1px;text-decoration:none;font-size:12px;line-height:1.25}
+a.cal-block:hover{filter:brightness(.97);box-shadow:0 2px 8px rgba(15,27,26,.14)}
+.cal-time{font-weight:700;font-size:11.5px;opacity:.9}
+.cal-who{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-meta,.cal-status{font-size:11px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-void{opacity:.5}
+.cal-void .cal-who{text-decoration:line-through}
+/* Service colours. Distinct in hue AND in lightness, so they stay separable
+   for a red-green colour-blind reader and in a greyscale printout. */
+.svc-consultation{background:#e3f1ee;border-color:#a9cdc6;color:#0B5651}
+.svc-vaccination{background:#e4edfb;border-color:#adc4e8;color:#1b3f7a}
+.svc-surgery{background:#efe6f7;border-color:#c9b3dd;color:#4b2a6b}
+.svc-emergency{background:#fdecea;border-color:#e6b0a8;color:#8d2418}
+.svc-grooming{background:#fdf3e0;border-color:#e2c894;color:#7a5313}
+.svc-teleconsultation{background:#eceef1;border-color:#bcc4cc;color:#39424c}
+.svc-hidden{background:#f4f6f6;border-color:#d7dedd;color:#5B6B69}
+@media(max-width:760px){.cal-controls label{min-width:140px}.cal-axis{width:46px}}
+/* Short bookings: one line instead of four, so the patient name survives. The
+   full detail stays in the title attribute for hover. */
+.cal-block.cal-compact{flex-direction:row;align-items:baseline;gap:6px}
+.cal-block.cal-compact .cal-time{flex:none}
+.cal-block.cal-compact .cal-who{flex:1;min-width:0}
+
+/* Client master file (0034). */
+.cli-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.cli-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:12px;align-content:start}
+.cli-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.cli-head h3{margin:0;font-size:19px}
+.cli-billing{margin-top:0;flex:none}
+.cli-good_standing{background:#e3f1ee;color:var(--teal-d)}
+.cli-credit_hold{background:#fdf3e0;color:#7a5313}
+.cli-payment_plan{background:#e4edfb;color:#1b3f7a}
+.cli-vip{background:#efe6f7;color:#4b2a6b}
+.cli-bad_debt{background:#fdecea;color:#8d2418}
+.cli-animals{display:flex;flex-wrap:wrap;gap:8px}
+.cli-pet{display:inline-flex;align-items:center;gap:5px;background:var(--soft);border:1px solid var(--line);
+  border-radius:999px;padding:4px 6px 4px 11px;font-size:13px}
+.cli-alert{background:#fdecea;color:#8d2418;border-radius:999px;padding:1px 7px;font-size:11.5px;font-weight:700}
+.cli-link{font-size:12px;text-decoration:underline}
+.cli-unlink{border:0;background:none;cursor:pointer;font-size:16px;line-height:1;color:var(--muted);padding:0 4px}
+.cli-unlink:hover{color:var(--accent)}
+.cli-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cli-fields .wide{grid-column:1/-1}
+@media(max-width:760px){.cli-fields{grid-template-columns:1fr}.cli-list{grid-template-columns:1fr}}

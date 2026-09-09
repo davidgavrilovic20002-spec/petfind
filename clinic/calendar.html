@@ -1,0 +1,36 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Schedule — PetFind</title><link rel="stylesheet" href="../assets/css/styles.css?v=9"><link rel="stylesheet" href="../assets/css/clinic.css?v=9"></head><body>
+<a class="skip" href="#main" data-i18n="cl.cal.skip">Skip to the schedule</a><header class="clinic-head"><span class="logo"><img src="../assets/img/favicon.svg" alt="PetFind logo" width="30" height="30">Pet<span>Find</span><span class="clinic-word" data-i18n="cl.word.cal">/ Schedule</span></span><nav aria-label="Clinic"><a href="index.html" data-i18n="cl.cal.back">← Patients</a><button id="logout" class="btn soft" type="button" hidden data-i18n="cl.signout">Sign out</button></nav></header>
+<main id="main" class="clinic-main"><p id="cal-notice" class="notice" role="status" aria-live="polite">Loading the schedule…</p>
+
+<section id="cal-signin" hidden><p><a href="index.html" class="btn primary" data-i18n="cl.cal.signin">Sign in from the patient list</a></p></section>
+
+<section id="cal" hidden>
+  <div class="page-heading"><div><span class="eyebrow" data-i18n="cl.cal.eyebrow">SCHEDULE</span><h1 id="cal-title"></h1><p id="cal-sub" class="muted"></p></div>
+    <div class="head-actions">
+      <button id="cal-prev" class="btn soft" type="button" aria-label="Previous">‹</button>
+      <button id="cal-today" class="btn soft" type="button" data-i18n="cl.cal.today">Today</button>
+      <button id="cal-next" class="btn soft" type="button" aria-label="Next">›</button>
+      <button id="cal-refresh" class="btn ghost" type="button" data-i18n="cl.cal.refresh">Refresh</button>
+    </div>
+  </div>
+
+  <div class="cal-controls">
+    <label><span data-i18n="cl.cal.clinic">Clinic</span><select id="cal-clinic"></select></label>
+    <label><span data-i18n="cl.cal.view">View</span><select id="cal-view">
+      <option value="day" data-i18n="cl.cal.v.day">Day</option>
+      <option value="week" data-i18n="cl.cal.v.week">Week</option>
+      <option value="rooms" data-i18n="cl.cal.v.rooms">Room grid</option>
+      <option value="staff" data-i18n="cl.cal.v.staff">Practitioners</option>
+      <option value="surgery" data-i18n="cl.cal.v.surgery">Surgery board</option>
+    </select></label>
+    <label><span data-i18n="cl.cal.date">Date</span><input id="cal-date" type="date"></label>
+  </div>
+
+  <div id="cal-legend" class="cal-legend" aria-hidden="true"></div>
+  <div id="cal-grid" class="cal-grid"></div>
+  <p id="cal-empty" class="empty" hidden data-i18n="cl.cal.empty">Nothing booked in this range.</p>
+  <p class="small muted" data-i18n="cl.cal.privacy">Slots belonging to a colleague's patient show the room, practitioner and time only. The animal and the reason are not shown unless the owner has shared that record with you.</p>
+</section>
+
+</main><footer class="clinic-foot" data-i18n="cl.foot">PetFind Clinic · Records shared with permission</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js" integrity="sha384-CLZeq1dk8+Uzrs7TVvBUdlFoV5F0DMqgRoeHa8g5wJcuPe5SkVfEvdxB0ZuzlnBQ" crossorigin="anonymous"></script><script src="../assets/js/supabase.js?v=13"></script><script src="../assets/js/i18n.js?v=31"></script><script src="../assets/js/breeds.js?v=2"></script><script src="../assets/js/clinic-data.js?v=8"></script><script src="../assets/js/calendar.js?v=2"></script></body></html>
