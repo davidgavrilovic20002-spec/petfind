@@ -16,16 +16,16 @@ function setup({ role = 'vet', aal = 'aal2', rpcResult = null, insertError = nul
   const client = {
     rpc(name, args) { rpcs.push({ name, args }); return Promise.resolve({ data: rpcResult }); },
     from(table) {
-      let inserted = null;
+      let inserted = null, projection = null;
       const filters = [];
       const query = {
-        select() { return query; }, eq(k, v) { filters.push([k, v]); return query; },
+        select(cols) { projection = cols; return query; }, eq(k, v) { filters.push([k, v]); return query; },
         is(k, v) { filters.push([k, v]); return query; }, ilike(k, v) { filters.push([k, v]); return query; },
         order() { return query; }, limit(n) { filters.push(['limit', n]); return query; },
         insert(row) { inserted = row; return query; }, update(row) { inserted = row; return query; },
         delete() { return query; }, single() { return query; }, maybeSingle() { return query; },
         then(resolve, reject) {
-          selects.push({ table, filters });
+          selects.push({ table, filters, projection });
           if (inserted) { inserts.push({ table, row: inserted }); }
           if (insertError && inserted) return Promise.resolve({ error: { message: insertError } }).then(resolve, reject);
           return Promise.resolve({ data: inserted ? { id: 'new' } : [] }).then(resolve, reject);
@@ -135,6 +135,18 @@ test('access logging never throws, even when the call fails', () => {
   // patient's history, so this is fire-and-forget by design.
   assert.doesNotThrow(() => api.logAccess(petId, 'record'));
   assert.doesNotThrow(() => api.logAccess(petId, 'nonsense'));
+});
+
+test('clinics() projects the id every picker needs', async () => {
+  // The schedule, client file and clinic setup all build a <select> from this
+  // and skip rows with no id. When it projected only clinics(name), a vet who
+  // had just created a clinic was told they belonged to none.
+  const { api, selects } = setup();
+  await api.clinics();
+  const q = selects.find(s => s.table === 'clinic_members');
+  assert.ok(q, 'clinic_members was queried');
+  assert.match(q.projection, /clinic_id/);
+  assert.match(q.projection, /clinics\(\s*id/);
 });
 
 test('creating a clinic requires a real name', async () => {

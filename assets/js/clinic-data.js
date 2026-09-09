@@ -401,9 +401,16 @@
     clients, saveClient, clientAnimals, linkClientPet, unlinkClientPet,
     identity, vetIdentity, recordIdentity, caseload, recordContext, records, addRecord, payload, definitions, ownerGrants,
     createPatient, claimRecord, withdrawRecord, removePatient,
+    // clinic_id and clinics(id) are BOTH selected on purpose. This helper
+    // originally fed clinic.js, which only ever printed clinics.name -- so the
+    // id was never projected. The schedule, client file and clinic setup all
+    // build a <select> from it and drop any row without an id, which meant a
+    // vet who had just created a clinic was told they had none.
     clinics: async function () {
       const who = await vetIdentity();
-      return unwrap(await client.from('clinic_members').select('clinics(name)').eq('vet_id',who.user.id)) || [];
+      return unwrap(await client.from('clinic_members')
+        .select('clinic_id, title, clinics(id,name)')
+        .eq('vet_id', who.user.id)) || [];
     },
     grant: async function (petId,email,scope) {
       await identity();

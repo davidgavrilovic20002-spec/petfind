@@ -185,6 +185,7 @@
         o.value = row.clinic_id || (row.clinics && row.clinics.id) || '';
         o.textContent = (row.clinics && row.clinics.name) || T('Clinic', 'Clinique');
         if (o.value) list.append(o);
+      else console.warn('PetFind: a clinic row arrived without an id and was skipped', row);
       }
       caseload = await PFVet.caseload().catch(() => []);
       $('cli').hidden = false; $('cli-signin').hidden = true;
