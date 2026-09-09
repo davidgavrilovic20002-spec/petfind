@@ -149,6 +149,30 @@ test('clinics() projects the id every picker needs', async () => {
   assert.match(q.projection, /clinics\(\s*id/);
 });
 
+test('a page asking for an older build is flagged as stale, not left to misbehave', () => {
+  // The exact failure this catches: cached HTML requests clinic-data.js?v=9,
+  // the server returns the current file anyway, and the page then runs old
+  // expectations against new code -- surfacing as a plausible wrong message
+  // rather than as "your page is out of date".
+  const mk = askedVersion => {
+    const el = { id: '', style: {}, appendChild(){}, setAttribute(){}, addEventListener(){} };
+    const doc = {
+      currentScript: { src: 'https://x/assets/js/clinic-data.js?v=' + askedVersion },
+      getElementById: () => null, createElement: () => el,
+      addEventListener(){}, body: { appendChild(){} }
+    };
+    const sandbox = { window: { PFDB: { client: {}, getUser: async()=>null, getProfile: async()=>({}), mfaAAL: async()=>({}) } }, document: doc };
+    vm.runInNewContext(source, sandbox);
+    return sandbox.window;
+  };
+  // Read BUILD from the source rather than hardcoding it, so bumping the
+  // version does not break this test every single time.
+  const build = Number((source.match(/const BUILD = (\d+);/) || [])[1]);
+  assert.ok(Number.isInteger(build), 'BUILD constant is present and numeric');
+  assert.equal(mk(build).PFStalePage, undefined, 'a current page is not flagged');
+  assert.equal(mk(build - 1).PFStalePage, true, 'an older page is flagged');
+});
+
 test('creating a clinic requires a real name', async () => {
   const { api, rpcs } = setup({ rpcResult: 'clinic-id' });
   await assert.rejects(api.createClinic({ name: 'x' }), /name|nom/i);

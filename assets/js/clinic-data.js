@@ -5,6 +5,46 @@
   if (!global.PFDB) return;
   const db = global.PFDB, client = db.client;
   const T = (en, fr) => (global.PFI18n && global.PFI18n.lang === 'fr') ? fr : en;
+
+  // ---- stale-page detection ------------------------------------------------
+  // Versioned asset URLs only help when the HTML asking for them is fresh, and
+  // GitHub Pages caches the HTML too. A stale page therefore requests
+  // clinic-data.js?v=9, the server returns THIS file regardless (a query string
+  // does not change what is served), and the page runs new markup expectations
+  // against old code -- or old markup against new code.
+  //
+  // The mismatch is detectable from inside: compare the version the HTML asked
+  // for against the one this file actually is. It cost four debugging sessions
+  // to notice, each time surfacing as a plausible-but-wrong message like "No
+  // clinic is linked to your account".
+  const BUILD = 11;   // keep in step with ?v= on clinic-data.js in the HTML
+  (function detectStalePage() {
+    try {
+      const src = (document.currentScript && document.currentScript.src) || '';
+      const asked = src.match(/[?&]v=(\d+)/);
+      if (!asked || Number(asked[1]) === BUILD) return;
+      global.PFStalePage = true;
+      const show = function () {
+        if (document.getElementById('pf-stale')) return;
+        const bar = document.createElement('div');
+        bar.id = 'pf-stale';
+        bar.setAttribute('role', 'alert');
+        bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:9999;background:#92231a;color:#fff;'
+          + 'font:600 14px/1.4 system-ui,sans-serif;padding:11px 16px;text-align:center';
+        bar.textContent = T('This page is out of date and may behave incorrectly. Reload it.',
+                            'Cette page n’est pas à jour et peut mal fonctionner. Rechargez-la.') + '  ';
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.style.cssText = 'font:inherit;background:#fff;color:#92231a;border:0;border-radius:6px;padding:4px 12px;cursor:pointer';
+        b.textContent = T('Reload', 'Recharger');
+        b.addEventListener('click', function () { location.reload(true); });
+        bar.appendChild(b);
+        document.body.appendChild(bar);
+      };
+      if (document.body) show();
+      else document.addEventListener('DOMContentLoaded', show);
+    } catch (e) { /* detection must never break the app */ }
+  })();
   function unwrap(result) {
     if (result.error) throw result.error;
     return result.data;
