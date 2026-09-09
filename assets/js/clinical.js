@@ -1,6 +1,12 @@
 (function(){
 'use strict';
-const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+// The demo's own tests run this file with no window, so read the globals
+// defensively rather than assuming a browser.
+const G=typeof window!=='undefined'?window:globalThis;
+const lang=()=>(G.PFI18n&&G.PFI18n.lang)||'fr';
+const t=v=>{const d=G.PFDemoEN;return lang()==='en'&&d&&d[v]!==undefined?d[v]:v;};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const statuses=['Planifié','Arrivé / admis','En consultation 1','En consultation 2','En consultation 3','Au bloc','Hospitalisé','Prêt pour la sortie','Annulé','Absent'];
 const services=['Consultation','Vaccination','Chirurgie','Urgence','Toilettage','Téléconsultation'];
 const colors=['','blue','purple','red','orange','blue'];
@@ -39,7 +45,43 @@ $('cancel-appointment').onclick=()=>{$('appointment-editor').replaceChildren();$
 $('appointment-form').onsubmit=e=>{e.preventDefault();const a=Object.fromEntries(new FormData(e.target));a.duration=Number(a.duration);const mins=t=>Number(t.slice(0,2))*60+Number(t.slice(3));if(mins(a.time)+a.duration>1440){$('appointment-error').textContent='Le rendez-vous doit se terminer avant minuit.';return;}if(appointments.some(b=>b.date===a.date&&!['Annulé','Absent'].includes(b.status)&&(b.vet===a.vet||b.room===a.room)&&mins(a.time)<mins(b.time)+b.duration&&mins(b.time)<mins(a.time)+a.duration)){$('appointment-error').textContent='Ce créneau chevauche un rendez-vous de cette salle ou de ce praticien.';return;}a.id=Date.now();a.status='Planifié';appointments.push(a);appointments.sort((a,b)=>a.time.localeCompare(b.time));date=a.date;render();notify('Rendez-vous ajouté à la démonstration. Aucune réservation réelle envoyée.');};
 }
 const titles={agenda:['Accueil & agenda','Une vue claire de la journée, de l’arrivée à la sortie.'],intake:['Client & admission','Identité, alertes et premières observations au même endroit.'],soap:['Consultation SOAP','Un examen structuré, avec la décision clinique au vétérinaire.'],specialties:['Spécialités','Des fiches ciblées pour approfondir l’examen.'],lab:['Laboratoire & imagerie','Suivre les résultats et préparer les connexions de la clinique.'],france:['Cadre français','Distinguer les obligations, les bonnes pratiques et les options.']};
-function render(){const methods={agenda,intake,soap,specialties,lab,france};$('surface').innerHTML=methods[page]();$('page-title').textContent=titles[page][0];$('page-subtitle').textContent=titles[page][1];restore();bind();}
+// One pass over the rendered text, translating exact matches. Doing it here
+// rather than at each call site catches the headings, buttons and outputs that
+// were never routed through esc(), and it keeps the French strings intact as
+// the demo's own state.
+function localise(root){
+ if(lang()!=='en'||!G.PFDemoEN||!root||typeof document==='undefined'||!document.createTreeWalker)return;
+ const dict=G.PFDemoEN,jobs=[],walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+ while(walker.nextNode()){const n=walker.currentNode,k=(n.nodeValue||'').trim();if(k&&dict[k]!==undefined)jobs.push([n,k]);}
+ for(const [n,k] of jobs){
+  const el=n.parentElement;
+  // An <option> with no value attribute submits its own text, and this demo
+  // filters on those French values. Pin the value before changing the label.
+  if(el&&el.tagName==='OPTION'&&!el.hasAttribute('value'))el.setAttribute('value',k);
+  n.nodeValue=n.nodeValue.replace(k,dict[k]);
+ }
+ // Some text is composed at render time -- "Chat · Européen · Camille Exemple"
+ // is a species, a breed and a sample owner in one node -- so no whole-node key
+ // matches. Fall back to substring replacement, longest key first, with a
+ // length floor so a short word cannot match inside a longer one.
+ if(!localise.parts){
+  // Floor of 7 so a short word cannot match inside a longer one, but low
+  // enough to reach "Salle 1". Longest first, so "Salle 1" is not eaten by a
+  // shorter key that happens to be a prefix.
+  localise.parts=Object.keys(dict).filter(k=>k.trim().length>=7).sort((a,b)=>b.length-a.length);
+ }
+ // No accent test here. "Statut de Luna" and "Dr Martin · Salle 1" are French
+ // and carry no accented character at all, which is exactly how they survived
+ // the first sweep.
+ const rest=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+ while(rest.nextNode()){
+  const n=rest.currentNode;let v=n.nodeValue;
+  if(!v||v.trim().length<7)continue;
+  for(const k of localise.parts){if(v.includes(k))v=v.split(k).join(dict[k]);}
+  if(v!==n.nodeValue)n.nodeValue=v;
+ }
+}
+function render(){const methods={agenda,intake,soap,specialties,lab,france};$('surface').innerHTML=methods[page]();$('page-title').textContent=t(titles[page][0]);$('page-subtitle').textContent=t(titles[page][1]);restore();bind();localise($('surface'));}
 function bind(){if(page==='agenda'){$('new-appointment').onclick=appointmentEditor;$('agenda-date').onchange=e=>{if(e.target.value){date=e.target.value;render();}};$('service-filter').onchange=e=>{filter=e.target.value;render();};}bindExtra();}
 $('modules').onclick=e=>{const b=e.target.closest('[data-page]');if(!b)return;remember();page=b.dataset.page;document.querySelectorAll('[data-page]').forEach(x=>x.removeAttribute('aria-current'));b.setAttribute('aria-current','page');notify('');render();};
 $('surface').onclick=e=>{const b=e.target.closest('[data-view]');if(b){view=b.dataset.view;render();}};
@@ -76,5 +118,5 @@ function bsa(weight,species){if(!Number.isFinite(weight)||weight<0.1||weight>120
 function updateBSA(){const f=$('module-form');const value=bsa(Number(f.elements.bsa_weight.value),f.elements.bsa_species.value);$('bsa-result').textContent=value===null?'Poids attendu : 0,1 à 120 kg':value.toFixed(3)+' m²';}
 function updateIntake(){const f=$('module-form'),v=Object.fromEntries(new FormData(f));const d=new Date(v.dob+'T12:00:00'),now=new Date();if(v.dob&&!isNaN(d)&&d<=now){let months=(now.getFullYear()-d.getFullYear())*12+now.getMonth()-d.getMonth()-(now.getDate()<d.getDate()?1:0);$('calculated-age').textContent=Math.max(0,Math.floor(months/12))+' ans · '+Math.max(0,months%12)+' mois';}else $('calculated-age').textContent='Date à préciser';const alerts=[v.behavior,v.allergies&&'Allergies : '+v.allergies,v.anesthesia==='Risque signalé'&&'Risque anesthésique',v.medical,v.triage].filter(Boolean);$('safety-banner').replaceChildren();for(const a of alerts){const span=document.createElement('span');span.className='tag '+(a.startsWith('Rouge')||a.includes('morsure')?'red':a.startsWith('Orange')?'orange':a.startsWith('Jaune')?'yellow':'');span.textContent=a;$('safety-banner').append(span);}}
 
-render();
-})();
+G.PFI18nOnChange=function(){render();};
+render();})();

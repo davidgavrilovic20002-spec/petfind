@@ -141,11 +141,12 @@
   $('cs-create-form').addEventListener('submit', async event => {
     event.preventDefault();
     if (busy) return;
-    busy = true; const b = event.currentTarget.querySelector('button'); b.disabled = true;
+    const form = event.currentTarget, b = form.querySelector('button');
+    busy = true; b.disabled = true;
     notice(T('Creating…', 'Création…'));
     try {
-      await PFVet.createClinic(Object.fromEntries(new FormData(event.currentTarget)));
-      event.currentTarget.reset(); $('cs-none').hidden = true;
+      await PFVet.createClinic(Object.fromEntries(new FormData(form)));
+      form.reset(); $('cs-none').hidden = true;
       await loadClinics();
       notice(T('Clinic created. Add its rooms next — the schedule needs them.', 'Clinique créée. Ajoutez ses salles : l’agenda en a besoin.'));
     } catch (e) { notice(fail(e), true); }
@@ -155,9 +156,9 @@
   $('cs-room-form').addEventListener('submit', async event => {
     event.preventDefault();
     if (busy) return;
-    busy = true; const b = event.currentTarget.querySelector('button'); b.disabled = true;
+    const f = event.currentTarget, b = f.querySelector('button');
+    busy = true; b.disabled = true;
     try {
-      const f = event.currentTarget;
       await PFVet.addRoom(current(), f.elements.name.value, f.elements.kind.value);
       f.reset(); await renderRooms(); notice('');
     } catch (e) { notice(fail(e), true); }
@@ -167,9 +168,9 @@
   $('cs-team-form').addEventListener('submit', async event => {
     event.preventDefault();
     if (busy) return;
-    busy = true; const b = event.currentTarget.querySelector('button'); b.disabled = true;
+    const f = event.currentTarget, b = f.querySelector('button');
+    busy = true; b.disabled = true;
     try {
-      const f = event.currentTarget;
       await PFVet.addClinicMember(current(), f.elements.email.value, f.elements.title.value);
       f.reset(); await renderTeam();
       notice(T('Practitioner added.', 'Praticien ajouté.'));

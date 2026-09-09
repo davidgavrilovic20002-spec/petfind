@@ -726,6 +726,32 @@
     'sec.2fa.verify': 'Vérifier le code',
     'sec.open.records': 'Ouvrir les dossiers cliniques',
     'sec.reset.mine': 'Réinitialiser mon mot de passe',
+
+    /* ---- clinical records workspace ---- */
+    'ops.doctitle': 'Dossiers cliniques — PetFind',
+    'ops.skip': 'Aller aux dossiers',
+    'ops.nav.patients': 'Patients',
+    'ops.nav.demo': 'Démonstration',
+    'ops.eyebrow': 'DOSSIERS CLINIQUES',
+    'ops.title': 'Le suivi de vos patients',
+    'ops.sub': 'Formulaires enregistrés en ligne, avec historique des versions.',
+    'ops.badge': 'Vétérinaire · 2FA',
+    'ops.login': 'Connexion vétérinaire',
+    'ops.mfa': 'Vérification en deux étapes',
+    'ops.mfa.code': "Code de l'application d'authentification",
+    'ops.enroll': "Activez d'abord l'authentification à deux facteurs dans <a href=\"security.html\">la sécurité de votre compte PetFind</a>, puis revenez ici.",
+    'ops.patient': 'Patient autorisé',
+    'ops.kind': 'Type de fiche',
+    'ops.new': '+ Nouvelle fiche',
+    'ops.notice': "Seuls les vétérinaires disposant d'une autorisation active pour cet animal peuvent consulter ces fiches. Les brouillons de prescription et de facturation ne sont pas des documents officiels.",
+    'ops.saved': 'Fiches enregistrées',
+    'ops.close': 'Fermer',
+    'ops.formtitle': 'Titre',
+    'ops.save': 'Enregistrer en ligne',
+    'ops.history': 'Historique des versions',
+    'ops.todo': 'Services à raccorder',
+    'ops.todo.sub': "Registres nationaux, laboratoires, PACS, signature électronique, Calypso, paiement, Factur-X, vidéo et rappels automatiques ne sont pas connectés. Aucun envoi ni paiement n'est déclenché par ces formulaires.",
+    'ops.anses': "Consulter l'index officiel ANSES-ANMV ↗",
   };
 
   var year = new Date().getFullYear();
