@@ -84,6 +84,17 @@ h1,h2,h3{letter-spacing:-.4px;line-height:1.15}
 .btn.accent,.btn.amber{background:var(--accent);color:#fff;box-shadow:0 10px 22px rgba(198,56,45,.32)}
 .btn.accent:hover,.btn.amber:hover{background:var(--accent-d);box-shadow:0 12px 26px rgba(198,56,45,.4)}
 .btn.ghost{background:#fff;color:var(--teal-d);border:1.6px solid var(--teal)}
+.btn.ghost:hover{background:var(--soft)}
+/* Destructive actions. Outlined rather than filled: "Delete tag" and "Remove
+   patient" sit beside ordinary controls, and a solid red block there would read
+   as the main thing to do on the page. It fills on hover, so the commitment is
+   unmistakable at the moment of clicking. */
+.btn.danger{background:#fff;color:var(--accent);border:1.6px solid var(--accent)}
+.btn.danger:hover{background:var(--accent);color:#fff;box-shadow:0 10px 22px rgba(198,56,45,.28)}
+/* Signing out is not destructive, but it does end the session, so it warms to
+   red only under the cursor. Targeted by id rather than on .btn.soft, which is
+   also Cancel and Refresh -- those must not turn red. */
+#logout:hover,#vet-signout:hover{color:var(--accent);border-color:var(--accent)}
 .btn.soft{background:var(--soft);color:var(--ink);border:1px solid var(--line)}
 .btn.block{width:100%}
 .btn.lg{padding:16px 26px;font-size:16.5px}
