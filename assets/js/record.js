@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const $=id=>document.getElementById(id), petId=new URLSearchParams(location.search).get('pet');
-  let context=null, revision=0, saving=false, dirty=false, pendingId=null, submitted=false, alerts=[];
+  let context=null, revision=0, saving=false, dirty=false, pendingId=null, submitted=false, alerts=[], vitals=[];
   // Language follows the header switcher (shared pf_lang with the owner site).
   const lang=()=>(window.PFI18n&&window.PFI18n.lang)||'fr';
   const T=(en,fr)=>lang()==='fr'?fr:en;
@@ -99,6 +99,80 @@
     }
   }
 
+  const triageLabel=v=>({red:T('Red — resuscitation','Rouge — réanimation'),orange:T('Orange — very urgent','Orange — très urgent'),yellow:T('Yellow — urgent','Jaune — urgent'),green:T('Green — standard','Vert — standard')}[v]||'');
+  const mcsLabel=v=>({normal:T('Normal','Normal'),mild:T('Mild loss','Perte légère'),moderate:T('Moderate loss','Perte modérée'),severe:T('Severe loss','Perte sévère')}[v]||'');
+
+  function renderVitals(){
+    const cur=$('vitals-current'); cur.replaceChildren();
+    $('vitals-new').hidden=!(context&&context.writable&&!context.owner);
+    if(!vitals.length){
+      const p=document.createElement('p');p.className='vitals-empty';
+      p.textContent=T('No vitals recorded yet.','Aucune constante enregistrée.');
+      cur.append(p); $('vitals-chart').replaceChildren(); return;
+    }
+    const latest=vitals[0];
+    const item=(label,value,extra)=>{
+      if(value==null||value==='')return;
+      const d=document.createElement('div');d.className='v-item';
+      const b=document.createElement('strong');b.textContent=value;
+      const s=document.createElement('span');s.textContent=label;
+      d.append(b,s); if(extra)d.classList.add(extra); cur.append(d);
+    };
+    item(T('Weight','Poids'), latest.weight_kg!=null?latest.weight_kg+' kg':null);
+    item(T('BCS','BCS'), latest.bcs!=null?latest.bcs+'/9':null);
+    item(T('MCS','MCS'), mcsLabel(latest.mcs)||null);
+    item(T('Temperature','Température'), latest.temperature!=null?latest.temperature+' °C':null);
+    if(latest.triage){
+      const d=document.createElement('div');d.className='v-item';
+      const b=document.createElement('strong');b.className='v-triage v-'+latest.triage;
+      b.textContent=triageLabel(latest.triage);
+      const s=document.createElement('span');s.textContent=T('Triage','Triage')+' · '+date(String(latest.recorded_at).slice(0,10));
+      d.append(b,s); cur.append(d);
+    }
+    renderWeightChart();
+  }
+
+  // One polyline, drawn by hand. A charting library would be many times the
+  // size of the thing it draws, and this has to work offline in a clinic.
+  function renderWeightChart(){
+    const host=$('vitals-chart'); host.replaceChildren();
+    const pts=vitals.filter(v=>v.weight_kg!=null)
+      .map(v=>({t:new Date(v.recorded_at).getTime(),w:Number(v.weight_kg)}))
+      .filter(v=>Number.isFinite(v.t)&&Number.isFinite(v.w))
+      .sort((a,b)=>a.t-b.t);
+    if(pts.length<2){host.setAttribute('aria-label','');return;}
+    const W=600,H=96,pad=26;
+    const t0=pts[0].t,t1=pts[pts.length-1].t;
+    const lo=Math.min(...pts.map(p=>p.w)),hi=Math.max(...pts.map(p=>p.w));
+    const span=(hi-lo)||1;
+    const x=p=>pad+((p.t-t0)/((t1-t0)||1))*(W-pad*2);
+    const y=p=>H-pad+ -((p.w-lo)/span)*(H-pad*2)+ (pad-pad);
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H); svg.setAttribute('preserveAspectRatio','none');
+    const line=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    line.setAttribute('class','vc-line');
+    line.setAttribute('points',pts.map(p=>x(p)+','+y(p)).join(' '));
+    svg.append(line);
+    for(const p of pts){
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('class','vc-dot');c.setAttribute('cx',x(p));c.setAttribute('cy',y(p));c.setAttribute('r','2.5');
+      svg.append(c);
+    }
+    const tag=(tx,ty,text,anchor)=>{
+      const el=document.createElementNS('http://www.w3.org/2000/svg','text');
+      el.setAttribute('class','vc-label');el.setAttribute('x',tx);el.setAttribute('y',ty);
+      if(anchor)el.setAttribute('text-anchor',anchor);
+      el.textContent=text;svg.append(el);
+    };
+    // Weights hug the left edge, dates sit clear below the plot: at the
+    // bottom-left they were landing on top of each other.
+    tag(2,12,hi+' kg'); tag(2,H-pad+4,lo+' kg');
+    tag(pad,H+10,new Date(t0).toLocaleDateString(lang()==='fr'?'fr-FR':'en-GB',{month:'short',year:'2-digit'}));
+    tag(W-pad,H+10,new Date(t1).toLocaleDateString(lang()==='fr'?'fr-FR':'en-GB',{month:'short',year:'2-digit'}),'end');
+    host.append(svg);
+    host.setAttribute('aria-label',T('Weight from ','Poids de ')+pts[0].w+' kg '+T('to ','à ')+pts[pts.length-1].w+' kg');
+  }
+
   const alertKinds=()=>({behaviour:T('Behaviour','Comportement'),allergy:T('Drug allergy','Allergie médicamenteuse'),medical:T('Medical','Médical'),anaesthetic:T('Anaesthetic risk','Risque anesthésique'),quarantine:T('Quarantine','Quarantaine'),other:T('Other','Autre')});
 
   function renderAlerts(){
@@ -134,7 +208,7 @@
     catch(e){saving=false;button.disabled=false;if(run===revision)notice(e.message||T('Could not clear this alert.','Impossible de lever cette alerte.'),true);}
   }
 
-  function clear(){context=null;alerts=[];$('alert-banner').hidden=true;$('alert-banner').replaceChildren();$('alert-form').hidden=true;$('alert-new').hidden=true;$('remove-patient').hidden=true;$('record').hidden=true;$('timeline').replaceChildren();$('editor').hidden=true;$('pet-name').textContent='';$('pet-detail').textContent='';}
+  function clear(){context=null;alerts=[];vitals=[];$('vitals-form').hidden=true;$('vitals-new').hidden=true;$('alert-banner').hidden=true;$('alert-banner').replaceChildren();$('alert-form').hidden=true;$('alert-new').hidden=true;$('remove-patient').hidden=true;$('record').hidden=true;$('timeline').replaceChildren();$('editor').hidden=true;$('pet-name').textContent='';$('pet-detail').textContent='';}
   async function load(){
     if(saving)return;
     const run=++revision;clear();$('retry').hidden=true;$('signin').hidden=true;notice(T('Loading record…','Chargement du dossier…'));
@@ -145,6 +219,7 @@
       // record -- but a silent empty banner would be a lie, so it is reported.
       let alertError=null;
       try{alerts=await PFVet.alerts(petId);}catch(e){alerts=[];alertError=e;}
+      try{vitals=await PFVet.vitals(petId);}catch(e){vitals=[];}
       if(run!==revision)return;
       context=result;if($('clinical-forms')){$('clinical-forms').href='operations.html?pet='+encodeURIComponent(petId);$('clinical-forms').hidden=!!context.owner;}$('logout').hidden=false;$('pet-name').textContent=context.pet.name;document.title=T('Patient record — PetFind','Dossier du patient — PetFind');
       const sp=window.PFBreeds?PFBreeds.speciesLabel(context.pet.species,lang()):context.pet.species;
@@ -158,7 +233,8 @@
       $('back').href=context.owner?'../account.html':'index.html';
       $('back').textContent=context.owner?T('← My account','← Mon compte'):T('← Patient list','← Liste des patients');
       // The owner is not a vet, so vet_remove_patient() would refuse them.
-      renderAlerts();
+      PFVet.logAccess(petId, 'record');
+      renderAlerts(); renderVitals();
       if(alertError)notice(T('The safety alerts could not be loaded. Treat this record as incomplete and refresh.',
                              'Les alertes de sécurité n\'ont pas pu être chargées. Considérez ce dossier comme incomplet et actualisez.'),true);
       $('alert-new').hidden=!(context.writable&&!context.owner);
@@ -168,7 +244,16 @@
         : T('Remove from my list','Retirer de ma liste');
       $('editor').hidden=!context.writable;$('record-layout').classList.toggle('read-only',!context.writable);$('record').hidden=false;renderTimeline();notice('');
       if(!context.writable){buildFields();}
-    }catch(e){if(run!==revision)return;clear();buildFields();$('retry').hidden=false;$('signin').hidden=false;notice(e.message||T('Could not load this record. Try again.','Chargement du dossier impossible. Réessayez.'),true);}
+    }catch(e){
+      if(run!==revision)return;clear();buildFields();
+      if(e&&e.code==='mfa_setup_required'){
+        $('retry').hidden=true;$('signin').hidden=false;
+        $('signin').href='security.html';
+        $('signin').textContent=T('Open Account security','Ouvrir Sécurité du compte');
+        notice(e.message,true);return;
+      }
+      $('retry').hidden=false;$('signin').hidden=false;
+      notice(e.message||T('Could not load this record. Try again.','Chargement du dossier impossible. Réessayez.'),true);}
   }
   // Calculated age beats a free-text one when a birthdate is on file: "3 ans"
   // typed in 2024 is wrong by now, and a dose depends on it.
@@ -198,6 +283,24 @@
 
   $('kind').addEventListener('change',buildFields);
   $('remove-patient').addEventListener('click',removePatient);
+  $('vitals-new').addEventListener('click',()=>{const f=$('vitals-form');f.hidden=!f.hidden;if(!f.hidden)f.elements.weight_kg.focus();else f.reset();});
+  $('vitals-cancel').addEventListener('click',()=>{$('vitals-form').hidden=true;$('vitals-form').reset();$('vitals-notice').textContent='';});
+  $('vitals-form').addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(saving||!context||!context.writable)return;
+    const form=event.currentTarget,button=form.querySelector('button[type=submit]');
+    saving=true;button.disabled=true;$('vitals-notice').textContent=T('Saving…','Enregistrement…');
+    try{
+      await PFVet.recordVitals(petId,Object.fromEntries(new FormData(form)));
+      saving=false;form.reset();form.hidden=true;$('vitals-notice').textContent='';
+      vitals=await PFVet.vitals(petId);renderVitals();
+      notice(T('Vitals recorded.','Constantes enregistrées.'));
+    }catch(e){
+      saving=false;
+      $('vitals-notice').textContent=e.message||T('Could not save these vitals.','Impossible d\'enregistrer ces constantes.');
+      $('vitals-notice').classList.add('error');
+    }finally{button.disabled=false;}
+  });
   $('alert-new').addEventListener('click',()=>{const f=$('alert-form');f.hidden=!f.hidden;if(!f.hidden)f.elements.label.focus();else f.reset();});
   $('alert-cancel').addEventListener('click',()=>{$('alert-form').hidden=true;$('alert-form').reset();});
   $('alert-form').addEventListener('submit',async event=>{
@@ -244,7 +347,7 @@
     const form=$('entry-form'), kept=Object.fromEntries(new FormData(form));
     buildFields();
     for(const [k,v] of Object.entries(kept)) if(form.elements[k]&&v) form.elements[k].value=v;
-    if(context)renderTimeline();
+    if(context){renderTimeline();renderAlerts();renderVitals();}
   };
   buildFields();load();
 })();

@@ -481,7 +481,7 @@
       var url = slug ? petUrl(slug) : null;
       var breed = window.PFBreeds ? window.PFBreeds.displayBreed(p, lang()) : p.breed;
       var species = window.PFBreeds ? window.PFBreeds.speciesLabel(p.species, lang()) : p.species;
-      var sub = [breed || species, p.sex, p.age].filter(Boolean).join(' · ');
+      var sub = [breed || species, p.sex, ownerAge(p) || p.age].filter(Boolean).join(' · ');
       var item = document.createElement('div'); item.className = 'pet-item';
       var h = document.createElement('h3'); h.textContent = p.name || '—'; item.appendChild(h);
       var s = document.createElement('div'); s.className = 'pi-sub'; s.textContent = sub || '—'; item.appendChild(s);
@@ -545,6 +545,31 @@
     }
   }
 
+  async function renderAppointments() {
+    var card = $('appt-card'), list = $('appt-list');
+    if (!card || !list) return;
+    list.replaceChildren();
+    try {
+      var rows = await window.PFDB.client.rpc('owner_appointments', {});
+      if (rows.error) throw rows.error;
+      var data = rows.data || [];
+      card.hidden = !data.length;
+      data.forEach(function (a) {
+        var row = document.createElement('div'); row.className = 'pet-item';
+        var when = new Date(a.starts_at);
+        var h = document.createElement('h3');
+        h.textContent = when.toLocaleString(lang() === 'fr' ? 'fr-FR' : 'en-GB',
+          { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+        var sub = document.createElement('div'); sub.className = 'pi-sub';
+        sub.textContent = [a.pet_name, a.clinic_name, a.room].filter(Boolean).join(' · ');
+        row.appendChild(h); row.appendChild(sub); list.appendChild(row);
+      });
+    } catch (e) {
+      // A diary that cannot load must not take the dashboard down with it.
+      card.hidden = true;
+    }
+  }
+
   (function bindPetsFilter() {
     var filterEl = document.getElementById('pets-filter');
     // Re-renders from the pets already loaded; no refetch, no request per key.
@@ -552,6 +577,21 @@
   })();
 
   function L(en, fr) { return lang() === 'fr' ? fr : en; }
+
+  // Prefer the age the birthdate implies. "3 ans" typed in 2024 is wrong now,
+  // and the two disagreeing on one line is worse than either alone.
+  function ownerAge(pet) {
+    if (!pet || !pet.birthdate) return '';
+    var b = new Date(pet.birthdate + 'T12:00:00');
+    if (isNaN(b)) return '';
+    var now = new Date();
+    var m = (now.getFullYear() - b.getFullYear()) * 12 + (now.getMonth() - b.getMonth());
+    if (now.getDate() < b.getDate()) m--;
+    if (m < 0) return '';
+    var y = Math.floor(m / 12), r = m % 12;
+    if (y < 1) return m + ' ' + L('months', 'mois');
+    return y + ' ' + L(y > 1 ? 'years' : 'year', 'an' + (y > 1 ? 's' : '')) + (r ? ' ' + r + ' ' + L('months', 'mois') : '');
+  }
 
   function showDeletionError(error) {
     var host = $('deletion-error'); host.hidden = false;
@@ -730,6 +770,7 @@
     }
     lastPets = res.data || [];
     renderPets(lastPets);
+    renderAppointments();
     renderTwoFA();
     renderResearchConsent();
   }

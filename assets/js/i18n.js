@@ -25,6 +25,7 @@
 
     /* ---- account page ---- */
     'acc.eyebrow': 'Espace propriétaire',
+    'acc.appt.title': 'Prochains rendez-vous',
     'acc.filter.label': 'Filtrer vos animaux',
     'acc.filter.ph': 'Filtrer par nom ou race',
     'acc.login.title': 'Connectez-vous',
@@ -667,6 +668,37 @@
     'cli.privacy': "Ceci est le fichier de votre clinique sur une personne, saisi par vous. Il n'est pas relié à son compte PetFind et n'y lit jamais rien.",
     'cli.nav': 'Clients',
     'cli.nav.sub': 'Coordonnées, foyers, situation de facturation & leurs animaux',
+
+    /* ---- vitals + clinic setup (0035/0036) ---- */
+    'cl.v.title': 'Constantes & triage',
+    'cl.v.add': 'Saisir des constantes',
+    'cl.v.weight': 'Poids (kg)', 'cl.v.bcs': 'BCS (1–9)', 'cl.v.mcs': 'MCS',
+    'cl.v.temp': 'Température (°C)', 'cl.v.triage': 'Triage', 'cl.v.notes': 'Notes',
+    'cl.v.none': 'Non évalué',
+    'cl.v.m.normal': 'Normale', 'cl.v.m.mild': 'Perte légère',
+    'cl.v.m.moderate': 'Perte modérée', 'cl.v.m.severe': 'Perte sévère',
+    'cl.v.t.red': 'Rouge — réanimation', 'cl.v.t.orange': 'Orange — très urgent',
+    'cl.v.t.yellow': 'Jaune — urgent', 'cl.v.t.green': 'Vert — standard',
+    'cl.v.save': 'Enregistrer les constantes',
+    'cs.word': '/ Configuration', 'cs.skip': 'Aller à la configuration',
+    'cs.eyebrow': 'CONFIGURATION', 'cs.title': 'Votre clinique',
+    'cs.sub': "L'agenda et le fichier client ont besoin d'une clinique et de ses salles pour fonctionner.",
+    'cs.create': 'Créer votre clinique',
+    'cs.create.sub': "Vous en devenez le premier membre. Les confrères sont ajoutés ensuite par leur e-mail vétérinaire.",
+    'cs.create.go': 'Créer la clinique',
+    'cs.f.name': 'Nom de la clinique *', 'cs.f.address': 'Adresse',
+    'cs.f.postal': 'Code postal', 'cs.f.city': 'Ville', 'cs.f.phone': 'Téléphone',
+    'cs.another': 'Ajouter une autre clinique',
+    'cs.rooms': 'Salles',
+    'cs.rooms.sub': "Les salles rendent un double réservation détectable. Sans elles l'agenda compare du texte saisi : « Salle 1 » et « salle 1 » sont deux salles différentes.",
+    'cs.room.name': 'Nom de la salle', 'cs.room.kind': 'Type', 'cs.room.add': 'Ajouter la salle',
+    'cs.k.exam': 'Salle de consultation', 'cs.k.surgery': 'Bloc opératoire',
+    'cs.k.imaging': 'Imagerie', 'cs.k.hospital': 'Hospitalisation', 'cs.k.other': 'Autre',
+    'cs.team': 'Praticiens',
+    'cs.team.sub': "Seuls les membres peuvent être planifiés dans l'agenda. L'ajout nécessite l'e-mail de leur compte vétérinaire.",
+    'cs.team.email': 'E-mail vétérinaire', 'cs.team.title': 'Titre', 'cs.team.add': 'Ajouter le praticien',
+    'cs.nav': 'Configuration de la clinique',
+    'cs.nav.sub': 'Créer la clinique, ses salles et ses praticiens',
   };
 
   var year = new Date().getFullYear();

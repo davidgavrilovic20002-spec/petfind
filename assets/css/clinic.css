@@ -109,3 +109,35 @@ a.cal-block:hover{filter:brightness(.97);box-shadow:0 2px 8px rgba(15,27,26,.14)
 .cli-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .cli-fields .wide{grid-column:1/-1}
 @media(max-width:760px){.cli-fields{grid-template-columns:1fr}.cli-list{grid-template-columns:1fr}}
+
+/* Vitals & triage (0036). The weight sparkline is inline SVG rather than a
+   library: it is one polyline, and a chart library would be 40x its weight. */
+.vitals-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:22px}
+.vitals-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.vitals-head h2{margin:0;font-size:19px}
+.vitals-current{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}
+.vitals-current .v-item strong{font-size:17px}
+.vitals-current .v-item span{color:var(--muted);font-size:12.5px;display:block}
+.v-triage{border-radius:999px;padding:3px 11px;font-weight:700;font-size:13px}
+.v-red{background:#fdecea;color:#8d2418;border:1px solid #e6b0a8}
+.v-orange{background:#fdf1e6;color:#8a4b12;border:1px solid #e5c09a}
+.v-yellow{background:#fdf8e0;color:#6f5b12;border:1px solid #e0d59a}
+.v-green{background:#e6f4ea;color:#1d6b39;border:1px solid #a9d4b8}
+.vitals-chart{margin-top:14px;padding-bottom:16px}
+.vitals-chart svg{width:100%;height:96px;overflow:visible}
+.vitals-chart .vc-line{fill:none;stroke:var(--teal);stroke-width:2}
+.vitals-chart .vc-dot{fill:var(--teal)}
+.vitals-chart .vc-label{font-size:10.5px;fill:var(--muted)}
+.vitals-empty{color:var(--muted);font-size:13.5px}
+.vitals-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:16px;
+  border-top:1px solid var(--line);padding-top:16px}
+.vitals-form .wide{grid-column:1/-1}
+.vitals-form .head-actions,.vitals-form .notice{grid-column:1/-1}
+
+/* Clinic setup (0036). */
+.cs-rooms{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.cs-chip{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border:1px solid var(--line);
+  border-radius:999px;padding:5px 6px 5px 12px;font-size:13.5px}
+.cs-inline{display:flex;flex-wrap:wrap;gap:12px;align-items:end;border-top:1px solid var(--line);padding-top:14px}
+.cs-inline label{min-width:180px}
+.entry-form + .entry-form{margin-top:20px}

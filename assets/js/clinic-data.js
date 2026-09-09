@@ -25,10 +25,33 @@
     if (who.profile.role !== 'vet') throw new Error(T('This workspace needs an approved veterinary account. Use Owner account to manage your pets.', 'Cet espace nécessite un compte vétérinaire validé. Utilisez un compte propriétaire pour gérer vos animaux.'));
     return who;
   }
+
+  // A vet reaching a MEDICAL RECORD needs a verified second factor: 0035
+  // requires it on vaccinations, diagnoses, prescriptions, attachments and
+  // vitals, and clinic_schedule and clinic_work_access already did.
+  //
+  // Scoped to exactly those paths and no wider. The patient list and creating
+  // a patient do not require it in the database, and demanding it here would
+  // lock a vet out of their own caseload to enforce a rule that does not
+  // exist. identity() already covers "enrolled but not yet verified"; this
+  // covers "never enrolled", which RLS would otherwise answer with an empty
+  // record -- indistinguishable from having no patients.
+  async function recordIdentity() {
+    const who = await vetIdentity();
+    const aal = unwrap(await db.mfaAAL());
+    if (!aal || aal.currentLevel !== 'aal2') {
+      const error = new Error(T('Two-factor authentication is required to open medical records. Set it up under Account security.',
+                                "La double authentification est requise pour ouvrir un dossier médical. Activez-la dans Sécurité du compte."));
+      error.code = 'mfa_setup_required';
+      throw error;
+    }
+    return who;
+  }
+  const PAGE = 200;
   async function caseload() {
     const who = await vetIdentity();
     const grants = unwrap(await client.from('vet_pet_access').select('id,scope,pet_id,pets(id,name,species,breed,breed_id,sex,age,deleted_at,breeds(name_fr,name_en,aliases,is_generic))')
-      .eq('vet_id', who.user.id).eq('status', 'active')) || [];
+      .eq('vet_id', who.user.id).eq('status', 'active').limit(PAGE)) || [];
     const byPet = new Map();
     for (const grant of grants) {
       const pet = grant.pets;
@@ -38,12 +61,16 @@
     }
     const walkIns = unwrap(await client.from('pets')
       .select('id,name,species,breed,breed_id,sex,age,deleted_at,claim_code,breeds(name_fr,name_en,aliases,is_generic)')
-      .is('owner_id', null).eq('created_by_vet', who.user.id)) || [];
+      .is('owner_id', null).eq('created_by_vet', who.user.id).limit(PAGE)) || [];
     for (const pet of walkIns) {
       if (pet.deleted_at) continue;
       byPet.set(pet.id, { ...pet, scope: 'full', unclaimed: true });
     }
-    return Array.from(byPet.values()).sort((a,b) => a.name.localeCompare(b.name));
+    const all = Array.from(byPet.values()).sort((a,b) => a.name.localeCompare(b.name));
+    // The caller needs to know when a list is cut short, or a missing patient
+    // looks like a permissions problem.
+    all.truncated = all.length >= PAGE;
+    return all;
   }
   const definitions = {
     vaccination: { table:'vaccinations', date:'administered_at', title:'vaccine_type', author:'administered_by', fields:['vaccine_type','product_name','batch_lot','administered_at','valid_until'] },
@@ -72,6 +99,9 @@
   async function recordContext(petId) {
     if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(petId || '')) throw new Error(T('Open a patient from your list to view their record.', 'Ouvrez un patient depuis votre liste pour voir son dossier.'));
     const who = await identity();
+    // An OWNER reading their own pet is not held to the clinic's second-factor
+    // rule -- 0035 exempts them deliberately. Only the vet path is gated.
+    if (who.profile.role === 'vet') await recordIdentity();
     const pet = unwrap(await client.from('pets').select('id,owner_id,created_by_vet,claim_code,name,species,breed,breed_id,sex,age,birthdate,coat,tattoo,eu_passport,registry_ref,neutered,breeds(name_fr,name_en,is_generic)').eq('id', petId).is('deleted_at', null).maybeSingle());
     if (!pet) throw new Error(T('This record is unavailable. Access may have been revoked.', "Ce dossier est indisponible. L'accès a peut-être été révoqué."));
     const owner = pet.owner_id === who.user.id;
@@ -210,11 +240,14 @@
   // clinic_schedule() returns every slot and blanks the identity of the ones
   // this vet is not entitled to see (visible === false).
   async function schedule(clinicId, from, to) {
-    await vetIdentity();
+    await recordIdentity();
     return unwrap(await client.rpc('clinic_schedule', {
       p_clinic: clinicId,
-      p_from: from instanceof Date ? from.toISOString() : from,
-      p_to:   to   instanceof Date ? to.toISOString()   : to
+      // Duck-typed rather than `instanceof Date`: that is false for a Date
+      // built in another realm, and would silently post an object where the
+      // RPC expects an instant.
+      p_from: from && typeof from.toISOString === 'function' ? from.toISOString() : from,
+      p_to:   to   && typeof to.toISOString   === 'function' ? to.toISOString()   : to
     })) || [];
   }
   async function rooms(clinicId) {
@@ -280,11 +313,93 @@
   }
   function text(v) { const s = String(v == null ? '' : v).trim(); return s === '' ? null : s; }
 
+  // ---- vitals (0036) ------------------------------------------------------
+  async function vitals(petId) {
+    await identity();
+    return unwrap(await client.from('pet_vitals')
+      .select('id,recorded_at,weight_kg,bcs,mcs,temperature,triage,notes')
+      .eq('pet_id', petId).order('recorded_at', { ascending: false }).limit(PAGE)) || [];
+  }
+  async function recordVitals(petId, fields) {
+    const who = await recordIdentity();
+    const num = (v, lo, hi, whole) => {
+      const raw = String(v == null ? '' : v).trim();
+      if (raw === '') return null;
+      const n = Number(raw.replace(',', '.'));
+      if (!Number.isFinite(n) || n < lo || n > hi) throw new Error(T('Value out of range.', 'Valeur hors limites.'));
+      if (whole && !Number.isInteger(n)) throw new Error(T('Whole number expected.', 'Nombre entier attendu.'));
+      return n;
+    };
+    const row = {
+      pet_id: petId, recorded_by: who.user.id,
+      weight_kg: num(fields.weight_kg, 0.001, 2000),
+      bcs: num(fields.bcs, 1, 9, true),
+      temperature: num(fields.temperature, 20, 50),
+      mcs: ['normal','mild','moderate','severe'].includes(fields.mcs) ? fields.mcs : null,
+      triage: ['red','orange','yellow','green'].includes(fields.triage) ? fields.triage : null,
+      notes: text(fields.notes)
+    };
+    if (row.weight_kg == null && row.bcs == null && row.temperature == null && row.mcs == null && row.triage == null) {
+      throw new Error(T('Record at least one measurement.', 'Saisissez au moins une mesure.'));
+    }
+    return unwrap(await client.from('pet_vitals').insert(row).select('id').single());
+  }
+
+  async function amendAlert(alertId, fields) {
+    await vetIdentity();
+    await client.rpc('amend_pet_alert', {
+      p_id: alertId, p_kind: fields.kind, p_severity: fields.severity,
+      p_label: String(fields.label || '').trim(), p_detail: text(fields.detail)
+    }).then(r => { if (r.error) throw r.error; });
+    return true;
+  }
+
+  // Logs that a record was opened. Deliberately fire-and-forget: an audit line
+  // that failed to write must never stop a vet reading a patient's history.
+  function logAccess(petId, context) {
+    try { client.rpc('log_record_access', { p_pet_id: petId, p_context: context }).then(() => {}, () => {}); }
+    catch (e) {}
+  }
+
+  // ---- provisioning (0036) ------------------------------------------------
+  async function createClinic(fields) {
+    await vetIdentity();
+    const name = String(fields.name || '').trim();
+    if (name.length < 2) throw new Error(T('Give the clinic a name.', 'Donnez un nom à la clinique.'));
+    return unwrap(await client.rpc('create_clinic', {
+      p_name: name, p_city: text(fields.city), p_address: text(fields.address),
+      p_postal_code: text(fields.postal_code), p_phone: text(fields.phone)
+    }));
+  }
+  async function addClinicMember(clinicId, email, title) {
+    await vetIdentity();
+    await client.rpc('add_clinic_member', { p_clinic: clinicId, p_email: String(email || '').trim(), p_title: text(title) })
+      .then(r => { if (r.error) throw r.error; });
+    return true;
+  }
+  async function addRoom(clinicId, name, kind) {
+    const who = await vetIdentity();
+    const clean = String(name || '').trim();
+    if (!clean) throw new Error(T('Give the room a name.', 'Donnez un nom à la salle.'));
+    return unwrap(await client.from('clinic_rooms')
+      .insert({ clinic_id: clinicId, name: clean,
+                kind: ['exam','surgery','imaging','hospital','other'].includes(kind) ? kind : 'exam' })
+      .select('id').single());
+  }
+  async function retireRoom(roomId) {
+    await vetIdentity();
+    const r = await client.from('clinic_rooms').update({ active: false }).eq('id', roomId);
+    if (r.error) throw r.error;
+    return true;
+  }
+
   global.PFVet = {
-    alerts, raiseAlert, resolveAlert,
+    alerts, raiseAlert, resolveAlert, amendAlert,
+    vitals, recordVitals, logAccess,
+    createClinic, addClinicMember, addRoom, retireRoom,
     schedule, rooms, colleagues,
     clients, saveClient, clientAnimals, linkClientPet, unlinkClientPet,
-    identity, vetIdentity, caseload, recordContext, records, addRecord, payload, definitions, ownerGrants,
+    identity, vetIdentity, recordIdentity, caseload, recordContext, records, addRecord, payload, definitions, ownerGrants,
     createPatient, claimRecord, withdrawRecord, removePatient,
     clinics: async function () {
       const who = await vetIdentity();

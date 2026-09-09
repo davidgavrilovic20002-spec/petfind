@@ -185,7 +185,7 @@
       var user = await currentUser();
       if (!user) return { data: [] };
       return client.from('pets')
-        .select('id,name,species,breed,breed_id,sex,age,created_at,' +
+        .select('id,name,species,breed,breed_id,sex,age,birthdate,created_at,' +
                 'breeds(name_fr,name_en,is_generic),' +
                 'pet_tags(public_slug,tag_uid,status),' +
                 'pet_public_profile(show_phone,home_message,finder_steps,backup_vet)')

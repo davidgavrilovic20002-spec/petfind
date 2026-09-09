@@ -65,6 +65,15 @@
       PFVet.clinics().then(clinics => { if (run===revision && clinics.length) $('clinic-name').textContent=clinics.map(c=>c.clinics?.name).filter(Boolean).join(' · '); }).catch(()=>{});
     } catch(error) {
       if (run!==revision) return;
+      if (error && error.code === 'mfa_setup_required') {
+        show('login');
+        notice(error.message, true);
+        const link = document.createElement('a');
+        link.href = 'security.html'; link.className = 'btn primary';
+        link.textContent = T('Open Account security', 'Ouvrir Sécurité du compte');
+        $('notice').append(document.createElement('br'), link);
+        return;
+      }
       if (error.code==='mfa_required') {
         try {
           const result=await PFDB.mfaList(); if(result.error) throw result.error;
