@@ -4,24 +4,25 @@
   'use strict';
   if (!global.PFDB) return;
   const db = global.PFDB, client = db.client;
+  const T = (en, fr) => (global.PFI18n && global.PFI18n.lang === 'fr') ? fr : en;
   function unwrap(result) {
     if (result.error) throw result.error;
     return result.data;
   }
   async function identity() {
     const user = await db.getUser();
-    if (!user) throw new Error('Sign in to continue.');
+    if (!user) throw new Error(T('Sign in to continue.', 'Connectez-vous pour continuer.'));
     const aal = unwrap(await db.mfaAAL());
     if (!aal || (aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2')) {
-      const error = new Error('Verify your authenticator code to continue.'); error.code = 'mfa_required'; throw error;
+      const error = new Error(T('Verify your authenticator code to continue.', "Saisissez le code de votre application d'authentification pour continuer.")); error.code = 'mfa_required'; throw error;
     }
     const profile = unwrap(await db.getProfile());
-    if (!profile || profile.deleted_at) throw new Error('This account is unavailable.');
+    if (!profile || profile.deleted_at) throw new Error(T('This account is unavailable.', 'Ce compte est indisponible.'));
     return { user, profile };
   }
   async function vetIdentity() {
     const who = await identity();
-    if (who.profile.role !== 'vet') throw new Error('This workspace needs an approved veterinary account. Use Owner account to manage your pets.');
+    if (who.profile.role !== 'vet') throw new Error(T('This workspace needs an approved veterinary account. Use Owner account to manage your pets.', 'Cet espace nécessite un compte vétérinaire validé. Utilisez un compte propriétaire pour gérer vos animaux.'));
     return who;
   }
   async function caseload() {
@@ -54,37 +55,37 @@
   }
   function payload(kind, values) {
     const def = definitions[kind];
-    if (!def) throw new Error('Choose a record type.');
+    if (!def) throw new Error(T('Choose a record type.', "Choisissez un type d'entrée."));
     const row = {};
     for (const field of def.fields) row[field] = values[field] == null || String(values[field]).trim() === '' ? null : String(values[field]).trim();
-    if (!row[def.title]) throw new Error('Enter the record name.');
-    if (!validDate(row[def.date])) throw new Error('Enter a valid record date.');
+    if (!row[def.title]) throw new Error(T('Enter the record name.', "Saisissez le nom de l'entrée."));
+    if (!validDate(row[def.date])) throw new Error(T('Enter a valid record date.', 'Saisissez une date valide.'));
     const end = row.valid_until || row.end_date;
-    if (end && (!validDate(end) || end < row[def.date])) throw new Error('The end date must be on or after the record date.');
-    if (kind === 'diagnosis' && !['active','resolved','chronic'].includes(row.status)) throw new Error('Choose a diagnosis status.');
+    if (end && (!validDate(end) || end < row[def.date])) throw new Error(T('The end date must be on or after the record date.', "La date de fin doit être postérieure ou égale à la date de l'entrée."));
+    if (kind === 'diagnosis' && !['active','resolved','chronic'].includes(row.status)) throw new Error(T('Choose a diagnosis status.', 'Choisissez un statut de diagnostic.'));
     if (kind === 'prescription' && row.dose_amount !== null) {
       row.dose_amount = Number(row.dose_amount);
-      if (!Number.isFinite(row.dose_amount) || row.dose_amount <= 0 || !row.dose_unit) throw new Error('Enter a positive dose and its unit.');
+      if (!Number.isFinite(row.dose_amount) || row.dose_amount <= 0 || !row.dose_unit) throw new Error(T('Enter a positive dose and its unit.', 'Saisissez une dose positive et son unité.'));
     }
     return row;
   }
   async function recordContext(petId) {
-    if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(petId || '')) throw new Error('Open a patient from your list to view their record.');
+    if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(petId || '')) throw new Error(T('Open a patient from your list to view their record.', 'Ouvrez un patient depuis votre liste pour voir son dossier.'));
     const who = await identity();
     const pet = unwrap(await client.from('pets').select('id,owner_id,created_by_vet,claim_code,name,species,breed,breed_id,sex,age,birthdate,breeds(name_fr,name_en,is_generic)').eq('id', petId).is('deleted_at', null).maybeSingle());
-    if (!pet) throw new Error('This record is unavailable. Access may have been revoked.');
+    if (!pet) throw new Error(T('This record is unavailable. Access may have been revoked.', "Ce dossier est indisponible. L'accès a peut-être été révoqué."));
     const owner = pet.owner_id === who.user.id;
     const unclaimed = pet.owner_id === null && pet.created_by_vet === who.user.id;
     let writable = false;
     if (!owner) {
-      if (who.profile.role !== 'vet') throw new Error('This record is unavailable.');
+      if (who.profile.role !== 'vet') throw new Error(T('This record is unavailable.', 'Ce dossier est indisponible.'));
       if (unclaimed) {
         // A patient this vet created and nobody has claimed yet: theirs to write
         // until an owner takes it over, at which point the grant decides.
         writable = true;
       } else {
         const grants = unwrap(await client.from('vet_pet_access').select('scope').eq('pet_id', petId).eq('vet_id', who.user.id).eq('status','active')) || [];
-        if (!grants.length) throw new Error('This record is unavailable. Access may have been revoked.');
+        if (!grants.length) throw new Error(T('This record is unavailable. Access may have been revoked.', "Ce dossier est indisponible. L'accès a peut-être été révoqué."));
         writable = grants.some(g => g.scope === 'write' || g.scope === 'full');
       }
     }
@@ -101,7 +102,7 @@
   async function addRecord(petId, kind, values, entryId) {
     const row = payload(kind, values);
     const context = await recordContext(petId);
-    if (!context.writable) throw new Error('You do not have permission to add records for this pet.');
+    if (!context.writable) throw new Error(T('You do not have permission to add records for this pet.', "Vous n'êtes pas autorisé à ajouter des entrées pour cet animal."));
     row.id = entryId; row.pet_id = petId; row[definitions[kind].author] = context.user.id;
     // Stable UUID supplied by the form prevents a retry after a lost response
     // from creating the same entry twice. Never upsert: existing records stay intact.
@@ -110,7 +111,7 @@
   async function ownerGrants(petId) {
     const who = await identity();
     const pet = unwrap(await client.from('pets').select('id').eq('id',petId).eq('owner_id',who.user.id).is('deleted_at',null).maybeSingle());
-    if (!pet) throw new Error('Only the pet owner can manage access.');
+    if (!pet) throw new Error(T('Only the pet owner can manage access.', "Seul le propriétaire de l'animal peut gérer les accès."));
     return unwrap(await client.from('vet_pet_access').select('id,vet_id,scope,status,created_at').eq('pet_id',petId).eq('status','active').order('created_at',{ascending:false})) || [];
   }
   // Create a walk-in patient with no owner yet. The database issues the claim
@@ -118,10 +119,10 @@
   async function createPatient(fields) {
     const who = await vetIdentity();
     const name = String(fields.name || '').trim();
-    if (!name) throw new Error('Enter the patient name.');
+    if (!name) throw new Error(T('Enter the patient name.', 'Saisissez le nom du patient.'));
     const sex = ['female','male','unknown'].includes(fields.sex) ? fields.sex : null;
     const birthdate = String(fields.birthdate || '').trim();
-    if (birthdate && !validDate(birthdate)) throw new Error('Enter a valid date of birth.');
+    if (birthdate && !validDate(birthdate)) throw new Error(T('Enter a valid date of birth.', 'Saisissez une date de naissance valide.'));
     const text = key => {
       const value = String(fields[key] == null ? '' : fields[key]).trim();
       return value === '' ? null : value;
@@ -147,7 +148,7 @@
   async function claimRecord(code) {
     await identity();
     const clean = String(code || '').trim().toUpperCase().replace(/\s+/g, '');
-    if (!/^PF-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(clean)) throw new Error('Enter a claim code that looks like PF-XXXX-XXXX.');
+    if (!/^PF-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(clean)) throw new Error(T('Enter a claim code that looks like PF-XXXX-XXXX.', 'Saisissez un code de récupération au format PF-XXXX-XXXX.'));
     return unwrap(await client.rpc('claim_pet_record', { p_code: clean }));
   }
 
@@ -166,7 +167,7 @@
       const who = await identity();
       const row = unwrap(await client.from('vet_pet_access').update({status:'revoked',revoked_at:new Date().toISOString(),granted_by:who.user.id})
         .eq('id',grantId).eq('pet_id',petId).select('id').maybeSingle());
-      if (!row) throw new Error('Access could not be revoked. Refresh and try again.');
+      if (!row) throw new Error(T('Access could not be revoked. Refresh and try again.', "L'accès n'a pas pu être révoqué. Actualisez et réessayez."));
       return row;
     }
   };

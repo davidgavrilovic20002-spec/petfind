@@ -526,7 +526,75 @@
     'tm.h2.changes': 'Modifications',
     'tm.changes': "Nous pourrons mettre à jour ces conditions à mesure que le produit évolue. Continuer à l'utiliser après des modifications vaut acceptation.",
     'tm.h2.contact': 'Contact',
-    'tm.contact': "Des questions ? Écrivez à <a href=\"mailto:hello@petfind.example\">hello@petfind.example</a>. <em>(À remplacer par votre vrai contact avant le lancement.)</em>"
+    'tm.contact': "Des questions ? Écrivez à <a href=\"mailto:hello@petfind.example\">hello@petfind.example</a>. <em>(À remplacer par votre vrai contact avant le lancement.)</em>",
+    /* ---- clinic app (vet workspace + care record) ----
+       The clinic is a separate app on the same origin, so it shares this
+       dictionary and the pf_lang choice the vet already made on the site. */
+    'cl.skip': "Aller à l'espace de travail",
+    'cl.skip.record': 'Aller au dossier',
+    'cl.word': '/ Clinique',
+    'cl.word.record': '/ Dossier de soins',
+    'cl.signout': 'Se déconnecter',
+    'cl.checking': 'Vérification de votre session…',
+    'cl.login.eyebrow': 'PETFIND POUR LES VÉTÉRINAIRES',
+    'cl.login.title': 'Vos patients.<br>Leurs soins, ensemble.',
+    'cl.login.sub': 'Connectez-vous pour voir les animaux que leurs propriétaires ont partagés avec vous.',
+    'cl.login.email': 'Adresse e-mail',
+    'cl.login.password': 'Mot de passe',
+    'cl.login.submit': 'Se connecter',
+    'cl.login.forgot': 'Mot de passe oublié ?',
+    'cl.login.note': 'Utilisez votre compte vétérinaire validé. Les comptes propriétaires gèrent le partage depuis Mon compte.',
+    'cl.mfa.title': 'Vérifiez votre identité',
+    'cl.mfa.sub': "Saisissez le code de votre application d'authentification.",
+    'cl.mfa.code': 'Code à 6 chiffres',
+    'cl.mfa.verify': 'Vérifier',
+    'cl.ws.eyebrow': 'ESPACE VÉTÉRINAIRE',
+    'cl.ws.title': 'Vos patients',
+    'cl.ws.add': 'Ajouter un patient',
+    'cl.ws.refresh': 'Actualiser la liste',
+    'cl.ws.find': 'Rechercher un patient',
+    'cl.ws.find.ph': 'Rechercher par nom, espèce ou race (essayez « bouledogue »)',
+    'cl.np.title': 'Nouveau patient',
+    'cl.np.sub': "Pour un animal dont le propriétaire n'a pas encore de compte PetFind. Vous obtenez un code à lui remettre ; son dossier l'attend dès son inscription.",
+    'cl.np.name': 'Nom',
+    'cl.np.species': 'Espèce',
+    'cl.np.none': 'Non renseigné',
+    'cl.np.breed': 'Race',
+    'cl.np.breed.ph': "Choisissez d'abord une espèce, puis commencez à saisir",
+    'cl.np.sex': 'Sexe',
+    'cl.np.sex.f': 'Femelle',
+    'cl.np.sex.m': 'Mâle',
+    'cl.np.sex.u': 'Inconnu',
+    'cl.np.dob': 'Date de naissance',
+    'cl.np.icad': 'Puce / I-CAD',
+    'cl.np.create': 'Créer le patient',
+    'cl.np.cancel': 'Annuler',
+    'cl.claim.title': 'Remettez ce code au propriétaire',
+    'cl.claim.note': "Le propriétaire le saisit dans <strong>Mon compte</strong> pour rattacher ce dossier à son compte PetFind, avec tout ce que vous consignez aujourd'hui. Il ne fonctionne qu'une fois, et lui seul peut l'utiliser — ne le transmettez à personne d'autre.",
+    'cl.claim.done': 'Terminé',
+    'cl.foot': 'PetFind Clinic · Dossiers partagés avec autorisation',
+
+    /* ---- care record page ---- */
+    'cl.rec.back': '← Liste des patients',
+    'cl.rec.loading': 'Chargement du dossier…',
+    'cl.rec.retry': 'Réessayer',
+    'cl.rec.signin': 'Connectez-vous pour voir ce dossier',
+    'cl.rec.eyebrow': 'DOSSIER MÉDICAL',
+    'cl.rec.refresh': 'Actualiser le dossier',
+    'cl.rec.timeline': 'Historique des soins',
+    'cl.rec.filter': "Type d'entrée",
+    'cl.rec.filter.all': 'Toutes les entrées',
+    'cl.rec.filter.vac': 'Vaccinations',
+    'cl.rec.filter.dia': 'Diagnostics',
+    'cl.rec.filter.pre': 'Prescriptions',
+    'cl.rec.add': 'Ajouter une entrée',
+    'cl.rec.kind': "Type d'entrée",
+    'cl.rec.kind.vac': 'Vaccination',
+    'cl.rec.kind.dia': 'Diagnostic',
+    'cl.rec.kind.pre': 'Prescription',
+    'cl.rec.save': 'Enregistrer',
+    'cl.rec.savenote': 'Le propriétaire verra cette entrée dans le dossier médical de son animal.',
+    'cl.rec.foot': 'PetFind · Un historique de soins partagé',
   };
 
   var year = new Date().getFullYear();
@@ -583,7 +651,11 @@
   function injectSwitch() {
     // Place the switch in the header row itself (not inside .nav-links) so it
     // stays visible on mobile, where .nav-links collapses into the hamburger.
-    var host = document.querySelector('.site-head .nav') || document.querySelector('.site-head .nav-links');
+    // The clinic app has its own header (.clinic-head) and no .site-head, so it
+    // is listed here too -- it shares this dictionary and the same pf_lang.
+    var host = document.querySelector('.site-head .nav')
+            || document.querySelector('.site-head .nav-links')
+            || document.querySelector('.clinic-head nav');
     if (!host || document.getElementById('lang-switch')) return;
     var d = document.createElement('div');
     d.id = 'lang-switch'; d.className = 'lang-switch'; d.setAttribute('role', 'group'); d.setAttribute('aria-label', 'Language / Langue');

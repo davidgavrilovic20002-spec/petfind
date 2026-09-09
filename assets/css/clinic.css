@@ -9,3 +9,8 @@
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 @media (max-width:560px){.claim-code{font-size:23px;letter-spacing:1px}}
 
+
+/* The EN/FR switch is injected into the clinic header by i18n.js (it shares the
+   owner site's dictionary and pf_lang). .lang-switch itself is styled in
+   styles.css; this only spaces it inside the clinic's own nav. */
+.clinic-head nav .lang-switch{margin-right:10px}

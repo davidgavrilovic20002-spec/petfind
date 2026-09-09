@@ -2,40 +2,53 @@
   'use strict';
   const $ = id => document.getElementById(id);
   let patients = [], revision = 0, factor = null, breedPicker = null;
-  // Breed names are shown in French: this workspace serves French practices and
-  // the French name is what is on the animal's LOF/I-CAD paperwork. Typing
-  // either language still resolves, so nothing is lost by the choice.
-  const BREED_LANG = 'fr';
-  const label = pet => window.PFBreeds ? PFBreeds.speciesLabel(pet.species, BREED_LANG) : pet.species;
-  const breedOf = pet => window.PFBreeds ? PFBreeds.displayBreed(pet, BREED_LANG) : pet.breed;
+  // Language follows the switcher in the header, which shares pf_lang with the
+  // owner site. Falls back to French, the site's main language. Breed names
+  // resolve from either language, so a vet who reads the English UI can still
+  // type "Bouledogue francais" and match.
+  const lang = () => (window.PFI18n && window.PFI18n.lang) || 'fr';
+  const T = (en, fr) => lang() === 'fr' ? fr : en;
+  const label = pet => window.PFBreeds ? PFBreeds.speciesLabel(pet.species, lang()) : pet.species;
+  const breedOf = pet => window.PFBreeds ? PFBreeds.displayBreed(pet, lang()) : pet.breed;
   function notice(message, error) { $('notice').textContent = message || ''; $('notice').classList.toggle('error', !!error); }
+  // The markup ships the English string for first paint; own it from here on so
+  // a language switch cannot overwrite a live status with a stale static one.
+  notice(T('Checking your session…', 'Vérification de votre session…'));
   function show(id) { for (const view of ['login','mfa','workspace']) $(view).hidden = view !== id; }
   function render() {
     const term = $('search').value.trim().toLocaleLowerCase();
     const visible = patients.filter(p => (window.PFBreeds
-      ? PFBreeds.searchText(p, BREED_LANG)
+      ? PFBreeds.searchText(p, lang())
       : [p.name,p.breed,p.species].join(' ').toLocaleLowerCase()).includes(term));
     $('patient-count').textContent = patients.length;
     const list = $('patient-list'); list.replaceChildren();
     if (!visible.length) {
       const empty = document.createElement('div'); empty.className = 'empty';
-      const heading = document.createElement('h2'); heading.textContent = patients.length ? 'No matching patients' : 'Your patient list starts here';
-      const detail = document.createElement('p'); detail.className = 'muted'; detail.textContent = patients.length ? 'Try a different name, species or breed. Nicknames work too — "frenchie" and "bouledogue" find the same patients.' : 'Ask an owner to open their PetFind account and grant access using your veterinary email. Then refresh this list.';
+      const heading = document.createElement('h2'); heading.textContent = patients.length
+        ? T('No matching patients', 'Aucun patient correspondant')
+        : T('Your patient list starts here', 'Votre liste de patients commence ici');
+      const detail = document.createElement('p'); detail.className = 'muted'; detail.textContent = patients.length
+        ? T('Try a different name, species or breed. Nicknames work too — "frenchie" and "bouledogue" find the same patients.',
+            'Essayez un autre nom, espèce ou race. Les surnoms fonctionnent aussi : « frenchie » et « bouledogue » trouvent les mêmes patients.')
+        : T('Ask an owner to open their PetFind account and grant access using your veterinary email. Then refresh this list.',
+            'Demandez à un propriétaire d\'ouvrir son compte PetFind et de vous donner accès avec votre e-mail vétérinaire, puis actualisez cette liste.');
       empty.append(heading,detail); list.append(empty); return;
     }
     for (const pet of visible) {
       const card = document.createElement('a'); card.className = 'patient-card'; card.href = 'record.html?pet=' + encodeURIComponent(pet.id);
       const avatar = document.createElement('span'); avatar.className='patient-avatar'; avatar.textContent=(pet.name || '?').slice(0,1); avatar.setAttribute('aria-hidden','true');
       const info = document.createElement('div'), heading = document.createElement('h2'), detail = document.createElement('p'), badge = document.createElement('span'), arrow = document.createElement('span');
-      heading.textContent=pet.name; detail.textContent=[label(pet),breedOf(pet),pet.age].filter(Boolean).join(' · ') || 'Patient'; detail.className='muted';
-      badge.className='badge'; badge.textContent=pet.unclaimed ? ('Unclaimed · ' + (pet.claim_code || 'no code')) : (pet.scope === 'read' ? 'View records' : 'View & add records'); if(pet.unclaimed) badge.classList.add('unclaimed'); arrow.className='arrow'; arrow.textContent='→';
+      heading.textContent=pet.name; detail.textContent=[label(pet),breedOf(pet),pet.age].filter(Boolean).join(' · ') || T('Patient','Patient'); detail.className='muted';
+      badge.className='badge'; badge.textContent=pet.unclaimed
+        ? (T('Unclaimed · ','Non récupéré · ') + (pet.claim_code || T('no code','sans code')))
+        : (pet.scope === 'read' ? T('View records','Consulter le dossier') : T('View & add records','Consulter et compléter')); if(pet.unclaimed) badge.classList.add('unclaimed'); arrow.className='arrow'; arrow.textContent='→';
       info.append(heading,detail,badge); card.append(avatar,info,arrow); list.append(card);
     }
   }
   async function route() {
-    const run = ++revision; patients=[]; $('patient-list').replaceChildren(); show(null); notice('Loading your workspace…');
+    const run = ++revision; patients=[]; $('patient-list').replaceChildren(); show(null); notice(T('Loading your workspace…','Chargement de votre espace…'));
     try {
-      if (!window.PFVet) throw new Error('Cannot connect to PetFind. Check your connection and reload.');
+      if (!window.PFVet) throw new Error(T('Cannot connect to PetFind. Check your connection and reload.','Connexion à PetFind impossible. Vérifiez votre connexion et rechargez la page.'));
       const user=await PFDB.getUser(); if (run!==revision) return;
       $('logout').hidden=!user;
       if (!user) { show('login'); notice(''); return; }
@@ -66,9 +79,9 @@
   $('mfa-form').addEventListener('submit',async event=>{
     event.preventDefault(); const form=event.currentTarget,button=form.querySelector('button'); button.disabled=true;
     try {const result=await PFDB.mfaChallengeAndVerify(factor,form.code.value.trim()); if(result.error) throw result.error; form.reset(); await route();}
-    catch(e){notice('Could not verify the code. Try a new code.',true);} finally{button.disabled=false;}
+    catch(e){notice(T('Could not verify the code. Try a new code.','Code non vérifié. Essayez un nouveau code.'),true);} finally{button.disabled=false;}
   });
-  $('logout').addEventListener('click',async()=>{++revision; patients=[]; $('patient-list').replaceChildren(); show(null); try{const r=await PFDB.signOut();if(r.error)throw r.error;await route();}catch(e){notice('Could not sign out. Please retry.',true);}});
+  $('logout').addEventListener('click',async()=>{++revision; patients=[]; $('patient-list').replaceChildren(); show(null); try{const r=await PFDB.signOut();if(r.error)throw r.error;await route();}catch(e){notice(T('Could not sign out. Please retry.','Déconnexion impossible. Réessayez.'),true);}});
   function showForm(open) {
     $('new-patient-form').hidden = !open; $('claim-panel').hidden = true;
     $('new-patient-notice').textContent = '';
@@ -81,7 +94,7 @@
   $('new-patient-form').addEventListener('submit',async event=>{
     event.preventDefault();
     const form=event.currentTarget, button=$('create-patient'), note=$('new-patient-notice');
-    button.disabled=true; note.classList.remove('error'); note.textContent='Creating…';
+    button.disabled=true; note.classList.remove('error'); note.textContent=T('Creating…','Création…');
     try {
       const picked = breedPicker ? breedPicker.current() : null;
       const pet=await PFVet.createPatient({
@@ -90,11 +103,11 @@
         sex:form.sex.value, birthdate:form.birthdate.value, icad_number:form.icad_number.value
       });
       form.reset(); $('new-patient-form').hidden=true; note.textContent='';
-      $('claim-code').textContent=pet.claim_code || '(no code issued)';
+      $('claim-code').textContent=pet.claim_code || T('(no code issued)','(aucun code émis)');
       $('claim-panel').hidden=false;
       await route();
     } catch(e) {
-      note.textContent=e.message || 'Could not create the patient. Try again.'; note.classList.add('error');
+      note.textContent=e.message || T('Could not create the patient. Try again.','Création du patient impossible. Réessayez.'); note.classList.add('error');
     } finally { button.disabled=false; }
   });
   if (window.PFBreeds) {
@@ -102,9 +115,13 @@
     breedPicker = PFBreeds.bind({
       speciesEl: form.species, breedEl: form.breed,
       listEl: $('breed-list'), hintEl: $('breed-hint'),
-      lang: () => BREED_LANG
+      lang: lang
     });
   }
+  window.PFI18nOnChange = function () {
+    if (breedPicker) breedPicker.refresh();
+    if (!$('workspace').hidden) render();
+  };
   $('refresh').addEventListener('click',route); $('search').addEventListener('input',render);
   if(window.PFDB) PFDB.onAuth((event)=>{if(event==='SIGNED_OUT'){++revision;patients=[];$('patient-list').replaceChildren();show('login');$('logout').hidden=true;notice('');}});
   window.addEventListener('pageshow', event=>{if(event.persisted) route();});
