@@ -26,7 +26,7 @@
   }
   async function caseload() {
     const who = await vetIdentity();
-    const grants = unwrap(await client.from('vet_pet_access').select('id,scope,pet_id,pets(id,name,species,breed,sex,age,deleted_at)')
+    const grants = unwrap(await client.from('vet_pet_access').select('id,scope,pet_id,pets(id,name,species,breed,breed_id,sex,age,deleted_at,breeds(name_fr,name_en,aliases,is_generic))')
       .eq('vet_id', who.user.id).eq('status', 'active')) || [];
     const byPet = new Map();
     for (const grant of grants) {
@@ -36,7 +36,7 @@
       if (!previous || grant.scope === 'write' || grant.scope === 'full') byPet.set(pet.id, { ...pet, scope: grant.scope });
     }
     const walkIns = unwrap(await client.from('pets')
-      .select('id,name,species,breed,sex,age,deleted_at,claim_code')
+      .select('id,name,species,breed,breed_id,sex,age,deleted_at,claim_code,breeds(name_fr,name_en,aliases,is_generic)')
       .is('owner_id', null).eq('created_by_vet', who.user.id)) || [];
     for (const pet of walkIns) {
       if (pet.deleted_at) continue;
@@ -71,7 +71,7 @@
   async function recordContext(petId) {
     if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(petId || '')) throw new Error('Open a patient from your list to view their record.');
     const who = await identity();
-    const pet = unwrap(await client.from('pets').select('id,owner_id,created_by_vet,claim_code,name,species,breed,sex,age,birthdate').eq('id', petId).is('deleted_at', null).maybeSingle());
+    const pet = unwrap(await client.from('pets').select('id,owner_id,created_by_vet,claim_code,name,species,breed,breed_id,sex,age,birthdate,breeds(name_fr,name_en,is_generic)').eq('id', petId).is('deleted_at', null).maybeSingle());
     if (!pet) throw new Error('This record is unavailable. Access may have been revoked.');
     const owner = pet.owner_id === who.user.id;
     const unclaimed = pet.owner_id === null && pet.created_by_vet === who.user.id;
@@ -130,9 +130,13 @@
     // INSERT policy refused a request that met every one of its conditions and
     // the cause was never found, so the rule is enforced inside a SECURITY
     // DEFINER function instead -- the same pattern claim_pet_record() uses.
+    // p_breed_id (0026) carries an explicit pick from the breed list. It stays
+    // optional: with it null the trigger still resolves whatever was typed, and
+    // text that matches nothing saves exactly as the vet entered it.
     const rows = unwrap(await client.rpc('create_patient', {
       p_name: name,
-      p_species: text('species'), p_breed: text('breed'), p_sex: sex,
+      p_species: text('species'), p_breed: text('breed'),
+      p_breed_id: fields.breed_id || null, p_sex: sex,
       p_birthdate: birthdate || null, p_icad: text('icad_number')
     }));
     return Array.isArray(rows) ? rows[0] : rows;

@@ -45,7 +45,9 @@
       if(!window.PFVet)throw new Error('Cannot connect to PetFind. Check your connection and reload.');
       const result=await PFVet.records(petId);if(run!==revision)return;
       context=result;$('logout').hidden=false;$('pet-name').textContent=context.pet.name;document.title='Patient record — PetFind';
-      $('pet-detail').textContent=[context.pet.species,context.pet.breed,context.pet.sex,context.pet.age].filter(Boolean).join(' · ');
+      const sp=window.PFBreeds?PFBreeds.speciesLabel(context.pet.species,'fr'):context.pet.species;
+      const br=window.PFBreeds?PFBreeds.displayBreed(context.pet,'fr'):context.pet.breed;
+      $('pet-detail').textContent=[sp,br,context.pet.sex,context.pet.age].filter(Boolean).join(' · ');
       $('access').textContent=context.owner?'Your pet’s record':context.writable?'View & add records':'Read-only access';
       $('back').href=context.owner?'../account.html':'index.html';$('back').textContent=context.owner?'← My account':'← Patient list';
       $('editor').hidden=!context.writable;$('record-layout').classList.toggle('read-only',!context.writable);$('record').hidden=false;renderTimeline();notice('');

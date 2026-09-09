@@ -185,7 +185,8 @@
       var user = await currentUser();
       if (!user) return { data: [] };
       return client.from('pets')
-        .select('id,name,species,breed,sex,age,created_at,' +
+        .select('id,name,species,breed,breed_id,sex,age,created_at,' +
+                'breeds(name_fr,name_en,is_generic),' +
                 'pet_tags(public_slug,tag_uid,status),' +
                 'pet_public_profile(show_phone,home_message,finder_steps,backup_vet)')
         .eq('owner_id', user.id)
@@ -194,7 +195,7 @@
     },
     getPet: function (id) {
       return client.from('pets')
-        .select('*, pet_tags(public_slug,status), pet_public_profile(*)')
+        .select('*, breeds(name_fr,name_en,is_generic), pet_tags(public_slug,status), pet_public_profile(*)')
         .eq('id', id).single();
     },
 
@@ -213,7 +214,8 @@
       var petRes = await client.from('pets').insert({
         owner_id: user.id,
         name: data.name || '', species: data.species || null,
-        breed: data.breed || null, sex: normSex(data.sex), age: data.age || null
+        breed: data.breed || null, breed_id: data.breedId || null,
+        sex: normSex(data.sex), age: data.age || null
       }).select('id').single();
       if (petRes.error) return petRes;
       var petId = petRes.data.id;
@@ -246,7 +248,8 @@
 
       var petRes = await client.from('pets').update({
         name: data.name || '', species: data.species || null,
-        breed: data.breed || null, sex: normSex(data.sex), age: data.age || null
+        breed: data.breed || null, breed_id: data.breedId || null,
+        sex: normSex(data.sex), age: data.age || null
       }).eq('id', id);
       if (petRes.error) return petRes;
 

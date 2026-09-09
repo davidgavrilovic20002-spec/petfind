@@ -49,6 +49,20 @@ test('createPatient sends only vetted fields to the RPC and cannot pass an owner
   assert.equal(a.created_by_vet,undefined);assert.equal(a.owner_id,undefined);
   assert.equal(out.claim_code,'PF-ABCD-2345');
 });
+test('createPatient forwards a picked breed id and stays null without one',async()=>{
+  // breed_id (0026) is the optional canonical pointer. Absent, the database
+  // trigger still resolves the typed text, so null must reach the RPC rather
+  // than undefined -- and free text that matched nothing must still be sent.
+  const picked=setup({rpcResult:[{id:'p1',name:'Milo',claim_code:'PF-ABCD-2345'}]});
+  await picked.api.createPatient({name:'Milo',species:'dog',breed:'Bouledogue fran\u00e7ais',breed_id:'b-123'});
+  assert.equal(picked.rpcs[0].args.p_breed_id,'b-123');
+  assert.equal(picked.rpcs[0].args.p_breed,'Bouledogue fran\u00e7ais');
+
+  const typed=setup({rpcResult:[{id:'p2',name:'Rex',claim_code:'PF-ABCD-2346'}]});
+  await typed.api.createPatient({name:'Rex',species:'dog',breed:'croise lab/berger'});
+  assert.equal(typed.rpcs[0].args.p_breed_id,null);
+  assert.equal(typed.rpcs[0].args.p_breed,'croise lab/berger');
+});
 test('createPatient refuses a blank name and a non-vet account',async()=>{
   const {api,inserts}=setup();await assert.rejects(api.createPatient({name:'   '}),/patient name/);
   const owner=setup({role:'owner'});await assert.rejects(owner.api.createPatient({name:'Milo'}),/approved veterinary/);

@@ -10,7 +10,7 @@
 
   var state = {
     lang: 'en',
-    name: '', species: '', breed: '', sex: '', age: '', hasHome: true,
+    name: '', species: '', breed: '', breedId: null, sex: '', age: '', hasHome: true,
     owner: { name: '', phones: [{ label: '', number: '' }] },
     steps: PF.defaultSteps('en').map(function (s, i) { return { t: s.t, d: s.d, key: PF.DEFAULT_STEP_KEYS[i] }; }),
     vet: { name: '', address: '', phone: '' }
@@ -19,6 +19,7 @@
   var stepsCustomized = false;
   var previewTimer = null;
   var syncingLang = false; // guards the two-way sync between setLang() and PFI18n
+  var breedPicker = null;  // PFBreeds.bind() handle; null until DOMContentLoaded
   var editId = null;       // set when editing a saved pet (?edit=<id>)
   var currentSlug = null;  // the saved pet's public slug
 
@@ -43,6 +44,11 @@
     state.name = g('f-name');
     state.species = g('f-species');
     state.breed = g('f-breed');
+    // breedId is owned by the picker (see breedPicker below), not the form:
+    // it is set when the typed text resolves to a known breed and cleared the
+    // moment it stops matching. Unmatched text still saves -- the pet just has
+    // no canonical pointer, which is the designed outcome, not a failure.
+    if (breedPicker) { var hit = breedPicker.current(); state.breedId = hit ? hit.id : null; }
     state.sex = g('f-sex');
     state.age = g('f-age');
     var home = document.getElementById('f-home');
@@ -258,6 +264,9 @@
       state.steps = PF.defaultSteps(l).map(function (s, i) { return { t: s.t, d: s.d, key: PF.DEFAULT_STEP_KEYS[i] }; });
     }
     renderSteps(); renderSuggestions(); renderPhones(); updatePreview();
+    // The breed suggestions are written in the reader's language, so rebuild
+    // them. Anything already typed stays; only the offered list changes.
+    if (breedPicker) breedPicker.refresh();
     // Translate the interface chrome too (labels, headings, nav) so the choice
     // is visible immediately — not just in the pet-page preview further down.
     if (window.PFI18n && window.PFI18n.lang !== l && !syncingLang) {
@@ -324,6 +333,7 @@
     syncFromForm();
     return {
       name: state.name, species: state.species, breed: state.breed,
+      breedId: state.breedId,
       sex: state.sex, age: state.age, hasHome: state.hasHome,
       ownerName: state.owner.name, ownerPhone: primaryPhone(),
       contactPhones: cleanPhones(), showPhone: true,
@@ -567,7 +577,10 @@
     var p = res.data;
     editId = id;
     currentSlug = window.PFDB.slugForPet(p);
-    setVal('f-name', p.name); setVal('f-species', p.species); setVal('f-breed', p.breed);
+    setVal('f-name', p.name);
+    setVal('f-species', window.PFBreeds ? window.PFBreeds.normSpecies(p.species) : p.species);
+    setVal('f-breed', p.breed);
+    if (breedPicker) breedPicker.refresh();
     setVal('f-sex', p.sex); setVal('f-age', p.age);
     var pub = Array.isArray(p.pet_public_profile) ? (p.pet_public_profile[0] || {}) : (p.pet_public_profile || {});
     var homeEl = document.getElementById('f-home'); if (homeEl) homeEl.checked = pub.home_message !== false;
@@ -746,6 +759,16 @@
     bind('f-name', function (e) { state.name = e.target.value; updatePreview(); });
     bind('f-species', function (e) { state.species = e.target.value; updatePreview(); });
     bind('f-breed', function (e) { state.breed = e.target.value; updatePreview(); });
+    if (window.PFBreeds) {
+      breedPicker = window.PFBreeds.bind({
+        speciesEl: document.getElementById('f-species'),
+        breedEl:   document.getElementById('f-breed'),
+        listEl:    document.getElementById('breed-list'),
+        hintEl:    document.getElementById('f-breed-hint'),
+        lang:      function () { return state.lang; },
+        onResolve: function (row) { state.breedId = row ? row.id : null; }
+      });
+    }
     bind('f-sex', function (e) { state.sex = e.target.value; updatePreview(); });
     bind('f-age', function (e) { state.age = e.target.value; updatePreview(); });
     var home = document.getElementById('f-home');

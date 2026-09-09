@@ -25,6 +25,8 @@
 
     /* ---- account page ---- */
     'acc.eyebrow': 'Espace propriétaire',
+    'acc.filter.label': 'Filtrer vos animaux',
+    'acc.filter.ph': 'Filtrer par nom ou race',
     'acc.login.title': 'Connectez-vous',
     'acc.signup.title': 'Créer un compte',
     'acc.tab.login': 'Se connecter',
@@ -200,7 +202,9 @@
     'cr.pet.name': "Nom de l'animal",
     'cr.pet.species': 'Espèce',
     'cr.pet.choose': 'Choisir…',
-    'cr.pet.dog': 'Chien', 'cr.pet.cat': 'Chat', 'cr.pet.rabbit': 'Lapin', 'cr.pet.other': 'Autre',
+    'cr.pet.dog': 'Chien', 'cr.pet.cat': 'Chat', 'cr.pet.rabbit': 'Lapin',
+    'cr.pet.ferret': 'Furet', 'cr.pet.bird': 'Oiseau', 'cr.pet.rodent': 'Rongeur',
+    'cr.pet.reptile': 'Reptile', 'cr.pet.other': 'Autre',
     'cr.pet.breed': 'Race (facultatif)',
     'cr.pet.sex': 'Sexe (facultatif)',
     'cr.pet.female': 'Femelle', 'cr.pet.male': 'Mâle',

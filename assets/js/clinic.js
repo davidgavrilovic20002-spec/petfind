@@ -1,25 +1,33 @@
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
-  let patients = [], revision = 0, factor = null;
+  let patients = [], revision = 0, factor = null, breedPicker = null;
+  // Breed names are shown in French: this workspace serves French practices and
+  // the French name is what is on the animal's LOF/I-CAD paperwork. Typing
+  // either language still resolves, so nothing is lost by the choice.
+  const BREED_LANG = 'fr';
+  const label = pet => window.PFBreeds ? PFBreeds.speciesLabel(pet.species, BREED_LANG) : pet.species;
+  const breedOf = pet => window.PFBreeds ? PFBreeds.displayBreed(pet, BREED_LANG) : pet.breed;
   function notice(message, error) { $('notice').textContent = message || ''; $('notice').classList.toggle('error', !!error); }
   function show(id) { for (const view of ['login','mfa','workspace']) $(view).hidden = view !== id; }
   function render() {
     const term = $('search').value.trim().toLocaleLowerCase();
-    const visible = patients.filter(p => [p.name,p.breed,p.species].join(' ').toLocaleLowerCase().includes(term));
+    const visible = patients.filter(p => (window.PFBreeds
+      ? PFBreeds.searchText(p, BREED_LANG)
+      : [p.name,p.breed,p.species].join(' ').toLocaleLowerCase()).includes(term));
     $('patient-count').textContent = patients.length;
     const list = $('patient-list'); list.replaceChildren();
     if (!visible.length) {
       const empty = document.createElement('div'); empty.className = 'empty';
       const heading = document.createElement('h2'); heading.textContent = patients.length ? 'No matching patients' : 'Your patient list starts here';
-      const detail = document.createElement('p'); detail.className = 'muted'; detail.textContent = patients.length ? 'Try a different name, species or breed.' : 'Ask an owner to open their PetFind account and grant access using your veterinary email. Then refresh this list.';
+      const detail = document.createElement('p'); detail.className = 'muted'; detail.textContent = patients.length ? 'Try a different name, species or breed. Nicknames work too — "frenchie" and "bouledogue" find the same patients.' : 'Ask an owner to open their PetFind account and grant access using your veterinary email. Then refresh this list.';
       empty.append(heading,detail); list.append(empty); return;
     }
     for (const pet of visible) {
       const card = document.createElement('a'); card.className = 'patient-card'; card.href = 'record.html?pet=' + encodeURIComponent(pet.id);
       const avatar = document.createElement('span'); avatar.className='patient-avatar'; avatar.textContent=(pet.name || '?').slice(0,1); avatar.setAttribute('aria-hidden','true');
       const info = document.createElement('div'), heading = document.createElement('h2'), detail = document.createElement('p'), badge = document.createElement('span'), arrow = document.createElement('span');
-      heading.textContent=pet.name; detail.textContent=[pet.species,pet.breed,pet.age].filter(Boolean).join(' · ') || 'Patient'; detail.className='muted';
+      heading.textContent=pet.name; detail.textContent=[label(pet),breedOf(pet),pet.age].filter(Boolean).join(' · ') || 'Patient'; detail.className='muted';
       badge.className='badge'; badge.textContent=pet.unclaimed ? ('Unclaimed · ' + (pet.claim_code || 'no code')) : (pet.scope === 'read' ? 'View records' : 'View & add records'); if(pet.unclaimed) badge.classList.add('unclaimed'); arrow.className='arrow'; arrow.textContent='→';
       info.append(heading,detail,badge); card.append(avatar,info,arrow); list.append(card);
     }
@@ -64,7 +72,8 @@
   function showForm(open) {
     $('new-patient-form').hidden = !open; $('claim-panel').hidden = true;
     $('new-patient-notice').textContent = '';
-    if (open) $('new-patient-form').name.focus(); else $('new-patient-form').reset();
+    if (open) $('new-patient-form').name.focus();
+    else { $('new-patient-form').reset(); if (breedPicker) breedPicker.refresh(); }
   }
   $('new-patient').addEventListener('click',()=>showForm($('new-patient-form').hidden));
   $('cancel-patient').addEventListener('click',()=>showForm(false));
@@ -74,8 +83,10 @@
     const form=event.currentTarget, button=$('create-patient'), note=$('new-patient-notice');
     button.disabled=true; note.classList.remove('error'); note.textContent='Creating…';
     try {
+      const picked = breedPicker ? breedPicker.current() : null;
       const pet=await PFVet.createPatient({
         name:form.name.value, species:form.species.value, breed:form.breed.value,
+        breed_id: picked ? picked.id : null,
         sex:form.sex.value, birthdate:form.birthdate.value, icad_number:form.icad_number.value
       });
       form.reset(); $('new-patient-form').hidden=true; note.textContent='';
@@ -86,6 +97,14 @@
       note.textContent=e.message || 'Could not create the patient. Try again.'; note.classList.add('error');
     } finally { button.disabled=false; }
   });
+  if (window.PFBreeds) {
+    const form = $('new-patient-form');
+    breedPicker = PFBreeds.bind({
+      speciesEl: form.species, breedEl: form.breed,
+      listEl: $('breed-list'), hintEl: $('breed-hint'),
+      lang: () => BREED_LANG
+    });
+  }
   $('refresh').addEventListener('click',route); $('search').addEventListener('input',render);
   if(window.PFDB) PFDB.onAuth((event)=>{if(event==='SIGNED_OUT'){++revision;patients=[];$('patient-list').replaceChildren();show('login');$('logout').hidden=true;notice('');}});
   window.addEventListener('pageshow', event=>{if(event.persisted) route();});

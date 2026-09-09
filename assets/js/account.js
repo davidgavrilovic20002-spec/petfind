@@ -436,16 +436,34 @@
     return new URL('pet.html', location.href).href.replace(/[^/]*$/, 'pet.html') + '?s=' + encodeURIComponent(slug);
   }
 
+  /* The filter only appears once the list is long enough to need one. An
+     owner with three pets can see all of them at once; giving them a search box
+     is a control that never gets used. */
+  var FILTER_FROM = 5;
+
   function renderPets(pets) {
     var list = $('pets-list'); list.innerHTML = '';
     pets = pets || [];
+
+    var filterRow = $('pets-filter-row'), filterEl = $('pets-filter');
+    if (filterRow) filterRow.hidden = pets.length < FILTER_FROM;
+    if (filterRow && filterRow.hidden && filterEl) filterEl.value = '';
+    var term = (filterRow && !filterRow.hidden && filterEl ? filterEl.value : '').trim().toLocaleLowerCase();
+    if (term) {
+      pets = pets.filter(function (p) {
+        return (window.PFBreeds ? window.PFBreeds.searchText(p, lang())
+                                : [p.name, p.breed, p.species].filter(Boolean).join(' ').toLocaleLowerCase()
+               ).indexOf(term) !== -1;
+      });
+    }
     var linked = [];
     pets.forEach(function (p) { (p.pet_tags || []).forEach(function (tag) { if (tag.tag_uid) linked.push(tag.tag_uid); }); });
     var unlinked = dashboardOrders.filter(function (order) {
       if (!order.tag_uid || linked.indexOf(order.tag_uid) !== -1) return false;
       linked.push(order.tag_uid); return true;
     });
-    $('empty-msg').hidden = !!(pets.length || unlinked.length);
+    if (term) unlinked = [];
+    $('empty-msg').hidden = !!(term || pets.length || unlinked.length);
     unlinked.forEach(function (order) {
       var item = document.createElement('div'); item.className = 'pet-item';
       var heading = document.createElement('h3'); heading.textContent = order.tag_uid; item.appendChild(heading);
@@ -461,7 +479,9 @@
       var tags = p.pet_tags || [];
       var slug = window.PFDB.slugForPet(p);
       var url = slug ? petUrl(slug) : null;
-      var sub = [p.breed || p.species, p.sex, p.age].filter(Boolean).join(' · ');
+      var breed = window.PFBreeds ? window.PFBreeds.displayBreed(p, lang()) : p.breed;
+      var species = window.PFBreeds ? window.PFBreeds.speciesLabel(p.species, lang()) : p.species;
+      var sub = [breed || species, p.sex, p.age].filter(Boolean).join(' · ');
       var item = document.createElement('div'); item.className = 'pet-item';
       var h = document.createElement('h3'); h.textContent = p.name || '—'; item.appendChild(h);
       var s = document.createElement('div'); s.className = 'pi-sub'; s.textContent = sub || '—'; item.appendChild(s);
@@ -516,7 +536,20 @@
       if (window.PFOwnerHealth) window.PFOwnerHealth.mount(item, p);
       list.appendChild(item);
     });
+
+    if (term && !pets.length) {
+      var none = document.createElement('p'); none.className = 'pi-sub';
+      none.textContent = L('No pet matches that. Nicknames work too — "frenchie" finds a Bouledogue français.',
+                           'Aucun animal ne correspond. Les surnoms fonctionnent aussi : « frenchie » trouve un Bouledogue français.');
+      list.appendChild(none);
+    }
   }
+
+  (function bindPetsFilter() {
+    var filterEl = document.getElementById('pets-filter');
+    // Re-renders from the pets already loaded; no refetch, no request per key.
+    if (filterEl) filterEl.addEventListener('input', function () { renderPets(lastPets); });
+  })();
 
   function L(en, fr) { return lang() === 'fr' ? fr : en; }
 
