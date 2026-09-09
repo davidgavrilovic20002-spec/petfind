@@ -72,7 +72,7 @@
   async function recordContext(petId) {
     if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(petId || '')) throw new Error(T('Open a patient from your list to view their record.', 'Ouvrez un patient depuis votre liste pour voir son dossier.'));
     const who = await identity();
-    const pet = unwrap(await client.from('pets').select('id,owner_id,created_by_vet,claim_code,name,species,breed,breed_id,sex,age,birthdate,breeds(name_fr,name_en,is_generic)').eq('id', petId).is('deleted_at', null).maybeSingle());
+    const pet = unwrap(await client.from('pets').select('id,owner_id,created_by_vet,claim_code,name,species,breed,breed_id,sex,age,birthdate,coat,tattoo,eu_passport,registry_ref,neutered,breeds(name_fr,name_en,is_generic)').eq('id', petId).is('deleted_at', null).maybeSingle());
     if (!pet) throw new Error(T('This record is unavailable. Access may have been revoked.', "Ce dossier est indisponible. L'accès a peut-être été révoqué."));
     const owner = pet.owner_id === who.user.id;
     const unclaimed = pet.owner_id === null && pet.created_by_vet === who.user.id;
@@ -174,7 +174,37 @@
     return unwrap(await client.rpc('vet_remove_patient', { p_pet_id: petId }));
   }
 
+  // Safety alerts (0029). Read by anyone who can read the pet -- an owner
+  // should know their animal is flagged. Raised and cleared only by a vet with
+  // write access, which the database enforces independently.
+  async function alerts(petId) {
+    await identity();
+    return unwrap(await client.from('pet_alerts')
+      .select('id,kind,severity,label,detail,created_at,resolved_at')
+      .eq('pet_id', petId).is('resolved_at', null)
+      .order('severity', { ascending: true }).order('created_at', { ascending: false })) || [];
+  }
+  async function raiseAlert(petId, fields) {
+    const who = await vetIdentity();
+    const label = String(fields.label || '').trim();
+    if (!label) throw new Error(T('Describe the alert in a few words.', "Décrivez l'alerte en quelques mots."));
+    if (label.length > 120) throw new Error(T('Keep the alert under 120 characters.', "Limitez l'alerte à 120 caractères."));
+    const kind = ['behaviour','allergy','medical','anaesthetic','quarantine','other'].includes(fields.kind) ? fields.kind : 'other';
+    const severity = ['critical','warning','info'].includes(fields.severity) ? fields.severity : 'warning';
+    const detail = String(fields.detail || '').trim() || null;
+    return unwrap(await client.from('pet_alerts')
+      .insert({ pet_id: petId, kind, severity, label, detail, created_by: who.user.id })
+      .select('id').single());
+  }
+  async function resolveAlert(alertId) {
+    await vetIdentity();
+    await client.rpc('resolve_pet_alert', { p_id: alertId })
+      .then(r => { if (r.error) throw r.error; });
+    return true;
+  }
+
   global.PFVet = {
+    alerts, raiseAlert, resolveAlert,
     identity, vetIdentity, caseload, recordContext, records, addRecord, payload, definitions, ownerGrants,
     createPatient, claimRecord, withdrawRecord, removePatient,
     clinics: async function () {

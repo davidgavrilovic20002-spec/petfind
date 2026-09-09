@@ -595,6 +595,31 @@
     'cl.rec.save': 'Enregistrer',
     'cl.rec.savenote': 'Le propriétaire verra cette entrée dans le dossier médical de son animal.',
     'cl.rec.foot': 'PetFind · Un historique de soins partagé',
+
+    /* ---- safety alerts + clinic module nav (0029) ---- */
+    'cr.pet.equine': 'Cheval', 'cr.pet.bovine': 'Bovin',
+    'cl.al.new': 'Ajouter une alerte',
+    'cl.al.kind': "Type d'alerte",
+    'cl.al.k.behaviour': 'Comportement',
+    'cl.al.k.allergy': 'Allergie médicamenteuse',
+    'cl.al.k.medical': 'Médical',
+    'cl.al.k.anaesthetic': 'Risque anesthésique',
+    'cl.al.k.quarantine': 'Quarantaine',
+    'cl.al.k.other': 'Autre',
+    'cl.al.sev': 'Gravité',
+    'cl.al.s.critical': 'Critique',
+    'cl.al.s.warning': 'Avertissement',
+    'cl.al.s.info': 'Pour information',
+    'cl.al.label': 'Alerte',
+    'cl.al.label.ph': 'Risque de morsure — muselière requise',
+    'cl.al.detail': 'Précision (facultatif)',
+    'cl.al.add': "Ajouter l'alerte",
+    'cl.al.cancel': 'Annuler',
+    'cl.nav.records': 'Dossiers cliniques',
+    'cl.nav.records.sub': 'Agenda, SOAP, prescriptions, chirurgie & soins · enregistrement en ligne',
+    'cl.nav.demo': 'Explorer les modules',
+    'cl.nav.demo.sub': 'Planning visuel, admission, spécialités & diagnostics · démonstration',
+    'cl.nav.security': 'Sécurité du compte',
   };
 
   var year = new Date().getFullYear();

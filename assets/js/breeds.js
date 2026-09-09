@@ -24,6 +24,8 @@
     { slug: 'bird',    en: 'Bird',    fr: 'Oiseau'  },
     { slug: 'rodent',  en: 'Rodent',  fr: 'Rongeur' },
     { slug: 'reptile', en: 'Reptile', fr: 'Reptile' },
+    { slug: 'equine',  en: 'Horse',   fr: 'Cheval'  },
+    { slug: 'bovine',  en: 'Cattle',  fr: 'Bovin'   },
     { slug: 'other',   en: 'Other',   fr: 'Autre'   }
   ];
 
@@ -49,7 +51,9 @@
     ferret:  ['ferret','furet','furette','putois'],
     bird:    ['bird','birds','oiseau','oiseaux','perruche','perroquet','canari','pajaro','vogel'],
     rodent:  ['rodent','rongeur','hamster','cobaye','cochondinde','gerbille','rat','souris','chinchilla','octodon'],
-    reptile: ['reptile','lezard','serpent','tortue','gecko','iguane','snake','turtle','lizard']
+    reptile: ['reptile','lezard','serpent','tortue','gecko','iguane','snake','turtle','lizard'],
+    equine:  ['equine','equide','cheval','jument','poney','poulain','horse','pony','ane','mulet'],
+    bovine:  ['bovine','bovin','vache','taureau','veau','genisse','cow','bull','calf','cattle']
   };
 
   function normSpecies(value) {

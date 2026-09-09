@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const $=id=>document.getElementById(id), petId=new URLSearchParams(location.search).get('pet');
-  let context=null, revision=0, saving=false, dirty=false, pendingId=null, submitted=false;
+  let context=null, revision=0, saving=false, dirty=false, pendingId=null, submitted=false, alerts=[];
   // Language follows the header switcher (shared pf_lang with the owner site).
   const lang=()=>(window.PFI18n&&window.PFI18n.lang)||'fr';
   const T=(en,fr)=>lang()==='fr'?fr:en;
@@ -99,22 +99,69 @@
     }
   }
 
-  function clear(){context=null;$('remove-patient').hidden=true;$('record').hidden=true;$('timeline').replaceChildren();$('editor').hidden=true;$('pet-name').textContent='';$('pet-detail').textContent='';}
+  const alertKinds=()=>({behaviour:T('Behaviour','Comportement'),allergy:T('Drug allergy','Allergie médicamenteuse'),medical:T('Medical','Médical'),anaesthetic:T('Anaesthetic risk','Risque anesthésique'),quarantine:T('Quarantine','Quarantaine'),other:T('Other','Autre')});
+
+  function renderAlerts(){
+    const host=$('alert-banner');host.replaceChildren();
+    if(!alerts.length){host.hidden=true;return;}
+    host.hidden=false;
+    // critical first: if a vet reads only the top line it must be the worst one
+    const order={critical:0,warning:1,info:2};
+    for(const a of [...alerts].sort((x,y)=>order[x.severity]-order[y.severity])){
+      const row=document.createElement('div');row.className='alert-item alert-'+a.severity;
+      const body=document.createElement('div');
+      const what=document.createElement('span');what.className='alert-what';
+      what.textContent=(alertKinds()[a.kind]||a.kind)+' · '+a.label;
+      body.append(what);
+      if(a.detail){const d=document.createElement('div');d.className='alert-detail';d.textContent=a.detail;body.append(d);}
+      row.append(body);
+      if(context&&context.writable&&!context.owner){
+        const clear=document.createElement('button');clear.type='button';clear.className='alert-clear';
+        clear.textContent=T('Clear','Lever');
+        clear.addEventListener('click',()=>clearAlert(a,clear));
+        row.append(clear);
+      }
+      host.append(row);
+    }
+  }
+
+  async function clearAlert(a,button){
+    if(saving)return;
+    if(!window.confirm(T('Clear "'+a.label+'"? It stops showing on this record. It is kept, with who cleared it and when.',
+                         'Lever « '+a.label+' » ? Elle n\'apparaîtra plus sur ce dossier. Elle est conservée, avec l\'auteur et la date de la levée.')))return;
+    saving=true;button.disabled=true;const run=revision;
+    try{await PFVet.resolveAlert(a.id);saving=false;if(run===revision)await load();}
+    catch(e){saving=false;button.disabled=false;if(run===revision)notice(e.message||T('Could not clear this alert.','Impossible de lever cette alerte.'),true);}
+  }
+
+  function clear(){context=null;alerts=[];$('alert-banner').hidden=true;$('alert-banner').replaceChildren();$('alert-form').hidden=true;$('alert-new').hidden=true;$('remove-patient').hidden=true;$('record').hidden=true;$('timeline').replaceChildren();$('editor').hidden=true;$('pet-name').textContent='';$('pet-detail').textContent='';}
   async function load(){
     if(saving)return;
     const run=++revision;clear();$('retry').hidden=true;$('signin').hidden=true;notice(T('Loading record…','Chargement du dossier…'));
     try{
       if(!window.PFVet)throw new Error(T('Cannot connect to PetFind. Check your connection and reload.','Connexion à PetFind impossible. Vérifiez votre connexion et rechargez la page.'));
       const result=await PFVet.records(petId);if(run!==revision)return;
+      // Alerts are fetched separately so a failure here cannot blank the whole
+      // record -- but a silent empty banner would be a lie, so it is reported.
+      let alertError=null;
+      try{alerts=await PFVet.alerts(petId);}catch(e){alerts=[];alertError=e;}
+      if(run!==revision)return;
       context=result;if($('clinical-forms')){$('clinical-forms').href='operations.html?pet='+encodeURIComponent(petId);$('clinical-forms').hidden=!!context.owner;}$('logout').hidden=false;$('pet-name').textContent=context.pet.name;document.title=T('Patient record — PetFind','Dossier du patient — PetFind');
       const sp=window.PFBreeds?PFBreeds.speciesLabel(context.pet.species,lang()):context.pet.species;
       const br=window.PFBreeds?PFBreeds.displayBreed(context.pet,lang()):context.pet.breed;
-      $('pet-detail').textContent=[sp,br,context.pet.sex,context.pet.age].filter(Boolean).join(' · ');
+      const neuter={intact:T('Entire','Entier'),neutered:T('Neutered','Stérilisé'),unknown:''}[context.pet.neutered]||'';
+      const sexBits=[context.pet.sex,neuter].filter(Boolean).join(' · ');
+      $('pet-detail').textContent=[sp,br,context.pet.coat,sexBits,age(context.pet)||context.pet.age].filter(Boolean).join(' · ');
+      renderIds();
       $('access').textContent=context.owner?T('Your pet’s record','Le dossier de votre animal')
         :context.writable?T('View & add records','Consulter et compléter'):T('Read-only access','Accès en lecture seule');
       $('back').href=context.owner?'../account.html':'index.html';
       $('back').textContent=context.owner?T('← My account','← Mon compte'):T('← Patient list','← Liste des patients');
       // The owner is not a vet, so vet_remove_patient() would refuse them.
+      renderAlerts();
+      if(alertError)notice(T('The safety alerts could not be loaded. Treat this record as incomplete and refresh.',
+                             'Les alertes de sécurité n\'ont pas pu être chargées. Considérez ce dossier comme incomplet et actualisez.'),true);
+      $('alert-new').hidden=!(context.writable&&!context.owner);
       $('remove-patient').hidden=context.owner;
       $('remove-patient').textContent=context.unclaimed
         ? T('Remove patient','Supprimer le patient')
@@ -123,8 +170,51 @@
       if(!context.writable){buildFields();}
     }catch(e){if(run!==revision)return;clear();buildFields();$('retry').hidden=false;$('signin').hidden=false;notice(e.message||T('Could not load this record. Try again.','Chargement du dossier impossible. Réessayez.'),true);}
   }
+  // Calculated age beats a free-text one when a birthdate is on file: "3 ans"
+  // typed in 2024 is wrong by now, and a dose depends on it.
+  function age(pet){
+    if(!pet.birthdate)return '';
+    const b=new Date(pet.birthdate+'T12:00:00');if(isNaN(b))return '';
+    let m=(new Date().getFullYear()-b.getFullYear())*12+(new Date().getMonth()-b.getMonth());
+    if(new Date().getDate()<b.getDate())m--;
+    if(m<0)return '';
+    const y=Math.floor(m/12),r=m%12;
+    if(y<1)return m+' '+T('months','mois');
+    return y+' '+T(y>1?'years':'year','an'+(y>1?'s':''))+(r?' '+r+' '+T('months','mois'):'');
+  }
+
+  function renderIds(){
+    const host=$('patient-ids');host.replaceChildren();
+    const p=context.pet;
+    const bits=[[T('Microchip','Puce'),p.icad_number],[T('Tattoo','Tatouage'),p.tattoo],
+                [T('EU passport','Passeport UE'),p.eu_passport],[T('Registry','Registre'),p.registry_ref]];
+    for(const [label,value] of bits){
+      if(!value)continue;
+      const s=document.createElement('span');const b=document.createElement('strong');
+      b.textContent=value;s.append(label+' ',b);host.append(s);
+    }
+    host.hidden=!host.childElementCount;
+  }
+
   $('kind').addEventListener('change',buildFields);
   $('remove-patient').addEventListener('click',removePatient);
+  $('alert-new').addEventListener('click',()=>{const f=$('alert-form');f.hidden=!f.hidden;if(!f.hidden)f.elements.label.focus();else f.reset();});
+  $('alert-cancel').addEventListener('click',()=>{$('alert-form').hidden=true;$('alert-form').reset();});
+  $('alert-form').addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(saving||!context||!context.writable)return;
+    const form=event.currentTarget,button=form.querySelector('button[type=submit]');
+    saving=true;button.disabled=true;const run=revision;
+    try{
+      await PFVet.raiseAlert(petId,{kind:form.kind.value,severity:form.severity.value,
+                                    label:form.label.value,detail:form.detail.value});
+      saving=false;
+      if(run===revision){form.reset();form.parentElement&&($('alert-form').hidden=true);await load();notice(T('Alert added.','Alerte ajoutée.'));}
+    }catch(e){
+      saving=false;
+      if(run===revision)notice(e.message||T('Could not add this alert. Try again.','Impossible d\'ajouter cette alerte. Réessayez.'),true);
+    }finally{button.disabled=false;}
+  });
   $('entry-form').addEventListener('input',()=>{dirty=true;if(!submitted)pendingId=null;});
   $('filter').addEventListener('change',renderTimeline);$('refresh').addEventListener('click',load);$('retry').addEventListener('click',load);
   $('entry-form').addEventListener('submit',async event=>{
