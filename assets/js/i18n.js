@@ -5,6 +5,7 @@
    choice, sets <html lang>, and injects the EN/FR switcher.
    Attributes: data-i18n (textContent), data-i18n-html (innerHTML),
    data-i18n-ph (placeholder), data-i18n-al (aria-label),
+   data-i18n-alt (an image's alt text),
    data-i18n-content (content attr, for <meta>/<title> use data-i18n).
    ============================================================ */
 (function (global) {
@@ -699,6 +700,32 @@
     'cs.team.email': 'E-mail vétérinaire', 'cs.team.title': 'Titre', 'cs.team.add': 'Ajouter le praticien',
     'cs.nav': 'Configuration de la clinique',
     'cs.nav.sub': 'Créer la clinique, ses salles et ses praticiens',
+
+    /* ---- clinic account security ---- */
+    'sec.doctitle': 'Sécurité du compte vétérinaire — PetFind',
+    'sec.skip': 'Aller à la sécurité du compte',
+    'sec.back': 'Retour à la clinique',
+    'sec.eyebrow': 'COMPTE VÉTÉRINAIRE',
+    'sec.title': 'Accès & sécurité',
+    'sec.forgot.title': 'Mot de passe oublié',
+    'sec.forgot.sub': "Le lien reçu par e-mail vous ramènera ici, dans l'espace clinique.",
+    'sec.forgot.email': 'E-mail du compte',
+    'sec.forgot.send': 'Envoyer le lien de réinitialisation',
+    'sec.forgot.back': 'Revenir à la connexion',
+    'sec.new.title': 'Nouveau mot de passe',
+    'sec.new.pw': 'Nouveau mot de passe',
+    'sec.new.confirm': 'Confirmer le mot de passe',
+    'sec.new.hint': "Utilisez une phrase de passe d'au moins 12 caractères.",
+    'sec.new.save': 'Enregistrer le nouveau mot de passe',
+    'sec.2fa.title': 'Authentification en deux étapes',
+    'sec.2fa.why': "Un authentificateur vérifié est requis pour ouvrir un dossier médical. Sans lui, votre liste de patients reste accessible, mais pas leur historique.",
+    'sec.2fa.enroll': 'Configurer mon authentificateur',
+    'sec.2fa.scan': "Scannez ce QR code avec votre application d'authentification. Ne le partagez pas.",
+    'sec.2fa.qralt': "QR code privé de configuration de l'authentificateur",
+    'sec.2fa.code': 'Code à 6 chiffres',
+    'sec.2fa.verify': 'Vérifier le code',
+    'sec.open.records': 'Ouvrir les dossiers cliniques',
+    'sec.reset.mine': 'Réinitialiser mon mot de passe',
   };
 
   var year = new Date().getFullYear();
@@ -731,6 +758,13 @@
       var k = el.getAttribute('data-i18n-al');
       if (!('i18nEna' in el.dataset)) el.dataset.i18nEna = el.getAttribute('aria-label') || '';
       el.setAttribute('aria-label', t && t[k] != null ? fill(t[k]) : el.dataset.i18nEna);
+    });
+    // alt is not aria-label: an image's alt IS its text, and data-i18n-al would
+    // have left a French page describing its QR code in English.
+    applyAttr('[data-i18n-alt]', function (el) {
+      var k = el.getAttribute('data-i18n-alt');
+      if (!('i18nEnalt' in el.dataset)) el.dataset.i18nEnalt = el.getAttribute('alt') || '';
+      el.setAttribute('alt', t && t[k] != null ? fill(t[k]) : el.dataset.i18nEnalt);
     });
     applyAttr('[data-i18n-content]', function (el) {
       var k = el.getAttribute('data-i18n-content');
