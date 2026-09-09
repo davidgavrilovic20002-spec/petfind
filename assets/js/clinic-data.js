@@ -94,7 +94,8 @@
   async function records(petId) {
     const context = await recordContext(petId);
     const groups = await Promise.all(Object.entries(definitions).map(async ([kind,def]) => {
-      const rows = unwrap(await client.from(def.table).select('*').eq('pet_id',petId).order(def.date,{ascending:false})) || [];
+      const rows = unwrap(await client.from(def.table).select('*').eq('pet_id',petId)
+        .is('withdrawn_at',null).order(def.date,{ascending:false})) || [];
       return rows.map(row => ({ ...row, kind, date:row[def.date], title:row[def.title] }));
     }));
     return { ...context, entries:groups.flat().sort((a,b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at)) };
@@ -152,9 +153,30 @@
     return unwrap(await client.rpc('claim_pet_record', { p_code: clean }));
   }
 
+  // Retract one entry. The database decides who may (can_write_pet, the same
+  // rule the dropped DELETE policies used); this check is only so the UI can
+  // fail fast with a readable message instead of a raw RPC error.
+  async function withdrawRecord(petId, kind, entryId) {
+    const context = await recordContext(petId);
+    if (!context.writable) throw new Error(T('You do not have permission to change this record.', "Vous n'êtes pas autorisé à modifier ce dossier."));
+    if (!definitions[kind]) throw new Error(T('Choose a record type.', "Choisissez un type d'entrée."));
+    await client.rpc('withdraw_record', { p_kind: kind, p_id: entryId })
+      .then(r => { if (r.error) throw r.error; });
+    return true;
+  }
+
+  // Take a patient off this vet's list. Returns 'removed' for an unclaimed
+  // patient they created, or 'unlinked' when they have simply stepped back
+  // from an owner's pet -- the caller needs to know which, because they mean
+  // very different things to say out loud.
+  async function removePatient(petId) {
+    await vetIdentity();
+    return unwrap(await client.rpc('vet_remove_patient', { p_pet_id: petId }));
+  }
+
   global.PFVet = {
     identity, vetIdentity, caseload, recordContext, records, addRecord, payload, definitions, ownerGrants,
-    createPatient, claimRecord,
+    createPatient, claimRecord, withdrawRecord, removePatient,
     clinics: async function () {
       const who = await vetIdentity();
       return unwrap(await client.from('clinic_members').select('clinics(name)').eq('vet_id',who.user.id)) || [];

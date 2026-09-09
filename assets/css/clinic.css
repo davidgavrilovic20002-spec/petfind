@@ -14,3 +14,10 @@
    owner site's dictionary and pf_lang). .lang-switch itself is styled in
    styles.css; this only spaces it inside the clinic's own nav. */
 .clinic-head nav .lang-switch{margin-right:10px}
+
+/* Withdraw control on a timeline entry (0028). Deliberately quiet: retracting
+   an entry is a correction, not a primary action, so it reads as a link until
+   you are on it. .head-actions already exists above and is reused as-is. */
+.entry-actions{margin-top:14px}
+.entry-actions button{font:inherit;font-size:13px;font-weight:600;color:var(--muted);background:none;border:0;border-bottom:1px solid var(--line);padding:2px 0;cursor:pointer}
+.entry-actions button:hover{color:#92231a;border-bottom-color:#92231a}

@@ -42,10 +42,64 @@
       if(entry.kind==='vaccination'){detail(T('Product','Produit'),entry.product_name);detail(T('Batch / lot','Lot'),entry.batch_lot);detail(T('Valid until','Valable jusqu\'au'),date(entry.valid_until));}
       if(entry.kind==='diagnosis'){detail(T('Status','Statut'),statusLabel(entry.status));detail('',entry.notes);}
       if(entry.kind==='prescription'){detail(T('Dose','Dose'),[entry.dose_amount,entry.dose_unit].filter(v=>v!=null).join(' '));detail(T('Route','Voie'),entry.route);detail(T('Frequency','Fréquence'),entry.frequency);detail(T('End date','Fin'),date(entry.end_date));detail('',entry.instructions);}
+      // Only offered to someone who could have written the entry in the first
+      // place. The owner reads the timeline here too and must not be able to
+      // retract their vet's clinical entries.
+      if(context.writable){
+        const actions=document.createElement('div');actions.className='entry-actions';
+        const remove=document.createElement('button');remove.type='button';
+        remove.textContent=T('Withdraw this entry','Retirer cette entrée');
+        remove.addEventListener('click',()=>withdraw(entry,remove));
+        actions.append(remove);article.append(actions);
+      }
       target.append(article);
     }
   }
-  function clear(){context=null;$('record').hidden=true;$('timeline').replaceChildren();$('editor').hidden=true;$('pet-name').textContent='';$('pet-detail').textContent='';}
+  async function withdraw(entry,button){
+    if(saving)return;
+    // Says what actually happens -- the entry stops being shown, it is not
+    // erased -- so nobody withdraws a real treatment thinking it is reversible
+    // only by support, or leaves a wrong one up thinking deletion is forever.
+    if(!window.confirm(T(
+      'Withdraw this '+labels()[entry.kind].toLowerCase()+'? It stops showing in the record for you and the owner. It is kept, not erased, and it is removed from the anonymised research set.',
+      'Retirer cette entrée ('+labels()[entry.kind].toLowerCase()+') ? Elle n\'apparaîtra plus dans le dossier, ni pour vous ni pour le propriétaire. Elle est conservée, pas effacée, et elle est retirée du jeu de recherche anonymisé.')))return;
+    saving=true;button.disabled=true;const run=revision;
+    try{
+      await PFVet.withdrawRecord(petId,entry.kind,entry.id);
+      saving=false;
+      if(run===revision){await load();notice(T('Entry withdrawn.','Entrée retirée.'));}
+    }catch(e){
+      saving=false;button.disabled=false;
+      if(run===revision)notice(e.message||T('Could not withdraw this entry. Try again.','Impossible de retirer cette entrée. Réessayez.'),true);
+    }
+  }
+
+  async function removePatient(){
+    if(saving||!context)return;
+    const button=$('remove-patient'), name=context.pet.name||T('this patient','ce patient');
+    // Two different acts, so two different questions. Getting these the wrong
+    // way round would either destroy a record or silently leave one behind.
+    const ask=context.unclaimed
+      ? T('Remove '+name+'? This patient has no owner yet, so their record goes with them and the claim code stops working.',
+          'Supprimer '+name+' ? Ce patient n\'a pas encore de propriétaire : son dossier part avec lui et le code de récupération cesse de fonctionner.')
+      : T('Remove '+name+' from your list? The pet and its record stay with the owner — you are giving up your own access, and only they can grant it again.',
+          'Retirer '+name+' de votre liste ? L\'animal et son dossier restent chez le propriétaire : vous renoncez à votre accès, et lui seul peut vous le redonner.');
+    if(!window.confirm(ask))return;
+    saving=true;button.disabled=true;
+    try{
+      const outcome=await PFVet.removePatient(petId);
+      saving=false;
+      try{sessionStorage.setItem('pf_clinic_notice',outcome==='removed'
+        ? T(name+' was removed.',name+' a été supprimé.')
+        : T(name+' is no longer on your list.',name+' ne figure plus dans votre liste.'));}catch(e){}
+      location.href='index.html';
+    }catch(e){
+      saving=false;button.disabled=false;
+      notice(e.message||T('Could not remove this patient. Try again.','Impossible de retirer ce patient. Réessayez.'),true);
+    }
+  }
+
+  function clear(){context=null;$('remove-patient').hidden=true;$('record').hidden=true;$('timeline').replaceChildren();$('editor').hidden=true;$('pet-name').textContent='';$('pet-detail').textContent='';}
   async function load(){
     if(saving)return;
     const run=++revision;clear();$('retry').hidden=true;$('signin').hidden=true;notice(T('Loading record…','Chargement du dossier…'));
@@ -60,11 +114,17 @@
         :context.writable?T('View & add records','Consulter et compléter'):T('Read-only access','Accès en lecture seule');
       $('back').href=context.owner?'../account.html':'index.html';
       $('back').textContent=context.owner?T('← My account','← Mon compte'):T('← Patient list','← Liste des patients');
+      // The owner is not a vet, so vet_remove_patient() would refuse them.
+      $('remove-patient').hidden=context.owner;
+      $('remove-patient').textContent=context.unclaimed
+        ? T('Remove patient','Supprimer le patient')
+        : T('Remove from my list','Retirer de ma liste');
       $('editor').hidden=!context.writable;$('record-layout').classList.toggle('read-only',!context.writable);$('record').hidden=false;renderTimeline();notice('');
       if(!context.writable){buildFields();}
     }catch(e){if(run!==revision)return;clear();buildFields();$('retry').hidden=false;$('signin').hidden=false;notice(e.message||T('Could not load this record. Try again.','Chargement du dossier impossible. Réessayez.'),true);}
   }
   $('kind').addEventListener('change',buildFields);
+  $('remove-patient').addEventListener('click',removePatient);
   $('entry-form').addEventListener('input',()=>{dirty=true;if(!submitted)pendingId=null;});
   $('filter').addEventListener('change',renderTimeline);$('refresh').addEventListener('click',load);$('retry').addEventListener('click',load);
   $('entry-form').addEventListener('submit',async event=>{

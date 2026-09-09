@@ -55,7 +55,13 @@
       const who=await PFVet.vetIdentity();
       const rows=await PFVet.caseload(); if (run!==revision) return;
       patients=rows; $('vet-name').textContent=who.profile.full_name || user.email; $('clinic-name').textContent='VET WORKSPACE';
-      render(); show('workspace'); notice('');
+      render(); show('workspace');
+      // A patient removed from the record page redirects back here and leaves
+      // its confirmation behind, so the vet sees the result of what they did
+      // rather than a silently shorter list.
+      let handoff=null;
+      try{handoff=sessionStorage.getItem('pf_clinic_notice');sessionStorage.removeItem('pf_clinic_notice');}catch(e){}
+      notice(handoff||'');
       PFVet.clinics().then(clinics => { if (run===revision && clinics.length) $('clinic-name').textContent=clinics.map(c=>c.clinics?.name).filter(Boolean).join(' · '); }).catch(()=>{});
     } catch(error) {
       if (run!==revision) return;
