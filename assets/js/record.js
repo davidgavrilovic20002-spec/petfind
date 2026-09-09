@@ -106,7 +106,7 @@
     try{
       if(!window.PFVet)throw new Error(T('Cannot connect to PetFind. Check your connection and reload.','Connexion à PetFind impossible. Vérifiez votre connexion et rechargez la page.'));
       const result=await PFVet.records(petId);if(run!==revision)return;
-      context=result;$('logout').hidden=false;$('pet-name').textContent=context.pet.name;document.title=T('Patient record — PetFind','Dossier du patient — PetFind');
+      context=result;if($('clinical-forms')){$('clinical-forms').href='operations.html?pet='+encodeURIComponent(petId);$('clinical-forms').hidden=!!context.owner;}$('logout').hidden=false;$('pet-name').textContent=context.pet.name;document.title=T('Patient record — PetFind','Dossier du patient — PetFind');
       const sp=window.PFBreeds?PFBreeds.speciesLabel(context.pet.species,lang()):context.pet.species;
       const br=window.PFBreeds?PFBreeds.displayBreed(context.pet,lang()):context.pet.breed;
       $('pet-detail').textContent=[sp,br,context.pet.sex,context.pet.age].filter(Boolean).join(' · ');

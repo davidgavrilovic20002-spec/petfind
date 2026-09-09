@@ -69,7 +69,7 @@
         try {
           const result=await PFDB.mfaList(); if(result.error) throw result.error;
           factor=result.data.totp.find(f=>f.status==='verified')?.id;
-          if (!factor) throw new Error('Open Owner account to complete account verification.');
+          if (!factor) throw new Error(T('Open Account security to complete verification.','Ouvrez Sécurité du compte pour terminer la vérification.'));
           show('mfa'); notice(''); return;
         } catch(e) { notice(e.message,true); return; }
       }

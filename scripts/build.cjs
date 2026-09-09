@@ -5,7 +5,7 @@ fs.rmSync(dist,{recursive:true,force:true});fs.mkdirSync(dist);
 for(const name of fs.readdirSync(root)){
   if(name==='assets'||name==='clinic'||/\.(html|txt|xml|webmanifest|ico)$/.test(name)||name==='.nojekyll')fs.cpSync(path.join(root,name),path.join(dist,name),{recursive:true});
 }
-for(const name of ['index.html','account.html','clinic/index.html','clinic/record.html']){
+for(const name of ['index.html','account.html','clinic/index.html','clinic/record.html','clinic/clinical.html','clinic/operations.html','clinic/security.html']){
   const html=fs.readFileSync(path.join(dist,name),'utf8');
   for(const match of html.matchAll(/(?:src|href)="([^"?#]+)(?:[?#][^"]*)?"/g)){
     const ref=match[1];if(/^(https?:|mailto:|tel:|data:|#)/.test(ref))continue;
