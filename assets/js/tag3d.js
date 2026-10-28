@@ -2,8 +2,8 @@
    PetFind — real 3D paw tag (Three.js)
    Extruded, bevel-rounded paw -- the same paw the scroll trail walks
    (assets/js/pawtrail.js): 4 separate toe pads + a rounded-triangle
-   heel, matte white with soft studio lighting. A heel-shaped inlay
-   carries the logo on the front and the QR on the back. Drag to rotate; gentle
+   heel, matte white with soft studio lighting. The heel carries the
+   logo on the front and the QR on the back. Drag to rotate; gentle
    idle spin. Falls back to a static SVG paw if WebGL/Three is
    unavailable.
    ============================================================ */
@@ -27,7 +27,11 @@
   var DEMO_URL = 'https://genuine-melba-2e9324.netlify.app/';
   function drawQRBadge(ctx, cx, cy, area) {
     var ls = area * 0.19, halo = ls * 1.26, rr = ls * 0.10;
-    ctx.fillStyle = '#ffffff'; roundRect(ctx, cx - halo / 2, cy - halo / 2, halo, halo, area * 0.029); ctx.fill();
+    // clear the modules around the badge (the card paints this white; here the
+    // tag's own surface shows through, so there's no white square edge)
+    ctx.save(); ctx.globalCompositeOperation = 'destination-out';
+    roundRect(ctx, cx - halo / 2, cy - halo / 2, halo, halo, area * 0.029); ctx.fill();
+    ctx.restore();
     ctx.fillStyle = '#0F766E'; roundRect(ctx, cx - ls / 2, cy - ls / 2, ls, ls, ls * 0.26); ctx.fill();
     ctx.fillStyle = '#ffffff';
     function dot(dx, dy, s) { ctx.beginPath(); ctx.ellipse(cx + dx, cy + dy, s, s * 1.15, 0, 0, 7); ctx.fill(); }
@@ -47,23 +51,18 @@
     ctx.beginPath(); ctx.ellipse(cx, cy + 0.35 * s, 0.55 * s, 0.42 * s, 0, 0, 7); ctx.fill();
   }
 
-  /* A canvas over the heel's box (10px per paw unit) with the white,
-     heel-shaped inlay already painted, slightly inset from the heel's edge.
-     Callers draw on top of it in canvas px: paw (x, y) -> ((x-HX)*10, (y-HY)*10). */
-  function inlayCanvas() {
+  /* A transparent canvas over the heel's box (10px per paw unit); what's drawn
+     on it is printed straight onto the heel, with no backing panel whose edge
+     would show. Callers draw in canvas px: paw (x, y) -> ((x-HX)*10, (y-HY)*10). */
+  function heelCanvas() {
     var c = document.createElement('canvas'); c.width = HW * 10; c.height = HH * 10;
-    var ctx = c.getContext('2d');
-    ctx.setTransform(10, 0, 0, 10, -HX * 10, -HY * 10);
-    ctx.translate(50, 71); ctx.scale(0.86, 0.86); ctx.translate(-50, -71);
-    ctx.fillStyle = '#ffffff'; ctx.fill(new Path2D(HEEL));
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    return { c: c, ctx: ctx, base: ctx.getImageData(0, 0, c.width, c.height) };
+    return c;
   }
 
   function makeLogoTexture() {
-    var ink = inlayCanvas(), c = ink.c, ctx = ink.ctx;
+    var c = heelCanvas(), ctx = c.getContext('2d');
     function draw() {
-      ctx.putImageData(ink.base, 0, 0);
+      ctx.clearRect(0, 0, c.width, c.height);
       drawPawGlyph(ctx, 370, 140, 95, '#C6382D');
       ctx.fillStyle = '#22333b';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -78,7 +77,7 @@
   }
 
   function makeQRTexture() {
-    var ink = inlayCanvas(), c = ink.c, ctx = ink.ctx;
+    var c = heelCanvas(), ctx = c.getContext('2d');
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = '#0F766E'; ctx.font = '800 40px -apple-system,Segoe UI,Roboto,Arial';
     ctx.fillText('PetFind', 370, 80);
@@ -156,7 +155,7 @@
     });
     addPart(heelShape(), 0, 0, 0);
 
-    // logo + QR inlays over the heel, placed just proud of the real caps (proper occlusion)
+    // logo + QR printed over the heel, placed just proud of the real caps (proper occlusion)
     var planeW = HW * K, planeH = HH * K, planeY = (50 - (HY + HH / 2)) * K, off = 1.2;
     var logoMat = new THREE.MeshBasicMaterial({ map: makeLogoTexture(), transparent: true, depthWrite: false });
     var logo = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH), logoMat);
