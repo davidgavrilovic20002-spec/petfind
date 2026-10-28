@@ -1,0 +1,12 @@
+/* ============================================================
+   PetFind — scroll paw trail (see assets/js/pawtrail.js)
+   Prints in the logo-paw red (--accent) so they match the brand mark.
+   ============================================================ */
+.paw-trail{position:absolute;top:0;left:0;right:0;height:0;overflow:hidden;pointer-events:none;z-index:40;color:var(--accent,#C6382D)}
+.paw-trail .paw-defs{position:absolute;width:0;height:0}
+.paw-print{position:absolute;top:0;left:0}
+.paw-print svg{display:block;width:100%;height:100%;fill:currentColor;opacity:0;transform:scale(.3);
+  transition:opacity .35s ease,transform .45s cubic-bezier(.34,1.56,.64,1)}
+.paw-print.on svg{opacity:.8;transform:none}
+.paw-trail.narrow .paw-print.on svg{opacity:.55}
+@media (prefers-reduced-motion:reduce){.paw-print svg{transition:none}}
