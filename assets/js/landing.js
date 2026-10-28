@@ -9,15 +9,16 @@
   'use strict';
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  /* Shared paw silhouette (5 shapes: 4 toes + heel) */
-  var PAW = '<ellipse cx="46" cy="92" rx="22" ry="30" transform="rotate(-20 46 92)"/>' +
-            '<ellipse cx="88" cy="56" rx="24" ry="32" transform="rotate(-8 88 56)"/>' +
-            '<ellipse cx="132" cy="56" rx="24" ry="32" transform="rotate(8 132 56)"/>' +
-            '<ellipse cx="174" cy="92" rx="22" ry="30" transform="rotate(20 174 92)"/>' +
-            '<ellipse cx="110" cy="150" rx="58" ry="44"/>';
+  /* Shared paw silhouette (5 shapes: 4 toes + heel) -- the same paw as the
+     scroll trail (pawtrail.js) and the 3D tag (tag3d.js), in a 100x100 box */
+  var PAW = '<ellipse cx="15" cy="41" rx="10.5" ry="13.5" transform="rotate(-32 15 41)"/>' +
+            '<ellipse cx="36.5" cy="19" rx="11.5" ry="15" transform="rotate(-10 36.5 19)"/>' +
+            '<ellipse cx="63.5" cy="19" rx="11.5" ry="15" transform="rotate(10 63.5 19)"/>' +
+            '<ellipse cx="85" cy="41" rx="10.5" ry="13.5" transform="rotate(32 85 41)"/>' +
+            '<path d="M50 45C61 45 69 54 75 64C81 74 87 84 80 92C74 98 66 92 58 93C53 94 47 94 42 93C34 92 26 98 20 92C13 84 19 74 25 64C31 54 39 45 50 45Z"/>';
 
   function metalPaw(suffix) {
-    return '<svg class="paw-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    return '<svg class="paw-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
       '<defs>' +
         '<linearGradient id="mtl' + suffix + '" x1="0" y1="0" x2="0.35" y2="1">' +
           '<stop offset="0" stop-color="#ffffff"/><stop offset="0.4" stop-color="#dbe2e6"/>' +
@@ -26,15 +27,15 @@
         '<clipPath id="clip' + suffix + '">' + PAW + '</clipPath>' +
       '</defs>' +
       '<g clip-path="url(#clip' + suffix + ')">' +
-        '<rect x="0" y="0" width="220" height="220" fill="url(#mtl' + suffix + ')"/>' +
-        '<ellipse cx="78" cy="52" rx="130" ry="74" fill="#ffffff" opacity="0.4"/>' +
-        '<ellipse cx="150" cy="200" rx="120" ry="70" fill="#8b979d" opacity="0.25"/>' +
+        '<rect x="0" y="0" width="100" height="100" fill="url(#mtl' + suffix + ')"/>' +
+        '<ellipse cx="35.5" cy="23.6" rx="59" ry="33.6" fill="#ffffff" opacity="0.4"/>' +
+        '<ellipse cx="68.2" cy="90.9" rx="54.5" ry="31.8" fill="#8b979d" opacity="0.25"/>' +
       '</g>' +
-      '<g fill="none" stroke="#a7b1b7" stroke-width="2.5" opacity="0.75">' + PAW + '</g>' +
+      '<g fill="none" stroke="#a7b1b7" stroke-width="1.1" opacity="0.75">' + PAW + '</g>' +
     '</svg>';
   }
   function solidPaw(color) {
-    return '<svg class="paw-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="' + color + '">' + PAW + '</g></svg>';
+    return '<svg class="paw-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="' + color + '">' + PAW + '</g></svg>';
   }
 
   function buildTag(stage) {

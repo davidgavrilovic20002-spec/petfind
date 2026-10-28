@@ -1,13 +1,22 @@
 /* ============================================================
    PetFind — real 3D paw tag (Three.js)
-   Extruded, bevel-rounded paw: 4 separate toe pads + a shield heel,
-   matte white with soft studio lighting. Front heel carries the logo,
-   back heel carries the QR. Drag to rotate; gentle idle spin.
-   Falls back to a static SVG paw if WebGL/Three is unavailable.
+   Extruded, bevel-rounded paw -- the same paw the scroll trail walks
+   (assets/js/pawtrail.js): 4 separate toe pads + a rounded-triangle
+   heel, matte white with soft studio lighting. A heel-shaped inlay
+   carries the logo on the front and the QR on the back. Drag to rotate; gentle
+   idle spin. Falls back to a static SVG paw if WebGL/Three is
+   unavailable.
    ============================================================ */
 (function (global) {
   'use strict';
   var reduce = global.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* The trail's paw, in its 100x100 box with y pointing down. K scales it
+     into model units (and y is flipped) so it stands upright around (50,50). */
+  var K = 1.95;
+  var TOES = [[15, 41, 10.5, 13.5, -32], [36.5, 19, 11.5, 15, -10], [63.5, 19, 11.5, 15, 10], [85, 41, 10.5, 13.5, 32]]; // cx, cy, rx, ry, deg
+  var HEEL = 'M50 45C61 45 69 54 75 64C81 74 87 84 80 92C74 98 66 92 58 93C53 94 47 94 42 93C34 92 26 98 20 92C13 84 19 74 25 64C31 54 39 45 50 45Z';
+  var HX = 13, HY = 45, HW = 74, HH = 51;          // box around the heel, in paw units
 
   /* ---------- textures drawn on canvas ---------- */
   function roundRect(x, ctx, w, h, r) {} // placeholder (unused)
@@ -23,16 +32,28 @@
     ctx.beginPath(); ctx.ellipse(cx, cy + 0.35 * s, 0.55 * s, 0.42 * s, 0, 0, 7); ctx.fill();
   }
 
-  function makeLogoTexture() {
-    var c = document.createElement('canvas'); c.width = 620; c.height = 470;
+  /* A canvas over the heel's box (10px per paw unit) with the white,
+     heel-shaped inlay already painted, slightly inset from the heel's edge.
+     Callers draw on top of it in canvas px: paw (x, y) -> ((x-HX)*10, (y-HY)*10). */
+  function inlayCanvas() {
+    var c = document.createElement('canvas'); c.width = HW * 10; c.height = HH * 10;
     var ctx = c.getContext('2d');
+    ctx.setTransform(10, 0, 0, 10, -HX * 10, -HY * 10);
+    ctx.translate(50, 71); ctx.scale(0.86, 0.86); ctx.translate(-50, -71);
+    ctx.fillStyle = '#ffffff'; ctx.fill(new Path2D(HEEL));
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    return { c: c, ctx: ctx, base: ctx.getImageData(0, 0, c.width, c.height) };
+  }
+
+  function makeLogoTexture() {
+    var ink = inlayCanvas(), c = ink.c, ctx = ink.ctx;
     function draw() {
-      ctx.clearRect(0, 0, c.width, c.height);
-      drawPawGlyph(ctx, 310, 150, 120, '#D2382B');
+      ctx.putImageData(ink.base, 0, 0);
+      drawPawGlyph(ctx, 370, 140, 95, '#C6382D');
       ctx.fillStyle = '#22333b';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = '700 118px Lora, Georgia, "Times New Roman", serif';
-      ctx.fillText('PetFind', 310, 340);
+      ctx.font = '700 100px Lora, Georgia, "Times New Roman", serif';
+      ctx.fillText('PetFind', 370, 338);
     }
     draw();
     var tex = new THREE.CanvasTexture(c);
@@ -42,28 +63,19 @@
   }
 
   function makeQRTexture() {
-    var c = document.createElement('canvas'); c.width = 560; c.height = 470;
-    var ctx = c.getContext('2d');
-    // card
-    ctx.fillStyle = '#ffffff';
-    (function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill(); })(20, 14, 520, 442, 30);
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#0F766E'; ctx.font = '800 40px -apple-system,Segoe UI,Roboto,Arial';
-    ctx.fillText('PetFind', 280, 66);
-    ctx.fillStyle = '#0F1B1A'; ctx.font = '700 30px -apple-system,Segoe UI,Roboto,Arial';
-    ctx.fillText('Scan to meet Luna', 280, 104);
-    // QR
+    var ink = inlayCanvas(), c = ink.c, ctx = ink.ctx;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#0F766E'; ctx.font = '800 46px -apple-system,Segoe UI,Roboto,Arial';
+    ctx.fillText('PetFind', 370, 104);
+    // QR in the wide lower part of the heel
     if (typeof qrcode !== 'undefined') {
       var url = new URL('index.html', global.location.href).href;
       var qr = qrcode(0, 'M'); qr.addData(url); qr.make();
-      var n = qr.getModuleCount(), area = 250, qx = (560 - area) / 2, qy = 130, cell = area / n;
+      var n = qr.getModuleCount(), area = 260, qx = 370 - area / 2, qy = 160, cell = area / n;
       ctx.fillStyle = '#0B5651';
       for (var r = 0; r < n; r++) for (var col = 0; col < n; col++) if (qr.isDark(r, col))
         ctx.fillRect(Math.floor(qx + col * cell), Math.floor(qy + r * cell), Math.ceil(cell), Math.ceil(cell));
     }
-    ctx.fillStyle = '#5B6B69'; ctx.font = '400 20px -apple-system,Segoe UI,Roboto,Arial';
-    ctx.fillText('Point your phone camera at the code', 280, 410);
-    ctx.fillText('No app needed — works even with no battery', 280, 436);
     var tex = new THREE.CanvasTexture(c); tex.anisotropy = 4;
     return tex;
   }
@@ -71,16 +83,12 @@
   /* ---------- geometry ---------- */
   function ellipseShape(rx, ry) { var s = new THREE.Shape(); s.absellipse(0, 0, rx, ry, 0, Math.PI * 2, false, 0); return s; }
   function heelShape() {
-    // classic metacarpal pad: concave top (two shoulders + centre dip),
-    // bulging sides, broad rounded bottom.
-    var s = new THREE.Shape();
-    s.moveTo(0, 22);
-    s.bezierCurveTo(14, 30, 34, 41, 48, 32);
-    s.bezierCurveTo(64, 21, 62, -8, 52, -26);
-    s.bezierCurveTo(43, -42, 20, -47, 0, -45);
-    s.bezierCurveTo(-20, -47, -43, -42, -52, -26);
-    s.bezierCurveTo(-62, -8, -64, 21, -48, 32);
-    s.bezierCurveTo(-34, 41, -14, 30, 0, 22);
+    // the trail's heel path (one M, then C curves), mapped into model units
+    var n = HEEL.match(/\d+(\.\d+)?/g).map(Number), s = new THREE.Shape();
+    function X(i) { return (n[i] - 50) * K; }
+    function Y(i) { return (50 - n[i + 1]) * K; }
+    s.moveTo(X(0), Y(0));
+    for (var i = 2; i + 5 < n.length; i += 6) s.bezierCurveTo(X(i), Y(i), X(i + 2), Y(i + 2), X(i + 4), Y(i + 4));
     return s;
   }
 
@@ -124,15 +132,15 @@
       m.position.set(x, y, 0); m.rotation.z = rotZ || 0;
       tag.add(m); return g;
     }
-    // 4 separate toe pads (clear gaps) + shield heel
-    addPart(ellipseShape(19, 25), -70, 16, THREE.MathUtils.degToRad(-16));
-    addPart(ellipseShape(20, 27), -27, 46, THREE.MathUtils.degToRad(-5));
-    addPart(ellipseShape(20, 27), 27, 46, THREE.MathUtils.degToRad(5));
-    addPart(ellipseShape(19, 25), 70, 16, THREE.MathUtils.degToRad(16));
-    addPart(heelShape(), 0, -48, 0);
+    // 4 separate toe pads + heel. SVG angles turn clockwise and Three's
+    // counter-clockwise, hence the minus.
+    TOES.forEach(function (t) {
+      addPart(ellipseShape(t[2] * K, t[3] * K), (t[0] - 50) * K, (50 - t[1]) * K, THREE.MathUtils.degToRad(-t[4]));
+    });
+    addPart(heelShape(), 0, 0, 0);
 
-    // logo + QR decals, placed just proud of the real caps (proper occlusion)
-    var planeW = 84, planeH = 62, planeY = -54, off = 1.2;
+    // logo + QR inlays over the heel, placed just proud of the real caps (proper occlusion)
+    var planeW = HW * K, planeH = HH * K, planeY = (50 - (HY + HH / 2)) * K, off = 1.2;
     var logoMat = new THREE.MeshBasicMaterial({ map: makeLogoTexture(), transparent: true, depthWrite: false });
     var logo = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH), logoMat);
     logo.position.set(0, planeY, capF + off); logo.renderOrder = 4; tag.add(logo);
