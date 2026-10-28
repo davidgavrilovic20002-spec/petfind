@@ -96,7 +96,7 @@
     'meta.title.home': 'PetFind — la médaille qui ramène les animaux à la maison',
     'meta.desc.home': "PetFind est une médaille QR en forme de patte qui fonctionne toujours — sans batterie, sans appli, sans compte. Celui qui trouve votre animal scanne, vous appelle en un geste et voit le vétérinaire le plus proche. Créez la page de votre animal en une minute.",
     'hero.badge': 'Sans batterie · sans appli · sans compte',
-    'hero.h1': 'La médaille qui ramène <em>les animaux</em>.',
+    'hero.h1': 'La médaille qui ramène <em>les animaux</em>',
     'hero.lede': "Une médaille en forme de patte avec un QR code qui ne tombe jamais en panne de batterie. La personne qui trouve votre animal la scanne, vous joint en un geste et voit le vétérinaire le plus proche — où que votre animal réapparaisse.",
     'hero.drag': 'Faites pivoter la médaille',
     'hero.cta1': "Créer la médaille de votre animal",
