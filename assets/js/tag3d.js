@@ -41,14 +41,15 @@
   }
 
   function drawPawGlyph(ctx, cx, cy, s, color) {
-    // small red paw: 4 toes + heel, scaled by s (px), centred at cx,cy
+    // the logo paw (assets/img/favicon.svg): 4 toes + heel, about 1.7·s px
+    // across, centred at cx,cy
+    var k = s * 1.7 / 100;
+    ctx.save();
+    ctx.translate(cx - 50 * k, cy - 50 * k); ctx.scale(k, k);
     ctx.fillStyle = color;
-    function ell(dx, dy, rx, ry) { ctx.beginPath(); ctx.ellipse(cx + dx * s, cy + dy * s, rx * s, ry * s, 0, 0, 7); ctx.fill(); }
-    ell(-0.62, -0.30, 0.20, 0.28);
-    ell(-0.22, -0.55, 0.22, 0.30);
-    ell(0.22, -0.55, 0.22, 0.30);
-    ell(0.62, -0.30, 0.20, 0.28);
-    ctx.beginPath(); ctx.ellipse(cx, cy + 0.35 * s, 0.55 * s, 0.42 * s, 0, 0, 7); ctx.fill();
+    TOES.forEach(function (t) { ctx.beginPath(); ctx.ellipse(t[0], t[1], t[2], t[3], t[4] * Math.PI / 180, 0, 7); ctx.fill(); });
+    ctx.fill(new Path2D(HEEL));
+    ctx.restore();
   }
 
   /* A transparent canvas over the heel's box (10px per paw unit); what's drawn

@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-label="PetFind paw">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="PetFind paw">
   <g fill="#C6382D">
-    <ellipse cx="46" cy="92" rx="22" ry="30" transform="rotate(-20 46 92)"/>
-    <ellipse cx="88" cy="56" rx="24" ry="32" transform="rotate(-8 88 56)"/>
-    <ellipse cx="132" cy="56" rx="24" ry="32" transform="rotate(8 132 56)"/>
-    <ellipse cx="174" cy="92" rx="22" ry="30" transform="rotate(20 174 92)"/>
-    <ellipse cx="110" cy="150" rx="58" ry="44"/>
+    <ellipse cx="15" cy="41" rx="10.5" ry="13.5" transform="rotate(-32 15 41)"/>
+    <ellipse cx="36.5" cy="19" rx="11.5" ry="15" transform="rotate(-10 36.5 19)"/>
+    <ellipse cx="63.5" cy="19" rx="11.5" ry="15" transform="rotate(10 63.5 19)"/>
+    <ellipse cx="85" cy="41" rx="10.5" ry="13.5" transform="rotate(32 85 41)"/>
+    <path d="M50 45C61 45 69 54 75 64C81 74 87 84 80 92C74 98 66 92 58 93C53 94 47 94 42 93C34 92 26 98 20 92C13 84 19 74 25 64C31 54 39 45 50 45Z"/>
   </g>
 </svg>
