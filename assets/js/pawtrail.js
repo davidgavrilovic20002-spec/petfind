@@ -1,8 +1,8 @@
 /* ============================================================
    PetFind — scroll paw trail (customer pages only)
-   A trail of paw prints walks down the side of the page as you
-   scroll: prints stamp in one by one ahead of the reader and
-   step back out when you scroll up. Purely decorative.
+   A trail of paw prints loops its way down the side of the page
+   as you scroll: prints stamp in one by one ahead of the reader
+   and step back out when you scroll up. Purely decorative.
    ============================================================ */
 (function () {
   'use strict';
@@ -43,9 +43,35 @@
     return { node: node, svg: svg, on: false, y: 0 };
   }
 
-  /* Lay the trail out along the right side of the page. On wide screens it
-     wanders through the empty gutter beside the content; on narrower ones it
-     hugs the edge with smaller, fainter prints so it stays clear of text. */
+  /* The centre line of the walk, as points ~2px apart. On wide screens it
+     runs down one edge of the gutter, curls a full loop, carries on down,
+     crosses to the other edge and loops again -- a looping, spiralling
+     trail like a pet circling as it goes. Every leg starts and ends heading
+     straight down, so the joins are smooth. Without room for loops it just
+     runs straight down. */
+  function pathPoints(cx, radius, startY, endY) {
+    var pts = [], y = startY, side = 1, u, a;
+    if (radius <= 0) {
+      for (y = startY; y <= endY + 2; y += 2) pts.push([cx, y]);
+      return pts;
+    }
+    var lead = radius + 12, cross = 300;             // straight run around each loop; height of each crossing
+    function straight(x, len) { for (u = 0; u < len; u += 2) pts.push([x, y + u]); y += len; }
+    while (y < endY) {
+      var edge = cx + side * radius;
+      straight(edge, lead);
+      // Full circle across the gutter, entering and leaving at this edge heading down.
+      for (a = 0; a < 2 * Math.PI; a += 2 / radius) pts.push([cx + side * radius * Math.cos(a), y + radius * Math.sin(a)]);
+      straight(edge, lead);
+      for (u = 0; u < 1; u += 2 / cross) pts.push([edge - side * radius * (1 - Math.cos(Math.PI * u)), y + cross * u]);
+      y += cross; side = -side;
+    }
+    return pts;
+  }
+
+  /* Lay the trail out along the right side of the page: in the empty gutter
+     beside the content on wide screens; on narrower ones, straight down the
+     edge with smaller, fainter prints that stay clear of the text. */
   function layout() {
     layer.style.height = '0px';
     var docH = document.documentElement.scrollHeight;
@@ -56,30 +82,39 @@
     var vw = document.documentElement.clientWidth;
     var space = (vw - Math.min(vw, 1080)) / 2 + 20;
     var wide = space >= 110;
-    var size = wide ? 38 : 16;
-    var step = wide ? 88 : 52;                       // distance between prints
-    var stance = wide ? 16 : 4;                      // left / right foot offset
-    var sway = wide ? Math.max(0, Math.min(26, (space - size - 2 * stance - 16) / 2 - 4)) : 0;
+    var size = wide ? Math.min(28, Math.round(space / 6)) : 16;
+    var stride = wide ? size * 1.35 : 52;            // distance between prints along the path
+    var stance = wide ? size * 0.2 : 4;              // left / right foot offset (near single file, like a cat)
+    var radius = wide ? Math.min(90, space / 2 - size / 2 - stance - 6) : 0;
     var cx = wide ? vw - space / 2 : vw - 11;
     layer.classList.toggle('narrow', !wide);
 
-    var startY = 120;
-    var count = Math.max(0, Math.floor((docH - startY - 40) / step) + 1);
-    while (prints.length < count) prints.push(makePrint());
-    while (prints.length > count) layer.removeChild(prints.pop().node);
+    // Walk the centre line and drop a print every `stride` px walked.
+    var startY = 120, endY = docH - 40, count = 0, reach = 0, walked = 0, nextAt = 0;
+    var pts = pathPoints(cx, radius, startY, endY);
+    for (var i = 1; i < pts.length; i++) {
+      var x = pts[i][0], y = pts[i][1];
+      var dx = x - pts[i - 1][0], dy = y - pts[i - 1][1], ds = Math.sqrt(dx * dx + dy * dy);
+      walked += ds;
+      if (walked < nextAt) continue;
+      if (y > endY) break;
+      nextAt += stride;
 
-    for (var i = 0; i < count; i++) {
-      var y = startY + i * step, phase = y / 520, side = i % 2 ? 1 : -1;
-      var x = cx + Math.sin(phase) * sway + side * stance;
-      // Toes point the way it walks (down the page), turned with the curve
-      // and splayed slightly outward like real prints.
-      var heading = Math.atan(Math.cos(phase) * sway / 520) * 180 / Math.PI;
-      var rot = 180 - heading - side * 9;
-      var n = prints[i].node;
-      n.style.width = n.style.height = size + 'px';
-      n.style.transform = 'translate(' + (x - size / 2).toFixed(1) + 'px,' + (y - size / 2).toFixed(1) + 'px) rotate(' + rot.toFixed(1) + 'deg)';
-      prints[i].y = y;
+      // Feet land either side of the path; toes point the way it's walking
+      // (up the page on the back of a loop), splayed slightly outward.
+      var ux = dx / ds, uy = dy / ds, side = count % 2 ? 1 : -1;
+      var fx = x + side * stance * uy, fy = y - side * stance * ux;
+      var rot = Math.atan2(ux, -uy) * 180 / Math.PI - side * 9;
+      if (count === prints.length) prints.push(makePrint());
+      var p = prints[count++];
+      p.node.style.width = p.node.style.height = size + 'px';
+      p.node.style.transform = 'translate(' + (fx - size / 2).toFixed(1) + 'px,' + (fy - size / 2).toFixed(1) + 'px) rotate(' + rot.toFixed(1) + 'deg)';
+      // Stamp in walking order: a print on the way back up a loop appears
+      // right after the deepest one before it, not when its own height is reached.
+      reach = Math.max(reach, fy);
+      p.y = reach;
     }
+    while (prints.length > count) layer.removeChild(prints.pop().node);
     lastLine = -1;
     update();
   }
