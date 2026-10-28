@@ -19,7 +19,22 @@
   var HX = 13, HY = 45, HW = 74, HH = 51;          // box around the heel, in paw units
 
   /* ---------- textures drawn on canvas ---------- */
-  function roundRect(x, ctx, w, h, r) {} // placeholder (unused)
+  function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+  /* The back carries the QR from Luna's printed demo card, drawn the same way
+     as the card itself (composeQR in create.js): level-H code with the teal
+     paw badge in the middle. */
+  var DEMO_URL = 'https://genuine-melba-2e9324.netlify.app/';
+  function drawQRBadge(ctx, cx, cy, area) {
+    var ls = area * 0.19, halo = ls * 1.26, rr = ls * 0.10;
+    ctx.fillStyle = '#ffffff'; roundRect(ctx, cx - halo / 2, cy - halo / 2, halo, halo, area * 0.029); ctx.fill();
+    ctx.fillStyle = '#0F766E'; roundRect(ctx, cx - ls / 2, cy - ls / 2, ls, ls, ls * 0.26); ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    function dot(dx, dy, s) { ctx.beginPath(); ctx.ellipse(cx + dx, cy + dy, s, s * 1.15, 0, 0, 7); ctx.fill(); }
+    dot(-rr * 1.15, -rr * 1.9, rr * 0.62); dot(rr * 1.15, -rr * 1.9, rr * 0.62);
+    dot(-rr * 2.0, -rr * 0.2, rr * 0.6); dot(rr * 2.0, -rr * 0.2, rr * 0.6);
+    ctx.beginPath(); ctx.ellipse(cx, cy + rr * 0.7, rr * 1.5, rr * 1.7, 0, 0, 7); ctx.fill();
+  }
 
   function drawPawGlyph(ctx, cx, cy, s, color) {
     // small red paw: 4 toes + heel, scaled by s (px), centred at cx,cy
@@ -65,16 +80,18 @@
   function makeQRTexture() {
     var ink = inlayCanvas(), c = ink.c, ctx = ink.ctx;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#0F766E'; ctx.font = '800 46px -apple-system,Segoe UI,Roboto,Arial';
-    ctx.fillText('PetFind', 370, 104);
+    ctx.fillStyle = '#0F766E'; ctx.font = '800 40px -apple-system,Segoe UI,Roboto,Arial';
+    ctx.fillText('PetFind', 370, 80);
+    ctx.fillStyle = '#0F1B1A'; ctx.font = '800 25px -apple-system,Segoe UI,Roboto,Arial';
+    ctx.fillText('Scan to meet Luna', 370, 125);
     // QR in the wide lower part of the heel
     if (typeof qrcode !== 'undefined') {
-      var url = new URL('index.html', global.location.href).href;
-      var qr = qrcode(0, 'M'); qr.addData(url); qr.make();
-      var n = qr.getModuleCount(), area = 260, qx = 370 - area / 2, qy = 160, cell = area / n;
+      var qr = qrcode(0, 'H'); qr.addData(DEMO_URL); qr.make();
+      var n = qr.getModuleCount(), area = 260, qx = 370 - area / 2, qy = 165, cell = area / n;
       ctx.fillStyle = '#0B5651';
       for (var r = 0; r < n; r++) for (var col = 0; col < n; col++) if (qr.isDark(r, col))
         ctx.fillRect(Math.floor(qx + col * cell), Math.floor(qy + r * cell), Math.ceil(cell), Math.ceil(cell));
+      drawQRBadge(ctx, 370, qy + area / 2, area);
     }
     var tex = new THREE.CanvasTexture(c); tex.anisotropy = 4;
     return tex;
@@ -210,5 +227,5 @@
     return true;
   }
 
-  global.PetTag3D = { init: init };
+  global.PetTag3D = { init: init, DEMO_URL: DEMO_URL };
 })(window);

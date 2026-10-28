@@ -76,7 +76,8 @@
 
   function renderTagQR() {
     if (typeof qrcode === 'undefined') return;
-    var url = new URL('index.html', window.location.href).href;
+    // same QR as the 3D tag's back (Luna's demo card)
+    var url = window.PetTag3D ? window.PetTag3D.DEMO_URL : new URL('index.html', window.location.href).href;
     var qr = qrcode(0, 'M'); qr.addData(url); qr.make();
     var c = document.getElementById('tagQR'); if (!c) return;
     var ctx = c.getContext('2d'), n = qr.getModuleCount(), size = c.width, cell = size / n;
